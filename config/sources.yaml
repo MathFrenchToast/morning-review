@@ -1,0 +1,5107 @@
+version: '1.0'
+categories:
+- slug: actu
+  name: Actualités & Monde
+  description: Presse et médias publics de confiance (Radio France, Franceinfo, Le Monde, New York Times...)
+- slug: gaming-hardware
+  name: Hardware & Jeu Vidéo
+  description: PC, composants, tests matériel et culture jeu vidéo (Canard PC...)
+- slug: perso
+  name: Perso & Société
+  description: Sujets personnels, culture, économie et lectures générales
+- slug: science
+  name: Sciences & Découvertes
+  description: Physique, biologie, espace, recherche scientifique (Pour la Science, New Scientist, Quanta Magazine,
+    Radio France Sciences...)
+- slug: tech
+  name: Tech & Engineering
+  description: Cloud, Kubernetes, DevOps, IA, Architecture logicielle et développement
+sources:
+- kind: mcp_auth
+  title: Medium Abonné (Enrichissement à la demande via agent-auth-mcp)
+  url: mcp://agent-auth-mcp/medium
+  category: tech
+  labels:
+  - tech
+  creator: Medium Abonné
+  is_public: false
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://medium.com
+- kind: mcp_auth
+  title: New Scientist Abonné (Enrichissement à la demande via agent-auth-mcp)
+  url: mcp://agent-auth-mcp/newscientist
+  category: science
+  labels:
+  - science
+  creator: New Scientist
+  is_public: false
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.newscientist.com
+- kind: mcp_auth
+  title: Pour la Science Abonné (Enrichissement à la demande via agent-auth-mcp)
+  url: mcp://agent-auth-mcp/pourlascience
+  category: science
+  labels:
+  - science
+  creator: Pour la Science
+  is_public: false
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.pourlascience.fr
+- kind: newsletter
+  title: TLDR AI (dan@tldrnewsletter.com)
+  url: newsletter://dan@tldrnewsletter.com/tldr-ai
+  category: tech
+  labels:
+  - newsletter
+  - tech
+  creator: TLDR
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: dan@tldrnewsletter.com
+- kind: newsletter
+  title: TLDR (dan@tldrnewsletter.com)
+  url: newsletter://tldr.tech
+  category: tech
+  labels:
+  - newsletter
+  - tech
+  creator: TLDR
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: dan@tldrnewsletter.com
+  list_id: tldr.tech
+- kind: newsletter
+  title: TLDR (dan@tldrnewsletter.com)
+  url: newsletter://dan@tldrnewsletter.com/tldr
+  category: tech
+  labels:
+  - newsletter
+  - tech
+  creator: TLDR
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: dan@tldrnewsletter.com
+- kind: newsletter
+  title: TLDR Dev (dan@tldrnewsletter.com)
+  url: newsletter://dan@tldrnewsletter.com/tldr-dev
+  category: tech
+  labels:
+  - newsletter
+  - tech
+  creator: TLDR
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: dan@tldrnewsletter.com
+- kind: newsletter
+  title: TLDR Dev (dan@tldrnewsletter.com)
+  url: newsletter://tldr-dev.tech
+  category: tech
+  labels:
+  - newsletter
+  - tech
+  creator: TLDR
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: dan@tldrnewsletter.com
+  list_id: tldr-dev.tech
+- kind: newsletter
+  title: TLDR DevOps (dan@tldrnewsletter.com)
+  url: newsletter://dan@tldrnewsletter.com/tldr-devops
+  category: tech
+  labels:
+  - newsletter
+  - tech
+  creator: TLDR
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: dan@tldrnewsletter.com
+- kind: newsletter
+  title: TLDR InfoSec (dan@tldrnewsletter.com)
+  url: newsletter://dan@tldrnewsletter.com/tldr-infosec
+  category: tech
+  labels:
+  - newsletter
+  - tech
+  creator: TLDR
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: dan@tldrnewsletter.com
+- kind: podcast
+  title: À CÔTÉ DE MES POMPES (Sébastien Martin)
+  url: https://feeds.megaphone.fm/COMG9827854258
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: À CÔTÉ DE MES POMPES
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://acotedemespompes.fr/
+- kind: podcast
+  title: A la French (Mehdi Medjaoui)
+  url: https://feeds.acast.com/public/shows/6966aba40b081bb8b92e4a16
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: À la French
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://shows.acast.com/a-la-french
+- kind: podcast
+  title: À l'écoute de la science (Pour la Science)
+  url: https://feed.ausha.co/bYXW9i8nnqv3
+  category: science
+  labels:
+  - podcast
+  - science
+  creator: Pour la Science
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.pourlascience.fr/
+- kind: podcast
+  title: All Ears English Podcast
+  url: https://feeds.megaphone.fm/allearsenglish
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: All Ears English Podcast
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://www.allearsenglish.com/
+- kind: podcast
+  title: Anatomie d'une décision (L'Express)
+  url: https://feeds.acast.com/public/shows/1d0e62b5-9dc8-4f78-92b9-219c240e56a2
+  category: actu
+  labels:
+  - podcast
+  - actu
+  creator: Anatomie d'une décision
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.lexpress.fr/
+- kind: podcast
+  title: Avec philosophie (France Culture)
+  url: https://radiofrance-podcast.net/podcast09/podcast_b073d78c-d0d6-4910-b2e1-f9b370158a12.xml
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: France Culture
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://www.radiofrance.fr/franceculture/podcasts/avec-philosophie
+- kind: podcast
+  title: Canard PC (Le Podcast)
+  url: https://canardpc.lepodcast.fr/rss
+  category: gaming-hardware
+  labels:
+  - podcast
+  - gaming-hardware
+  creator: Canard PC
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.canardpc.com/
+- kind: podcast
+  title: Chaleur Humaine (Le Monde)
+  url: https://feeds.acast.com/public/shows/68db9a016d92c33f9c2eff83
+  category: science
+  labels:
+  - podcast
+  - science
+  creator: Le Monde
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.lemonde.fr/chaleur-humaine/
+- kind: podcast
+  title: College Matters from The Chronicle
+  url: https://feeds.megaphone.fm/THECHRONICLEOFHIGHEREDUCATION3939919750
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: College Matters from The Chronicle
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://www.chronicle.com/
+- kind: podcast
+  title: Comptoir IA (Nicolas Guyon)
+  url: https://feeds.acast.com/public/shows/64d7fb0db4d0da0010a2f09d
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Comptoir IA
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://shows.acast.com/comptoir-ia
+- kind: podcast
+  title: Dwarkesh Podcast (Dwarkesh Patel)
+  url: https://apple.dwarkesh-podcast.workers.dev/feed.rss
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Dwarkesh Patel
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.dwarkeshpatel.com/podcast
+- kind: podcast
+  title: Engineering Enablement by DX (Abi Noda)
+  url: https://anchor.fm/s/1116ee148/podcast/rss
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Engineering Enablement by DX
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://getdx.com/podcast/
+- kind: podcast
+  title: Entre la chaise et le clavier (Next.ink)
+  url: https://next.ink/feed/mp3/
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Next.ink
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://next.ink/
+- kind: podcast
+  title: Figures de Sport (Bruno Heubi)
+  url: https://anchor.fm/s/10b5f5148/podcast/rss
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: Bruno Heubi
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://www.brunoheubi.com/
+- kind: podcast
+  title: Fin Du Game
+  url: https://feeds.acast.com/public/shows/66ab52d50913aff5a45c6d19
+  category: gaming-hardware
+  labels:
+  - podcast
+  - gaming-hardware
+  creator: Fin Du Game
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://shows.acast.com/fin-du-game
+- kind: podcast
+  title: Game Developer Podcast
+  url: https://feed.podbean.com/gamedeveloper/feed.xml
+  category: gaming-hardware
+  labels:
+  - podcast
+  - gaming-hardware
+  creator: Game Developer Podcast
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.gamedeveloper.com/
+- kind: podcast
+  title: Global News Podcast (BBC World Service)
+  url: https://podcasts.files.bbci.co.uk/p02nq0gn.rss
+  category: actu
+  labels:
+  - podcast
+  - actu
+  creator: BBC
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.bbc.co.uk/programmes/p02nq0gn
+- kind: podcast
+  title: Google SRE Prodcast
+  url: https://rss.libsyn.com/shows/407036/destinations/3367133.xml
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Google SRE Prodcast
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://sre.google/resources/practices-and-processes/sre-prodcast/
+- kind: podcast
+  title: HugoDécrypte - Actus et interviews (Podcast)
+  url: https://feeds.acast.com/public/shows/95497e34-ecc2-596a-b910-bb3342918621
+  category: actu
+  labels:
+  - podcast
+  - actu
+  creator: HugoDécrypte
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://shows.acast.com/hugodecrypte
+- kind: podcast
+  title: IFTTD - If This Then Dev (Bruno Soulez)
+  url: https://feeds.audiomeans.fr/feed/03d88297-85c1-475f-a491-a6c7a443ffca.xml
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: IFTTD
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://ifttd.io/
+- kind: podcast
+  title: IMO with Michelle Obama and Craig Robinson
+  url: https://rss.art19.com/hga-imo
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: IMO with Michelle Obama and Craig Robinson
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://highergroundmedia.com/
+- kind: podcast
+  title: La Science, CQFD (France Culture)
+  url: https://radiofrance-podcast.net/podcast09/d4463877-caa3-4507-9399-f5eb00fde027/podcast_423b51d8-3f44-4b9a-b906-e0d14bdf0516.xml
+  category: science
+  labels:
+  - podcast
+  - science
+  creator: France Culture
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.radiofrance.fr/franceculture/podcasts/la-science-cqfd
+- kind: podcast
+  title: Learning English from the News (BBC)
+  url: https://podcasts.files.bbci.co.uk/p05hw4bq.rss
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: BBC
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://www.bbc.co.uk/learningenglish
+- kind: podcast
+  title: Learning English Grammar (BBC)
+  url: https://podcasts.files.bbci.co.uk/p02pc9wq.rss
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: BBC
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://www.bbc.co.uk/learningenglish
+- kind: podcast
+  title: Le code a changé (France Inter)
+  url: https://radiofrance-podcast.net/podcast09/podcast_3957c833-0b28-4314-8427-2a1d1e103381.xml
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: France Inter
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.radiofrance.fr/franceinter/podcasts/le-code-a-change
+- kind: podcast
+  title: Le Collimateur (Alexandre Jubelin)
+  url: https://feeds.audiomeans.fr/feed/64ee3763-1a46-44c2-8640-3a69405a3ad8.xml
+  category: actu
+  labels:
+  - podcast
+  - actu
+  creator: Le Collimateur
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://lerubicon.org/le-collimateur/
+- kind: podcast
+  title: Let's Trail Podcast
+  url: https://feed.ausha.co/bY5QLFA7LR15
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: Let's Trail Podcast
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://letstrail.fr/
+- kind: podcast
+  title: Lex Fridman Podcast
+  url: https://lexfridman.com/feed/podcast/
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Lex Fridman
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://lexfridman.com/podcast/
+- kind: podcast
+  title: L'Heure du Monde
+  url: https://feeds.acast.com/public/shows/68db9d2509b1c365e44318ca
+  category: actu
+  labels:
+  - podcast
+  - actu
+  creator: Le Monde
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.lemonde.fr/l-heure-du-monde/
+- kind: podcast
+  title: Maths en tête (Alexandre Morgan)
+  url: https://feeds.podcastics.com/podcastics/podcasts/rss/8668_0aad6f6c8d330ad3d93780b5b84873c4.rss
+  category: science
+  labels:
+  - podcast
+  - science
+  creator: Maths en tête
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.podcastics.com/podcast/maths-en-tete/
+- kind: podcast
+  title: Message à caractère informatique (Clever Cloud)
+  url: https://feed.ausha.co/yJpOltDVvJzN
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Clever Cloud
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.clever-cloud.com/fr/podcast/
+- kind: podcast
+  title: Metal Mastermind Podcast
+  url: https://anchor.fm/s/fd52157c/podcast/rss
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: Metal Mastermind Podcast
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://metalmastermind.com/
+- kind: podcast
+  title: Moonshots with Peter Diamandis
+  url: https://feeds.megaphone.fm/DVVTS2890392624
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Moonshots with Peter Diamandis
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.diamandis.com/podcast
+- kind: podcast
+  title: Opinion Science (Andy Luttrell)
+  url: https://rss.buzzsprout.com/981667.rss
+  category: science
+  labels:
+  - podcast
+  - science
+  creator: Opinion Science
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: http://opinionsciencepodcast.com/
+- kind: podcast
+  title: Platform Engineering Podcast (Cory O'Daniel)
+  url: https://api.riverside.com/hosting/8HLL4Sc0.rss
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Platform Engineering
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://platformengineering.org/
+- kind: podcast
+  title: Podcast Science
+  url: https://feeds.acast.com/public/shows/607aec11b1d7373173d66907
+  category: science
+  labels:
+  - podcast
+  - science
+  creator: Podcast Science
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.podcastscience.fm/
+- kind: podcast
+  title: Pourquoi tu Joues ? (Mauriton)
+  url: https://anchor.fm/s/c6db17a0/podcast/rss
+  category: gaming-hardware
+  labels:
+  - podcast
+  - gaming-hardware
+  creator: Pourquoi tu Joues ?
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://podcasters.spotify.com/pod/show/pourquoi-tu-joues
+- kind: podcast
+  title: Procrastination (Elbakin.net)
+  url: https://feeds.soundcloud.com/users/soundcloud:users:249595646/sounds.rss
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: Procrastination
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://www.elbakin.net/
+- kind: podcast
+  title: Sciences du logiciel - Xavier Leroy (Collège de France)
+  url: https://podcast.college-de-france.fr/xml2/cdf11-127.xml
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Collège de France
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.college-de-france.fr/fr/chaire/xavier-leroy-sciences-du-logiciel-chaire-statutaire
+- kind: podcast
+  title: Silicon Carne (Carlos Diaz)
+  url: https://feed.ausha.co/vVW80F6lQwAm
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Carlos Diaz / Silicon Carne
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://siliconcarne.fr/
+- kind: podcast
+  title: Sismique - Où va le monde ? (Julien Devaureix)
+  url: https://feeds.acast.com/public/shows/9851446c-d9b9-47a2-99a9-26d0a4968cc3
+  category: actu
+  labels:
+  - podcast
+  - actu
+  creator: Le Monde
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.sismique.fr/
+- kind: podcast
+  title: Small Talk (Konbini)
+  url: https://feeds.audiomeans.fr/feed/f57a29ac-5ce1-423d-8ca2-82369d9ca230.xml
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: Small Talk
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://www.konbini.com/
+- kind: podcast
+  title: TED Talks Daily
+  url: https://feeds.acast.com/public/shows/67587e77c705e441797aff96
+  category: science
+  labels:
+  - podcast
+  - science
+  creator: TED Talks Daily
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.ted.com/podcasts/ted-talks-daily
+- kind: podcast
+  title: The 404 Media Podcast
+  url: https://feeds.megaphone.fm/TBIEA2761282490
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: 404 Media
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.404media.co/
+- kind: podcast
+  title: The AIAS Game Maker's Notebook
+  url: https://interactive.libsyn.com/rss
+  category: gaming-hardware
+  labels:
+  - podcast
+  - gaming-hardware
+  creator: The AIAS Game Maker's Notebook
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.interactive.org/Interviews/the_game_makers_notebook.asp
+- kind: podcast
+  title: The Artificial Intelligence Podcast (Dr. Tony Hoang)
+  url: https://anchor.fm/s/3952c6f8/podcast/rss
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: The Artificial Intelligence Podcast
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://podcasters.spotify.com/pod/show/ai-podcast
+- kind: podcast
+  title: The Joe Rogan Experience
+  url: https://feeds.megaphone.fm/GLT1412515089
+  category: actu
+  labels:
+  - podcast
+  - actu
+  creator: The Joe Rogan Experience
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://open.spotify.com/show/4rOoJ6Egrf8K2IrywzwOMk
+- kind: podcast
+  title: The Joy of Why (Quanta Magazine)
+  url: https://joy.quantamagazine.org/
+  category: science
+  labels:
+  - podcast
+  - science
+  creator: Quanta Magazine
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.quantamagazine.org/tag/the-joy-of-why/
+- kind: podcast
+  title: The Peterman Pod (Ryan Peterman)
+  url: https://anchor.fm/s/106346b90/podcast/rss
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: The Peterman Pod
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.developing.dev/
+- kind: podcast
+  title: The Quanta Podcast
+  url: https://quantapodcast.quantamagazine.org/
+  category: science
+  labels:
+  - podcast
+  - science
+  creator: Quanta Magazine
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.quantamagazine.org/tag/the-quanta-podcast/
+- kind: podcast
+  title: The Steve Stine Guitar Podcast
+  url: https://rss.buzzsprout.com/1014784.rss
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: The Steve Stine Guitar Podcast
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://guitarzoom.com/
+- kind: podcast
+  title: The World, the Universe and Us (New Scientist)
+  url: https://feeds.megaphone.fm/ARML6831509338
+  category: science
+  labels:
+  - podcast
+  - science
+  creator: New Scientist
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.newscientist.com/podcasts/
+- kind: podcast
+  title: Torréfaction (Geekzone.fr)
+  url: https://www.geekzone.fr/feed/torrefaction/
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Geekzone
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.geekzone.fr/torrefaction/
+- kind: podcast
+  title: Uncanny Valley | WIRED
+  url: https://feeds.megaphone.fm/CNE6423132305
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: WIRED
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://www.wired.com/podcast/uncanny-valley/
+- kind: podcast
+  title: Underscore_ (Micode - Podcast)
+  url: https://feeds.acast.com/public/shows/43160adc-fadd-4764-b93f-aa1ca93f22bf
+  category: tech
+  labels:
+  - podcast
+  - tech
+  creator: Micode / Underscore_
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://shows.acast.com/underscore
+- kind: podcast
+  title: Writing Excuses (Brandon Sanderson & Mary Robinette Kowal)
+  url: https://feeds.redcircle.com/848724f4-c420-4a75-b4be-fa3db1e46546
+  category: perso
+  labels:
+  - podcast
+  - perso
+  creator: Writing Excuses
+  is_public: true
+  enabled: false
+  discovery_method: spotify_screenshot
+  site_url: https://writingexcuses.com/
+- kind: podcast
+  title: You Are Not So Smart (David McRaney)
+  url: https://feeds.simplecast.com/N5eKDxJI
+  category: science
+  labels:
+  - podcast
+  - science
+  creator: You Are Not So Smart
+  is_public: true
+  enabled: true
+  discovery_method: spotify_screenshot
+  site_url: https://youarenotsosmart.com/
+- kind: rss
+  title: Ars Technica (Science & Tech)
+  url: https://feeds.arstechnica.com/arstechnica/index
+  category: science
+  labels:
+  - science
+  creator: Ars Technica
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://arstechnica.com/
+- kind: rss
+  title: Benedict Evans
+  url: https://www.ben-evans.com/benedictevans?format=rss
+  category: tech
+  labels:
+  - tech
+  creator: Benedict Evans
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.ben-evans.com/newsletter
+- kind: rss
+  title: ByteByteGo (Alex Xu)
+  url: https://blog.bytebytego.com/feed
+  category: tech
+  labels:
+  - tech
+  creator: ByteByteGo
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://blog.bytebytego.com/
+- kind: rss
+  title: CERT-FR — Avis & Alertes (ANSSI)
+  url: https://www.cert.ssi.gouv.fr/feed/
+  category: tech
+  labels:
+  - tech
+  creator: CERT-FR
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.cert.ssi.gouv.fr/
+- kind: rss
+  title: Cloudflare Blog
+  url: https://blog.cloudflare.com/rss/
+  category: tech
+  labels:
+  - tech
+  creator: Cloudflare Blog
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://blog.cloudflare.com/
+- kind: rss
+  title: CNCF Blog
+  url: https://www.cncf.io/feed/
+  category: tech
+  labels:
+  - tech
+  creator: CNCF
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.cncf.io/blog/
+- kind: rss
+  title: Construction Physics (Brian Potter)
+  url: https://www.construction-physics.com/feed
+  category: science
+  labels:
+  - science
+  creator: Construction Physics
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.construction-physics.com/
+- kind: rss
+  title: France Culture - À la une (Radio France)
+  url: https://www.radiofrance.fr/franceculture/rss
+  category: actu
+  labels:
+  - actu
+  creator: France Culture
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.radiofrance.fr/franceculture
+- kind: rss
+  title: Franceinfo - Les Titres
+  url: https://www.francetvinfo.fr/titres.rss
+  category: actu
+  labels:
+  - actu
+  creator: Radio France / franceinfo
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.francetvinfo.fr/
+- kind: rss
+  title: France Inter - À la une (Radio France)
+  url: https://www.radiofrance.fr/franceinter/rss
+  category: actu
+  labels:
+  - actu
+  creator: France Inter
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.radiofrance.fr/franceinter
+- kind: rss
+  title: Frandroid
+  url: https://www.frandroid.com/feed
+  category: tech
+  labels:
+  - tech
+  creator: Frandroid
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.frandroid.com/
+- kind: rss
+  title: Hacker News (Frontpage >= 100 pts)
+  url: https://hnrss.org/frontpage?points=100
+  category: tech
+  labels:
+  - tech
+  creator: Hacker News
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://news.ycombinator.com/
+- kind: rss
+  title: Hugging Face Blog
+  url: https://huggingface.co/blog/feed.xml
+  category: tech
+  labels:
+  - tech
+  creator: Hugging Face
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://huggingface.co/blog
+- kind: rss
+  title: Import AI (Jack Clark)
+  url: https://importai.substack.com/feed
+  category: tech
+  labels:
+  - tech
+  creator: Import AI
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://importai.substack.com/
+- kind: rss
+  title: Journal du Net (JDN)
+  url: https://www.journaldunet.com/rss/
+  category: tech
+  labels:
+  - tech
+  creator: Journal du Net
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.journaldunet.com/
+- kind: rss
+  title: Krebs on Security
+  url: https://krebsonsecurity.com/feed/
+  category: tech
+  labels:
+  - tech
+  creator: Krebs on Security
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://krebsonsecurity.com/
+- kind: rss
+  title: Kubernetes Official Blog
+  url: https://kubernetes.io/feed.xml
+  category: tech
+  labels:
+  - tech
+  creator: Kubernetes Official Blog
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://kubernetes.io/blog/
+- kind: rss
+  title: Latent Space (AI Engineering)
+  url: https://www.latent.space/feed
+  category: tech
+  labels:
+  - tech
+  creator: Latent Space
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.latent.space/
+- kind: rss
+  title: LearnKube — Kubernetes This Week
+  url: https://learnkube.com/rss.xml
+  category: tech
+  labels:
+  - tech
+  creator: LearnKube
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://learnkube.com/
+- kind: rss
+  title: Le Grand Continent (Géopolitique européenne)
+  url: https://legrandcontinent.eu/fr/feed/
+  category: actu
+  labels:
+  - actu
+  creator: Le Grand Continent
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://legrandcontinent.eu/fr/
+- kind: rss
+  title: Le Monde - À la une
+  url: https://www.lemonde.fr/rss/une.xml
+  category: actu
+  labels:
+  - actu
+  creator: Le Monde
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.lemonde.fr/
+- kind: rss
+  title: Le Monde - Newsletters (Dernières éditions)
+  url: https://www.lemonde.fr/newsletters
+  category: actu
+  labels:
+  - actu
+  creator: Le Monde
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.lemonde.fr/newsletters
+- kind: rss
+  title: Les Numériques
+  url: https://www.lesnumeriques.com/rss.xml
+  category: tech
+  labels:
+  - tech
+  creator: Les Numériques
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.lesnumeriques.com/
+- kind: rss
+  title: Lobsters
+  url: https://lobste.rs/rss
+  category: tech
+  labels:
+  - tech
+  creator: Lobsters
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://lobste.rs/
+- kind: rss
+  title: L'Usine Digitale
+  url: https://news.google.com/rss/search?q=site:usine-digitale.fr+-emploi+-%22F/H%22+-%22H/F%22+when:7d&hl=fr&gl=FR&ceid=FR:fr
+  category: tech
+  labels:
+  - tech
+  creator: L'Usine Digitale
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.usine-digitale.fr/
+- kind: rss
+  title: L'Usine Nouvelle
+  url: https://news.google.com/rss/search?q=site:usinenouvelle.com+-emploi+-%22F/H%22+-%22H/F%22+when:7d&hl=fr&gl=FR&ceid=FR:fr
+  category: actu
+  labels:
+  - actu
+  creator: L'Usine Nouvelle
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.usinenouvelle.com/
+- kind: rss
+  title: LWN.net (Linux & Kernel)
+  url: https://lwn.net/headlines/rss
+  category: tech
+  labels:
+  - tech
+  creator: LWN.net
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://lwn.net/
+- kind: rss
+  title: Nautilus
+  url: https://nautil.us/feed/
+  category: science
+  labels:
+  - science
+  creator: Nautilus
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://nautil.us/
+- kind: rss
+  title: New Scientist - Latest News (Flux public)
+  url: https://www.newscientist.com/feed/home/
+  category: science
+  labels:
+  - science
+  creator: New Scientist
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.newscientist.com/
+- kind: rss
+  title: New York Times - Newsletters (Dernières éditions)
+  url: https://www.nytimes.com/newsletters
+  category: actu
+  labels:
+  - actu
+  creator: New York Times
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.nytimes.com/newsletters
+- kind: rss
+  title: New York Times - Top Stories (RSS)
+  url: https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml
+  category: actu
+  labels:
+  - actu
+  creator: New York Times
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.nytimes.com/
+- kind: rss
+  title: Numerama
+  url: https://www.numerama.com/feed/
+  category: tech
+  labels:
+  - tech
+  creator: Numerama
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.numerama.com/
+- kind: rss
+  title: Politico Europe — Technology
+  url: https://www.politico.eu/section/technology/feed/
+  category: actu
+  labels:
+  - actu
+  creator: Politico Europe
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.politico.eu/section/technology/
+- kind: rss
+  title: Pour la Science - Actualités (Flux public)
+  url: https://www.pourlascience.fr/rss.xml
+  category: science
+  labels:
+  - science
+  creator: Pour la Science
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.pourlascience.fr/
+- kind: rss
+  title: Quanta Magazine (Flux public)
+  url: https://api.quantamagazine.org/feed/
+  category: science
+  labels:
+  - science
+  creator: Quanta Magazine
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.quantamagazine.org/
+- kind: rss
+  title: Radio France - Monde & International
+  url: https://www.radiofrance.fr/rss/monde
+  category: actu
+  labels:
+  - actu
+  creator: Radio France / franceinfo
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.radiofrance.fr/rss
+- kind: rss
+  title: Radio France - Sciences & Savoirs
+  url: https://www.radiofrance.fr/rss/sciences-savoirs
+  category: science
+  labels:
+  - science
+  creator: Radio France / franceinfo
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.radiofrance.fr/rss
+- kind: rss
+  title: Radio France - Tech & Web
+  url: https://www.radiofrance.fr/rss/societe/tech-web
+  category: tech
+  labels:
+  - tech
+  creator: Radio France / franceinfo
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.radiofrance.fr/rss
+- kind: rss
+  title: Risky Business News (InfoSec)
+  url: https://risky.biz/feeds/risky-business-news/
+  category: tech
+  labels:
+  - tech
+  creator: Risky Business News
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://risky.biz/
+- kind: rss
+  title: Simon Willison's Weblog
+  url: https://simonwillison.net/atom/everything/
+  category: tech
+  labels:
+  - tech
+  creator: Simon Willison's Weblog
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://simonwillison.net/
+- kind: rss
+  title: Stratechery (Ben Thompson)
+  url: https://stratechery.com/feed/
+  category: tech
+  labels:
+  - tech
+  creator: Stratechery
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://stratechery.com/
+- kind: rss
+  title: The New Stack (Cloud Native, AI & DevOps)
+  url: https://thenewstack.io/blog/feed/
+  category: tech
+  labels:
+  - tech
+  creator: The New Stack
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://thenewstack.io/rss-feeds/
+- kind: rss
+  title: The Pragmatic Engineer (Gergely Orosz)
+  url: https://newsletter.pragmaticengineer.com/feed
+  category: tech
+  labels:
+  - tech
+  creator: The Pragmatic Engineer
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://newsletter.pragmaticengineer.com/
+- kind: rss
+  title: ZDNet France — Actualités IT
+  url: https://www.zdnet.fr/feeds/rss/actualites/
+  category: tech
+  labels:
+  - tech
+  creator: ZDNet France
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.zdnet.fr/
+- kind: youtube
+  title: 331Erock (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCtJVZjY6xsZUV-sYdcIFpZw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: 331Erock
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCtJVZjY6xsZUV-sYdcIFpZw
+- kind: youtube
+  title: 5hort5ubject (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCc_QUi3d92ceb3NzD2_DTGQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: 5hort5ubject
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCc_QUi3d92ceb3NzD2_DTGQ
+- kind: youtube
+  title: A Creates (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCyLmz1Swi0DUJrp7lW7mkfw
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: A Creates
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCyLmz1Swi0DUJrp7lW7mkfw
+- kind: youtube
+  title: Adam Smith - ADScomics (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC40W96VsSCMgLVM6xqmKgZw
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Adam Smith (ADScomics)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC40W96VsSCMgLVM6xqmKgZw
+- kind: youtube
+  title: À la French (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC4YRTAl0DLe1Psu3jz1OUog
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: À la French
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC4YRTAl0DLe1Psu3jz1OUog
+- kind: youtube
+  title: Alessandro Zilio (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCzGT4BQhZ2Vmwli48Hl_bUQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Alessandro Zilio
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCzGT4BQhZ2Vmwli48Hl_bUQ
+- kind: youtube
+  title: Alexander Amini (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCtslD4DGH6PKyG_1gFAX7sg
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Alexander Amini
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCtslD4DGH6PKyG_1gFAX7sg
+- kind: youtube
+  title: Alexandre David composer (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC991QjS2qhYbXew2D6O7DlQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Alexandre David
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC991QjS2qhYbXew2D6O7DlQ
+- kind: youtube
+  title: Alex Moukala Tutorials (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC_CyR8Aqfl45kzFIDeMr-CQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Alex Moukala
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC_CyR8Aqfl45kzFIDeMr-CQ
+- kind: youtube
+  title: Alex Rome (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCh1MtJ4rx4n4PQGYNYK_UXA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Alex Rome
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCh1MtJ4rx4n4PQGYNYK_UXA
+- kind: youtube
+  title: Alex Starbard (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZTimp6fGC-YFyRG_a9n2EQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Alex Starbard
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCZTimp6fGC-YFyRG_a9n2EQ
+- kind: youtube
+  title: Alfred Potter Guitar (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCQ9QDA0td48ESZz176t9LvQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Alfred Potter
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCQ9QDA0td48ESZz176t9LvQ
+- kind: youtube
+  title: AllemandCompris (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCEnnkHi7oFpTmaL8PUmryzw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: AllemandCompris
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCEnnkHi7oFpTmaL8PUmryzw
+- kind: youtube
+  title: Altesia (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCobxdJ3ySpqr2yQB9-ZDfLQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Altesia
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCobxdJ3ySpqr2yQB9-ZDfLQ
+- kind: youtube
+  title: Always Improving (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCfbLDMh6uGOZePAfqqjVZ-g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Always Improving
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCfbLDMh6uGOZePAfqqjVZ-g
+- kind: youtube
+  title: Andrea Boma Boccarusso (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCa5MTgY_WnOseKbIoBbp5iQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Andrea Boccarusso
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCa5MTgY_WnOseKbIoBbp5iQ
+- kind: youtube
+  title: André Pardal (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCd6WDYoetYkDBoV6AEEbT4w
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: André Pardal
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCd6WDYoetYkDBoV6AEEbT4w
+- kind: youtube
+  title: Andrew Hulshult (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC7aHrlS_AuO_XfOrelhswXg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Andrew Hulshult
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC7aHrlS_AuO_XfOrelhswXg
+- kind: youtube
+  title: Andrey Fomin (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCjU1Cz5JUkqJwJ4Qx7CFPqQ
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Andrey Fomin
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCjU1Cz5JUkqJwJ4Qx7CFPqQ
+- kind: youtube
+  title: Andy James Official (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCo4h6HGHICLyvGyvoKDOUcg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Andy James
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCo4h6HGHICLyvGyvoKDOUcg
+- kind: youtube
+  title: Andy Nicholson - The Dunk Camp (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC3g9i2XoZco329lBhu8AqWw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Andy Nicholson
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC3g9i2XoZco329lBhu8AqWw
+- kind: youtube
+  title: Anouck Andre (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCP34K7uENOSGRmGj9IsOuPw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Anouck Andre
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCP34K7uENOSGRmGj9IsOuPw
+- kind: youtube
+  title: Antoine BETAT (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCfMoJsdVPx9I69g3o92HoQA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Antoine Betat
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCfMoJsdVPx9I69g3o92HoQA
+- kind: youtube
+  title: Apprendre natur'allemand (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCSGjCmCMIi8lF2fOoVfHqxg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Apprendre natur'allemand
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCSGjCmCMIi8lF2fOoVfHqxg
+- kind: youtube
+  title: ARTE Concert (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC-smeLB9AnOTeypr1YyjJ3A
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: ARTE Concert
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC-smeLB9AnOTeypr1YyjJ3A
+- kind: youtube
+  title: AsapSCIENCE (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCC552Sd-3nyi_tk2BudLUzA
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: AsapSCIENCE
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCC552Sd-3nyi_tk2BudLUzA
+- kind: youtube
+  title: Ask Gamedev (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCd_lJ4zSp9wZDNyeKCWUstg
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Ask Gamedev
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCd_lJ4zSp9wZDNyeKCWUstg
+- kind: youtube
+  title: ASTERISM (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UChW49WDAfg2slMaak9Q0Ayw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: ASTERISM
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UChW49WDAfg2slMaak9Q0Ayw
+- kind: youtube
+  title: Audiofanzine (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCS9bLFcwOglGpvIEVf4QtdQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Audiofanzine
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCS9bLFcwOglGpvIEVf4QtdQ
+- kind: youtube
+  title: Avantasia (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCNEStAEX0fKYbZIXTAW8Juw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Avantasia
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCNEStAEX0fKYbZIXTAW8Juw
+- kind: youtube
+  title: Axel Arno (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCUnDV1MokLtrekyI550q_xw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Axel Arno
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCUnDV1MokLtrekyI550q_xw
+- kind: youtube
+  title: Ayman Mokdad (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCcJQO5m19V6rKii1_zGl1DQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Ayman Mokdad
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCcJQO5m19V6rKii1_zGl1DQ
+- kind: youtube
+  title: Backyard Ultra Channel (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCWHNnGzy5Wy3rNtbgMzEPYQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Backyard Ultra Channel
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCWHNnGzy5Wy3rNtbgMzEPYQ
+- kind: youtube
+  title: Banana Hetfield (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCJeXO_V7h3xi0TRja0ew6gQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Banana Hetfield
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCJeXO_V7h3xi0TRja0ew6gQ
+- kind: youtube
+  title: Ben Eller (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCcLsvLJOecfCL6RplXhaO4Q
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Ben Eller
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCcLsvLJOecfCL6RplXhaO4Q
+- kind: youtube
+  title: Benjamin Code (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLOAPb7ATQUs_nDs9ViLcMw
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Benjamin Code
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLOAPb7ATQUs_nDs9ViLcMw
+- kind: youtube
+  title: Ben Lacy (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCFw0zTC02VCsVzPHSjxsS2Q
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Ben Lacy
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCFw0zTC02VCsVzPHSjxsS2Q
+- kind: youtube
+  title: Ben Levin (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLuHOqDilyLQT4NPXQuVN4Q
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Ben Levin
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLuHOqDilyLQT4NPXQuVN4Q
+- kind: youtube
+  title: BERNTH Guitar Academy (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC_WyTgt4HmA1E9h6NqHh91g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: BERNTH
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC_WyTgt4HmA1E9h6NqHh91g
+- kind: youtube
+  title: BERNTH (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZvo8TZtUZkLgiH3rJsj-Ow
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: BERNTH
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCZvo8TZtUZkLgiH3rJsj-Ow
+- kind: youtube
+  title: Best Indie Games (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCCd3jyJmOFzkJEMj5Bp89rw
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Best Indie Games
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCCd3jyJmOFzkJEMj5Bp89rw
+- kind: youtube
+  title: bienvenue au cabinet (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCIIq-MNFUrlgmrW5pBdNedQ
+  category: actu
+  labels:
+  - youtube
+  - actu
+  creator: Bienvenue au cabinet
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCIIq-MNFUrlgmrW5pBdNedQ
+- kind: youtube
+  title: Brackeys (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCYbK_tjZ2OrIZFBvU6CCMiA
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Brackeys
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCYbK_tjZ2OrIZFBvU6CCMiA
+- kind: youtube
+  title: brainchildpl (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCR7Xn0VP8GPs0zG5NiivrIQ
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: brainchildpl
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCR7Xn0VP8GPs0zG5NiivrIQ
+- kind: youtube
+  title: Brett Papa (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCoMrOn8Vgd7sglHxF3AAyNA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Brett Papa
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCoMrOn8Vgd7sglHxF3AAyNA
+- kind: youtube
+  title: British English Teacher Roy (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCXcj487a4pVviO2vCpojj6w
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: British English Teacher Roy
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCXcj487a4pVviO2vCpojj6w
+- kind: youtube
+  title: Bruno Heubi (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCRWQBfbYhmkKq7OZV8G9f7w
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Bruno Heubi
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCRWQBfbYhmkKq7OZV8G9f7w
+- kind: youtube
+  title: BWDev (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCYU6BO_VdYnzeQEOS_kSBWA
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: BWDev
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCYU6BO_VdYnzeQEOS_kSBWA
+- kind: youtube
+  title: ByteByteGo (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZgt6AzoyjslHTC9dz0UoTw
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: ByteByteGo
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCZgt6AzoyjslHTC9dz0UoTw
+- kind: youtube
+  title: Canard PC (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCFe-p93CVJ13v3GM0hIzYNg
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Canard PC
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCFe-p93CVJ13v3GM0hIzYNg
+- kind: youtube
+  title: caydengineer - Cayden Pierce (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCq2Dd8Yb6_D3MhUPobB7ZEg
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Cayden Pierce
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCq2Dd8Yb6_D3MhUPobB7ZEg
+- kind: youtube
+  title: Chad Lubinski (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCK9Hz3X4LcG4fczA5vtz59Q
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Chad Lubinski
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCK9Hz3X4LcG4fczA5vtz59Q
+- kind: youtube
+  title: Charlie Gross (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCvaRh_a14L-pD5O1obw--EQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Charlie Gross
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCvaRh_a14L-pD5O1obw--EQ
+- kind: youtube
+  title: Charlie Parra del Riego (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCdrKuOS3tBgI-kwq-QPkGtw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Charlie Parra del Riego
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCdrKuOS3tBgI-kwq-QPkGtw
+- kind: youtube
+  title: Charly Sahona (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCSiwYi1RXVfLnX-TFfzD1VQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Charly Sahona
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCSiwYi1RXVfLnX-TFfzD1VQ
+- kind: youtube
+  title: CKanKonJoue (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCJoMLNZ-8V3ufnvWKXVzPew
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: CKanKonJoue
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCJoMLNZ-8V3ufnvWKXVzPew
+- kind: youtube
+  title: Clint Tustin (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCbgUjUinRjkPSWGXND3rSAg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Clint Tustin
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCbgUjUinRjkPSWGXND3rSAg
+- kind: youtube
+  title: CNCF [Cloud Native Computing Foundation] (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCvqbFHwN-nwalWPjPUKpvTA
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: CNCF
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCvqbFHwN-nwalWPjPUKpvTA
+- kind: youtube
+  title: Coach Chijo (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCMOivxtDoA2TOuDMFhbqP-g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Coach Chijo
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCMOivxtDoA2TOuDMFhbqP-g
+- kind: youtube
+  title: Codeur de Nuit (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCisX035rh3DHUpYR9cBG8bA
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Codeur de Nuit
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCisX035rh3DHUpYR9cBG8bA
+- kind: youtube
+  title: Cogitamus (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCiCqLqbx_hP9I-DpLAf1pkQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Cogitamus
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCiCqLqbx_hP9I-DpLAf1pkQ
+- kind: youtube
+  title: Collège de France (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCzZiy3EANVAx7h2XYqXsVbw
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Collège de France
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCzZiy3EANVAx7h2XYqXsVbw
+- kind: youtube
+  title: Creative Guitar Studio (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC7vw9BHKDZhpke_mnJD4UqQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Creative Guitar Studio
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC7vw9BHKDZhpke_mnJD4UqQ
+- kind: youtube
+  title: Crimson Hollow (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCnGQ2SeWCNK7vsm_AM8L2pg
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Crimson Hollow
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCnGQ2SeWCNK7vsm_AM8L2pg
+- kind: youtube
+  title: CueStack (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC7XOqXuQUg_YeajGsthBVpQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: CueStack
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC7XOqXuQUg_YeajGsthBVpQ
+- kind: youtube
+  title: Daniel Ilett (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UClgoE54W_4rX7jzZGiCmrXw
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Daniel Ilett
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UClgoE54W_4rX7jzZGiCmrXw
+- kind: youtube
+  title: Data for Good (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCA_utdbmVhAOFujulWlaaCQ
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Data for Good
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCA_utdbmVhAOFujulWlaaCQ
+- kind: youtube
+  title: David Escobar (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCvzDCuS_U3GCsk2JtRjuYag
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: David Escobar
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCvzDCuS_U3GCsk2JtRjuYag
+- kind: youtube
+  title: David Wallimann (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCn72qZqgRSUAO1u3T0_UeKw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: David Wallimann
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCn72qZqgRSUAO1u3T0_UeKw
+- kind: youtube
+  title: Daz (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCcOXoA8PsaWS_1sJlxvjO8Q
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Daz
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCcOXoA8PsaWS_1sJlxvjO8Q
+- kind: youtube
+  title: Dean Lamb (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCV3_xcWQ1J55f1kehK4-TOw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Dean Lamb
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCV3_xcWQ1J55f1kehK4-TOw
+- kind: youtube
+  title: Denny Schneidemesser (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCMudQPRb73EjffGFXecOJEQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Denny Schneidemesser
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCMudQPRb73EjffGFXecOJEQ
+- kind: youtube
+  title: DirtyBiology (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCtqICqGbPSbTN09K1_7VZ3Q
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: DirtyBiology
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCtqICqGbPSbTN09K1_7VZ3Q
+- kind: youtube
+  title: Disperse Band (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCQeaUWwoFz44iF4Tt-i3k7g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Disperse
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCQeaUWwoFz44iF4Tt-i3k7g
+- kind: youtube
+  title: Dr.Semiconductor (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCTD7VWPkRliCUEIdYb7GQGA
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Dr.Semiconductor
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCTD7VWPkRliCUEIdYb7GQGA
+- kind: youtube
+  title: drumlessonscom (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCfr1feUzluBz9_faEz3-iIA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: drumlessonscom
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCfr1feUzluBz9_faEz3-iIA
+- kind: youtube
+  title: Dwarkesh Patel (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCXl4i9dYBrFOabk0xGmbkRA
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Dwarkesh Patel
+  is_public: true
+  enabled: true
+  discovery_method: creator_youtube_pair
+  site_url: https://www.youtube.com/channel/UCXl4i9dYBrFOabk0xGmbkRA
+- kind: youtube
+  title: Earvin Ngapeth (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCQwRiTFEV0hXIlnTsMh2lzA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Earvin Ngapeth
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCQwRiTFEV0hXIlnTsMh2lzA
+- kind: youtube
+  title: Ebunny (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCurhl2RayFBUntxSAqN0MJQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Ebunny
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCurhl2RayFBUntxSAqN0MJQ
+- kind: youtube
+  title: EDISON SCIENCE CORNER (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCVcOsUBmH4hzVSnmJA_i5SA
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Edison Science Corner
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCVcOsUBmH4hzVSnmJA_i5SA
+- kind: youtube
+  title: Éditions Lelivrescolaire.fr (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCkEa9BPXrDtIvxXgRWetrQQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Lelivrescolaire.fr
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCkEa9BPXrDtIvxXgRWetrQQ
+- kind: youtube
+  title: EDUCFI Banque de France (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCtW4A2nVdhQHUAoizsvyliA
+  category: actu
+  labels:
+  - youtube
+  - actu
+  creator: Banque de France (EDUCFI)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCtW4A2nVdhQHUAoizsvyliA
+- kind: youtube
+  title: Effortless Swimming (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCKoeXneqNktkY1ijItuKFBQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Effortless Swimming
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCKoeXneqNktkY1ijItuKFBQ
+- kind: youtube
+  title: EGO (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCxH16958KSxT4Z9yL_9JYtw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: EGO
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCxH16958KSxT4Z9yL_9JYtw
+- kind: youtube
+  title: Elena Verrier (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCxt8Iutjk2eU1-wzixETTog
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Elena Verrier
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCxt8Iutjk2eU1-wzixETTog
+- kind: youtube
+  title: Elevate Yourself (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCoEMagRUvrXELuJZwS4DevA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Elevate Yourself
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCoEMagRUvrXELuJZwS4DevA
+- kind: youtube
+  title: El Jj (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCgkhWgBGRp0sdFy2MHDWfSg
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: El Jj
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCgkhWgBGRp0sdFy2MHDWfSg
+- kind: youtube
+  title: e-penser 2.0 (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCcziTK2NKeWtWQ6kB5tmQ8Q
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: e-penser (Bruce Benamran)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCcziTK2NKeWtWQ6kB5tmQ8Q
+- kind: youtube
+  title: EPFL SPS (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCDqiiaI27nCFYBcrc4ki9gA
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: EPFL
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCDqiiaI27nCFYBcrc4ki9gA
+- kind: youtube
+  title: Evan Tremorin (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCTnM3ChcxmwU0u-gsC5k25g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Evan Tremorin
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCTnM3ChcxmwU0u-gsC5k25g
+- kind: youtube
+  title: Exo7Math (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCSO-j_Rg4gf_Wpsjf4MSLyw
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Exo7Math
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCSO-j_Rg4gf_Wpsjf4MSLyw
+- kind: youtube
+  title: FabienOlicard (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCTafEJoRl5myC8A50plIrng
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Fabien Olicard
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCTafEJoRl5myC8A50plIrng
+- kind: youtube
+  title: Faculté des Lettres de Sorbonne Université (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCMOcYAHXBDTV41He19dKaPA
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Sorbonne Université
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCMOcYAHXBDTV41He19dKaPA
+- kind: youtube
+  title: FamilyJules (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCt9ez6CnUQCFEUnxeBGlR9w
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: FamilyJules
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCt9ez6CnUQCFEUnxeBGlR9w
+- kind: youtube
+  title: Fanatical (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCknY36HJ9_6WnrNcu0Pt0Yg
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Fanatical
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCknY36HJ9_6WnrNcu0Pt0Yg
+- kind: youtube
+  title: Fermilab (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCD5B6VoXv41fJ-IW8Wrhz9A
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Fermilab
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCD5B6VoXv41fJ-IW8Wrhz9A
+- kind: youtube
+  title: Floor Jansen (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCxy4Ijz2QKXXJaREs-isxwA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Floor Jansen
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCxy4Ijz2QKXXJaREs-isxwA
+- kind: youtube
+  title: Florent Garcia (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCzabZYC0MYRR2MFkq62d6yQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Florent Garcia
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCzabZYC0MYRR2MFkq62d6yQ
+- kind: youtube
+  title: Flow Studio (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCeaSgd_wuEWpqINS9nLfBxQ
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Flow Studio
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCeaSgd_wuEWpqINS9nLfBxQ
+- kind: youtube
+  title: FNEGE Médias (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCCHAU0-eEv_vhPU0RvrBI3w
+  category: actu
+  labels:
+  - youtube
+  - actu
+  creator: FNEGE Médias
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCCHAU0-eEv_vhPU0RvrBI3w
+- kind: youtube
+  title: Fouloscopie (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLXDNUOO3EQ80VmD9nQBHPg
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Fouloscopie (Mehdi Moussaid)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLXDNUOO3EQ80VmD9nQBHPg
+- kind: youtube
+  title: Francis Cabrel (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCt-CF8OVM5J9R04c5Lh_rQw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Francis Cabrel
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCt-CF8OVM5J9R04c5Lh_rQw
+- kind: youtube
+  title: Fredrik Zillén - Running Technique (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC0WsDg6XRxNH2N7U4qOpEGA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Fredrik Zillén
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC0WsDg6XRxNH2N7U4qOpEGA
+- kind: youtube
+  title: Frog Leap Studios (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC98tcedR6gULv8_b70WJKyw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Frog Leap Studios (Leo Moracchioli)
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC98tcedR6gULv8_b70WJKyw
+- kind: youtube
+  title: Front Range Volleyball Club (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCxEqFNQ0y474YhbSxAzQ75w
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Front Range Volleyball Club
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCxEqFNQ0y474YhbSxAzQ75w
+- kind: youtube
+  title: Gamefromscratch (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCr-5TdGkKszdbboXXsFZJTQ
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Gamefromscratch
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCr-5TdGkKszdbboXXsFZJTQ
+- kind: youtube
+  title: Game Maker's Toolkit (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCqJ-Xo29CKyLTjn6z2XwYAw
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Game Maker's Toolkit (Mark Brown)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCqJ-Xo29CKyLTjn6z2XwYAw
+- kind: youtube
+  title: GDC Festival of Gaming (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC0JB7TSe49lg56u6qH8y_MQ
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: GDC
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC0JB7TSe49lg56u6qH8y_MQ
+- kind: youtube
+  title: GDQuest (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCxboW7x0jZqFdvMdCFKTMsQ
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: GDQuest
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCxboW7x0jZqFdvMdCFKTMsQ
+- kind: youtube
+  title: Gears Of Tone (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCCXL3AdgGvIW3BQOC8eyibw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Gears Of Tone
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCCXL3AdgGvIW3BQOC8eyibw
+- kind: youtube
+  title: geek gamers (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLnDxuZE6qWwWxZCN9y8JQA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: geek gamers
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLnDxuZE6qWwWxZCN9y8JQA
+- kind: youtube
+  title: GENERATION MICROS (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCn7r5PVBk3B8M5iphVHhnmw
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Génération Micros
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCn7r5PVBk3B8M5iphVHhnmw
+- kind: youtube
+  title: Golden Hoops (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCoDfZzwJNFJ2lVgF41tUX0A
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Golden Hoops
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCoDfZzwJNFJ2lVgF41tUX0A
+- kind: youtube
+  title: Gowy (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLq0GPlnGz-qUHflbNxlxfg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Gowy
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLq0GPlnGz-qUHflbNxlxfg
+- kind: youtube
+  title: Guitare en ligne (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC27Mc0lqTEmQOExclorqMGQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Guitare en ligne
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC27Mc0lqTEmQOExclorqMGQ
+- kind: youtube
+  title: Guitar Interactive Magazine (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCS3QTujyp5t2nSSzktYFzWA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Guitar Interactive Magazine
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCS3QTujyp5t2nSSzktYFzWA
+- kind: youtube
+  title: GuitarLessons365 (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCvnfBBzEizi1T5unOXNCxdQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: GuitarLessons365
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCvnfBBzEizi1T5unOXNCxdQ
+- kind: youtube
+  title: Guitar Lessons Bobby Crispy (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCS_ZvrrdEhaURjEku83Xy4g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Bobby Crispy
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCS_ZvrrdEhaURjEku83Xy4g
+- kind: youtube
+  title: guitaro5000 (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCdTDC0hc3EPLOwwiPp6i6xw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: guitaro5000
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCdTDC0hc3EPLOwwiPp6i6xw
+- kind: youtube
+  title: Guitar Tricks (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCwSn2qQtmQ1r1nV9-0IQ3Xw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Guitar Tricks
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCwSn2qQtmQ1r1nV9-0IQ3Xw
+- kind: youtube
+  title: hack-ta-guitare (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCUzuL12gU5Qvzza1pS9osiw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: hack-ta-guitare
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCUzuL12gU5Qvzza1pS9osiw
+- kind: youtube
+  title: Hamsters Running Club (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCbiBWrOBqppi528-kdotleQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Hamsters Running Club
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCbiBWrOBqppi528-kdotleQ
+- kind: youtube
+  title: HAЯUN Official (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCmGhakzp4SdkrQdkcAR2YXg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: HARUN
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCmGhakzp4SdkrQdkcAR2YXg
+- kind: youtube
+  title: Hedacademy (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC8SRYHgGMqAYZehYdznaqvQ
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Hedacademy
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC8SRYHgGMqAYZehYdznaqvQ
+- kind: youtube
+  title: Hedu AI by Batool Haider (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCmUi2gnk9EbJQjvWo2VdZCA
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Batool Haider (Hedu AI)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCmUi2gnk9EbJQjvWo2VdZCA
+- kind: youtube
+  title: HGuitare (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCBB-BBT82SkJj1Jny3PfGAw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: HGuitare
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCBB-BBT82SkJj1Jny3PfGAw
+- kind: youtube
+  title: High Yield (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCmMwHbw2j8LfvTKVh3O7Vdw
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: High Yield
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCmMwHbw2j8LfvTKVh3O7Vdw
+- kind: youtube
+  title: HoopTalk (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCMurFWpRhMHUAC-0nqrrfbg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: HoopTalk
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCMurFWpRhMHUAC-0nqrrfbg
+- kind: youtube
+  title: Horns Up (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCc4RV1gHtai2R7k8GF70Tkw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Horns Up
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCc4RV1gHtai2R7k8GF70Tkw
+- kind: youtube
+  title: House of Protection (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCAI4mZgAh4GHyBNZuTvYqzA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: House of Protection
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCAI4mZgAh4GHyBNZuTvYqzA
+- kind: youtube
+  title: Hubert Lafore (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC4Xa0Tlu8zCYuMNkgGRAGnQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Hubert Lafore
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC4Xa0Tlu8zCYuMNkgGRAGnQ
+- kind: youtube
+  title: Hugging Face (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCHlNU7kIZhRgSbhHvFoy72w
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Hugging Face
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCHlNU7kIZhRgSbhHvFoy72w
+- kind: youtube
+  title: HugoDécrypte - Actus du jour (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCAcAnMF0OrCtUep3Y4M-ZPw
+  category: actu
+  labels:
+  - youtube
+  - actu
+  creator: HugoDécrypte
+  is_public: true
+  enabled: true
+  discovery_method: creator_youtube_pair
+  site_url: https://www.youtube.com/channel/UCAcAnMF0OrCtUep3Y4M-ZPw
+- kind: youtube
+  title: Hyve (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCtXI80bWhteUKD7E-XyM6uw
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Hyve
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCtXI80bWhteUKD7E-XyM6uw
+- kind: youtube
+  title: Ihlo (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCoCMB8JAJvhP_uBAKkanesg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Ihlo
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCoCMB8JAJvhP_uBAKkanesg
+- kind: youtube
+  title: Imphenzia (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCzfWju7SFoWLCyV_gDVCrGA
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Imphenzia
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCzfWju7SFoWLCyV_gDVCrGA
+- kind: youtube
+  title: INEOS 1:59 Challenge (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCrc3XCtBGtWErZUVVvn15jQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: INEOS 1:59 Challenge
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCrc3XCtBGtWErZUVVvn15jQ
+- kind: youtube
+  title: Info ou Mytho ? (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLmlUMA_bGiMWWgfDwfNDgw
+  category: actu
+  labels:
+  - youtube
+  - actu
+  creator: Info ou Mytho ?
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLmlUMA_bGiMWWgfDwfNDgw
+- kind: youtube
+  title: Inoxydable (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCHP7AhfvUrai1OUyVNjGMEQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Inoxydable
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCHP7AhfvUrai1OUyVNjGMEQ
+- kind: youtube
+  title: Institut Diderot (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCO9kIvxEfFjZBQyW7ivmWiw
+  category: actu
+  labels:
+  - youtube
+  - actu
+  creator: Institut Diderot
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCO9kIvxEfFjZBQyW7ivmWiw
+- kind: youtube
+  title: International Volleyball Academy (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCY8dChl2_KRytWWPj8ExBfQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: International Volleyball Academy
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCY8dChl2_KRytWWPj8ExBfQ
+- kind: youtube
+  title: IRONUMAN (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC8ZYMrDhyqgfq1xn-tf5w-A
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: IRONUMAN
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC8ZYMrDhyqgfq1xn-tf5w-A
+- kind: youtube
+  title: Jack Thammarat (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCfy4XIsYPJ3ubslsPwwIe-g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Jack Thammarat
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCfy4XIsYPJ3ubslsPwwIe-g
+- kind: youtube
+  title: James Shipway Guitar (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCgEEEz7ZNL8572YERffNfuw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: James Shipway
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCgEEEz7ZNL8572YERffNfuw
+- kind: youtube
+  title: Jamie Slays (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCRasQxsnwdzN1n_4A7zYbEQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Jamie Slays
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCRasQxsnwdzN1n_4A7zYbEQ
+- kind: youtube
+  title: Jared Dines (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCJcYRr8rpsxVPfWA5vkuxFw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Jared Dines
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCJcYRr8rpsxVPfWA5vkuxFw
+- kind: youtube
+  title: Jason Stallworth (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCY7K3zmRSS6ZiEdj09KHnpQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Jason Stallworth
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCY7K3zmRSS6ZiEdj09KHnpQ
+- kind: youtube
+  title: JeJoueDeLaGuitare.com (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCtjgalbqLFkHhry3gnuYRlw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: JeJoueDeLaGuitare
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCtjgalbqLFkHhry3gnuYRlw
+- kind: youtube
+  title: Jerome Cahuzac (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCfw2aNwY9G0TmVCSPWHlxNA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Jerome Cahuzac
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCfw2aNwY9G0TmVCSPWHlxNA
+- kind: youtube
+  title: Jettelly (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCDe9IaIvr1XOP3vbTgIekBQ
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Jettelly
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCDe9IaIvr1XOP3vbTgIekBQ
+- kind: youtube
+  title: Jin san Kim (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCks62YV5TsJWuhY_GqfHAzw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Jin san Kim
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCks62YV5TsJWuhY_GqfHAzw
+- kind: youtube
+  title: Jiri Popelka | VolleyCountry (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCRZAYb_vSNNepdQMDSIZQqg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Jiri Popelka (VolleyCountry)
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCRZAYb_vSNNepdQMDSIZQqg
+- kind: youtube
+  title: JMG SPORTS (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCoIYSV8K5V__hpUXIUGvebA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: JMG SPORTS
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCoIYSV8K5V__hpUXIUGvebA
+- kind: youtube
+  title: Joe Satriani (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCiynI3-MFYbiZ6FQqWNLh7w
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Joe Satriani
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCiynI3-MFYbiZ6FQqWNLh7w
+- kind: youtube
+  title: John Lin (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCM2RhfMLoLqG24e_DYgTQeA
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: John Lin
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCM2RhfMLoLqG24e_DYgTQeA
+- kind: youtube
+  title: Josh Middleton (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCauGhxsgmMMrmy_xIrm3IJw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Josh Middleton
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCauGhxsgmMMrmy_xIrm3IJw
+- kind: youtube
+  title: JTC Guitar (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCBAciNG_R9nqVBk45qKJN6w
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: JTC Guitar
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCBAciNG_R9nqVBk45qKJN6w
+- kind: youtube
+  title: Julien Song (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC3FXGTXQqx9cc2T7EDhslIQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Julien Song
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC3FXGTXQqx9cc2T7EDhslIQ
+- kind: youtube
+  title: Justin Sung (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC2Zs9v2hL2qZZ7vsAENsg4w
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Justin Sung
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC2Zs9v2hL2qZZ7vsAENsg4w
+- kind: youtube
+  title: Kalte Sonne (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC8zdvHHninB9tqoACqSdsnQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Kalte Sonne
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC8zdvHHninB9tqoACqSdsnQ
+- kind: youtube
+  title: Karim Duval (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC57bDOxg_KlFMn2ze5f0QlQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Karim Duval
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC57bDOxg_KlFMn2ze5f0QlQ
+- kind: youtube
+  title: KAZ MMORPG (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC4co9wT8hjTcPCClFDdN7bg
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: KAZ MMORPG
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC4co9wT8hjTcPCClFDdN7bg
+- kind: youtube
+  title: Kenny Serane (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCdP0wHSVHtDtm7AubUEVaEw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Kenny Serane
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCdP0wHSVHtDtm7AubUEVaEw
+- kind: youtube
+  title: Keyan Houshmand Live (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCueME1RtSxAxS4Jtq_QvXBA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Keyan Houshmand
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCueME1RtSxAxS4Jtq_QvXBA
+- kind: youtube
+  title: Kilian Jornet (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC5IhSDXTsi6TrIGHiW8kIBg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Kilian Jornet
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC5IhSDXTsi6TrIGHiW8kIBg
+- kind: youtube
+  title: KT Tunstall (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCRAzFFWjI1h9DvqHXd6wxZQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: KT Tunstall
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCRAzFFWjI1h9DvqHXd6wxZQ
+- kind: youtube
+  title: La Mêlée (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCq5pA3TRtJJGsOzuLw3bVXQ
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: La Mêlée
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCq5pA3TRtJJGsOzuLw3bVXQ
+- kind: youtube
+  title: LANDR (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCoYkWZ08y9HVu0KDpdxF8MA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: LANDR
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCoYkWZ08y9HVu0KDpdxF8MA
+- kind: youtube
+  title: La statistique expliquée à mon chat (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCWty1tzwZW_ZNSp5GVGteaA
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: La statistique expliquée à mon chat
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCWty1tzwZW_ZNSp5GVGteaA
+- kind: youtube
+  title: Le CCNMO (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCyfy-w32n5frFt5KYsmIdmg
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: CCNMO
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCyfy-w32n5frFt5KYsmIdmg
+- kind: youtube
+  title: leftlanetheory (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCHrXnjsW---sxyR_vOfagQg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: leftlanetheory
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCHrXnjsW---sxyR_vOfagQg
+- kind: youtube
+  title: Le Monde Fantastique De Danou (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCnmKz-dSINXoVkjLLBBZSiw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Le Monde
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCnmKz-dSINXoVkjLLBBZSiw
+- kind: youtube
+  title: Lessonface (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCV5PCRcfJvpOsFg7-bH8N4A
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Lessonface
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCV5PCRcfJvpOsFg7-bH8N4A
+- kind: youtube
+  title: Let'sPlayGuitar! (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCBl5sCJVHmnj_TZOYubd5cg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Let'sPlayGuitar!
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCBl5sCJVHmnj_TZOYubd5cg
+- kind: youtube
+  title: Lex Fridman (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCSHZKyawb77ixDdsGog4iWA
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Lex Fridman
+  is_public: true
+  enabled: true
+  discovery_method: creator_youtube_pair
+  site_url: https://www.youtube.com/@lexfridman
+- kind: youtube
+  title: Licklibrary (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCfvdirLsoCLpdBt4bJ8ZH2Q
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Licklibrary
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCfvdirLsoCLpdBt4bJ8ZH2Q
+- kind: youtube
+  title: Ludo Salenne (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCnnYqSNKKygemgmxC9PyLTw
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Ludo Salenne
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCnnYqSNKKygemgmxC9PyLTw
+- kind: youtube
+  title: Major Mouvement (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCsnRkRtbTyISkfGTGwM7VfQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Major Mouvement
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCsnRkRtbTyISkfGTGwM7VfQ
+- kind: youtube
+  title: Majuular (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCAYF6ZY9gWBR1GW3R7PX7yw
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Majuular
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCAYF6ZY9gWBR1GW3R7PX7yw
+- kind: youtube
+  title: Malva AI (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCv3ZocWMnZw3aljHs4irOzA
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Malva AI
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCv3ZocWMnZw3aljHs4irOzA
+- kind: youtube
+  title: Marcelo Donoso (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCIZ61x2DXZOKhdsKOIa3Kzg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Marcelo Donoso
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCIZ61x2DXZOKhdsKOIa3Kzg
+- kind: youtube
+  title: Marco Sfogli (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCn60xJzR-fhqo7QLw7LEOMQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Marco Sfogli
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCn60xJzR-fhqo7QLw7LEOMQ
+- kind: youtube
+  title: Marina Wyss - AI & Machine Learning (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZf_9SblvM8iTTkouFEcHtA
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Marina Wyss
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCZf_9SblvM8iTTkouFEcHtA
+- kind: youtube
+  title: Mario Doodles (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCy3bXrG_V9onDmGu8es7PoA
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Mario Doodles
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCy3bXrG_V9onDmGu8es7PoA
+- kind: youtube
+  title: Marketing Mania (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCSmUdD2Dd_v5uqBuRwtEZug
+  category: actu
+  labels:
+  - youtube
+  - actu
+  creator: Marketing Mania (Stan Leloup)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCSmUdD2Dd_v5uqBuRwtEZug
+- kind: youtube
+  title: MASTER BOOT RECORD (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCEVndLRqBDNcZhBdWo5oepg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: MASTER BOOT RECORD
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCEVndLRqBDNcZhBdWo5oepg
+- kind: youtube
+  title: Mathématiques et informatique - Collège de France (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCk58LsWC9j892FUMBwN5AsQ
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Collège de France
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCk58LsWC9j892FUMBwN5AsQ
+- kind: youtube
+  title: Mathieu Pascal (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCuYErhUJN95rbJsYdyO_Aug
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Mathieu Pascal
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCuYErhUJN95rbJsYdyO_Aug
+- kind: youtube
+  title: Maths Adultes (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC9Vaxx3-gWuBxt38pao4XCQ
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Maths Adultes
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC9Vaxx3-gWuBxt38pao4XCQ
+- kind: youtube
+  title: math-sup.fr (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCjuo-VgUli12Dbo36_eYjCQ
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: math-sup.fr
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCjuo-VgUli12Dbo36_eYjCQ
+- kind: youtube
+  title: Matt Barton - Matt Chat (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCE98xefVUXmbvQfe-wNS8oA
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Matt Barton
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCE98xefVUXmbvQfe-wNS8oA
+- kind: youtube
+  title: MattRach (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCacY6C1c_0tBGGkyCNciDSQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: MattRach
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCacY6C1c_0tBGGkyCNciDSQ
+- kind: youtube
+  title: Maxwell (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCJIU9zukwkb_ydhhh88WmfA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Maxwell
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCJIU9zukwkb_ydhhh88WmfA
+- kind: youtube
+  title: Max YME (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCPED7fTkjxd9mIYsnG9i2nQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Max YME
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCPED7fTkjxd9mIYsnG9i2nQ
+- kind: youtube
+  title: Mediapart (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCdnaDhU-LDQrIEEmSIfq0-Q
+  category: actu
+  labels:
+  - youtube
+  - actu
+  creator: Mediapart
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCdnaDhU-LDQrIEEmSIfq0-Q
+- kind: youtube
+  title: Merel Bechtold (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC7cq1cDiqwut75TL7QtmOjA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Merel Bechtold
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC7cq1cDiqwut75TL7QtmOjA
+- kind: youtube
+  title: Metal Guitar Masterclass (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC8Tc5lZreqrklITBz26Qteg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Metal Guitar Masterclass
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC8Tc5lZreqrklITBz26Qteg
+- kind: youtube
+  title: Metal Guitar Stuff / Tore Fagerheim (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLYItmLlvmeJDtiig2Vu5lA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Tore Fagerheim
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLYItmLlvmeJDtiig2Vu5lA
+- kind: youtube
+  title: Metalorgie (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCs5tsS9s4ayHxTvhTEtzvPw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Metalorgie
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCs5tsS9s4ayHxTvhTEtzvPw
+- kind: youtube
+  title: Metal & Rock Zone (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCso4b-P0AQA-0waly_e1nFg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Metal & Rock Zone
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCso4b-P0AQA-0waly_e1nFg
+- kind: youtube
+  title: Méthode Maths (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZdVYfnXxc0aQDMnijUREow
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Méthode Maths
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCZdVYfnXxc0aQDMnijUREow
+- kind: youtube
+  title: Mickaël Launay - Micmaths (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC4PasDd25MXqlXBogBw9CAg
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Mickaël Launay (Micmaths)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC4PasDd25MXqlXBogBw9CAg
+- kind: youtube
+  title: Micode (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCYnvxJ-PKiGXo_tYXpWAC-w
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Micode / Underscore_
+  is_public: true
+  enabled: true
+  discovery_method: creator_youtube_pair
+  site_url: https://www.youtube.com/@Micode
+- kind: youtube
+  title: Mike Dawes (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCkkS9vuXcbxijUfoXft8x7w
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Mike Dawes
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCkkS9vuXcbxijUfoXft8x7w
+- kind: youtube
+  title: Milo Andreo | Easy Fast Piano (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCUCq4gS0cVubTwb-bjDBGsg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Milo Andreo
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCUCq4gS0cVubTwb-bjDBGsg
+- kind: youtube
+  title: MortMort (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCsn9MzwyPKeCE6MEGtMU4gg
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: MortMort
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCsn9MzwyPKeCE6MEGtMU4gg
+- kind: youtube
+  title: MUSinc (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCWcujzVT_RU_EfOLGTxS2hw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: MUSinc
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCWcujzVT_RU_EfOLGTxS2hw
+- kind: youtube
+  title: Napalm Records (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCG7AaCh_CiG6pq_rRDNw72A
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Napalm Records
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCG7AaCh_CiG6pq_rRDNw72A
+- kind: youtube
+  title: Nathanael Morton (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCBiPAXmLVLZOu819ASlaH7g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Nathanael Morton
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCBiPAXmLVLZOu819ASlaH7g
+- kind: youtube
+  title: NBA Extra - beIN SPORTS France (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCcMGbm0EYWh1SZZ8MsM75tw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: NBA Extra (beIN SPORTS)
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCcMGbm0EYWh1SZZ8MsM75tw
+- kind: youtube
+  title: Neogeofanatic (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCE9YC3KKjzAMOD63uc2fL6A
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Neogeofanatic
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCE9YC3KKjzAMOD63uc2fL6A
+- kind: youtube
+  title: Nerdforge (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCggHsHce2n3vvbJf_8YKrMA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Nerdforge
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCggHsHce2n3vvbJf_8YKrMA
+- kind: youtube
+  title: Nick Johnston (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCRmm7T6mAm-QBNvnEaIl3AA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Nick Johnston
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCRmm7T6mAm-QBNvnEaIl3AA
+- kind: youtube
+  title: Nicole van der Hoeven (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCrmQZ9HHnJ2qpd6udc8iYYw
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Nicole van der Hoeven
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCrmQZ9HHnJ2qpd6udc8iYYw
+- kind: youtube
+  title: Nightsky (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCHqBMdx46hSmmgHDXHVjSeg
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Nightsky
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCHqBMdx46hSmmgHDXHVjSeg
+- kind: youtube
+  title: Nik Nocturnal (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLhcQ0bBZTLipRJ7D42Riow
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Nik Nocturnal
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLhcQ0bBZTLipRJ7D42Riow
+- kind: youtube
+  title: N&M Creation (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC5REr06j6BE5xtuYnDVK8zA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: N&M Creation
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC5REr06j6BE5xtuYnDVK8zA
+- kind: youtube
+  title: Noob & Olydri (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCdHXMcWxwZr2qQpdCCOcSkw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Noob & Olydri
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCdHXMcWxwZr2qQpdCCOcSkw
+- kind: youtube
+  title: Norah Jones (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCBJtGODWGrM3fdQ0G5E9uAQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Norah Jones
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCBJtGODWGrM3fdQ0G5E9uAQ
+- kind: youtube
+  title: Nuclear Blast Records (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCoxg3Kml41wE3IPq-PC-LQw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Nuclear Blast Records
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCoxg3Kml41wE3IPq-PC-LQw
+- kind: youtube
+  title: Ola Englund (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCfWdGyZaZODBPQc9Lu0y6aw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Ola Englund
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCfWdGyZaZODBPQc9Lu0y6aw
+- kind: youtube
+  title: Øljen – Les maths en finesse (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCcacNh2WN9kTmG1_t05ng7A
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Øljen (Olivier Geneste)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCcacNh2WN9kTmG1_t05ng7A
+- kind: youtube
+  title: opusdoriavideos (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC_gUqqHNB8D0dnwHbvc2vvA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: opusdoriavideos
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC_gUqqHNB8D0dnwHbvc2vvA
+- kind: youtube
+  title: Out of Season (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCXqJytwfS2aDGlqpvRYa50A
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Out of Season
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCXqJytwfS2aDGlqpvRYa50A
+- kind: youtube
+  title: Oxford Mathematics (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLnGGRG__uGSPLBLzyhg8dQ
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Oxford Mathematics
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLnGGRG__uGSPLBLzyhg8dQ
+- kind: youtube
+  title: Pagan's Mind (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCyOqzivKac9_gMmfOmvuPug
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Pagan's Mind
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCyOqzivKac9_gMmfOmvuPug
+- kind: youtube
+  title: Pascal Vigné (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCvOy8YK838JxJ0sdWX3flIQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Pascal Vigné
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCvOy8YK838JxJ0sdWX3flIQ
+- kind: youtube
+  title: Paul Davids (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC_Oa7Ph3v94om5OyxY1nPKg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Paul Davids
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC_Oa7Ph3v94om5OyxY1nPKg
+- kind: youtube
+  title: Paul Wardingham (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCn-1m8liF6_XlwCHenMUmng
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Paul Wardingham
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCn-1m8liF6_XlwCHenMUmng
+- kind: youtube
+  title: People Make Games (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZB6V9fUov0Mx_us3MWWILg
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: People Make Games
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCZB6V9fUov0Mx_us3MWWILg
+- kind: youtube
+  title: Pete Cottrell (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCXOf0fbOAhL_BPpVGDP_VnQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Pete Cottrell
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCXOf0fbOAhL_BPpVGDP_VnQ
+- kind: youtube
+  title: Plague Scythe Studios (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UClOkMtbv2rsgI7p-607jApg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Plague Scythe Studios
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UClOkMtbv2rsgI7p-607jApg
+- kind: youtube
+  title: Platform Engineering (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCKjVI0LawDxHaXSBMBOK1tA
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Platform Engineering
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCKjVI0LawDxHaXSBMBOK1tA
+- kind: youtube
+  title: Plini (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC-MEgsEcEkbSuPWpu4a-PzQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Plini
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC-MEgsEcEkbSuPWpu4a-PzQ
+- kind: youtube
+  title: Polygon Runway (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCGSJevmBuDyxjLLOBNaYMGA
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Polygon Runway
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCGSJevmBuDyxjLLOBNaYMGA
+- kind: youtube
+  title: Power Corde (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCpicd88cQKOJfmbGL8ARz5Q
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Power Corde
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCpicd88cQKOJfmbGL8ARz5Q
+- kind: youtube
+  title: PowerCore360 (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCIvKxQ9Xbsl86dIJn6hTEIQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: PowerCore360
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCIvKxQ9Xbsl86dIJn6hTEIQ
+- kind: youtube
+  title: Prépa Up (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCFfOS-rkKNFjltl6-vuf79g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Prépa Up
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCFfOS-rkKNFjltl6-vuf79g
+- kind: youtube
+  title: Puylaurens Volley Ball / AUTAN (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC1PXWVli-IvXh5h1qgv_yug
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Puylaurens Volley Ball
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC1PXWVli-IvXh5h1qgv_yug
+- kind: youtube
+  title: Python Programmer (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC68KSmHePPePCjW4v57VPQg
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Giles McMullen (Python Programmer)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC68KSmHePPePCjW4v57VPQg
+- kind: youtube
+  title: QJamTracks Guitar Tutorials (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCHvcGr_KQQFsH6JE9DeDyow
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: QJamTracks
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCHvcGr_KQQFsH6JE9DeDyow
+- kind: youtube
+  title: Quentin D. Guitare (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCEFZd0MWE6pAKLTy6BrMIyg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Quentin D. Guitare
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCEFZd0MWE6pAKLTy6BrMIyg
+- kind: youtube
+  title: Quentin Godet - Kwiny (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCnj9e92B6Es-pqikr40v2dg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Quentin Godet
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCnj9e92B6Es-pqikr40v2dg
+- kind: youtube
+  title: QuêtamineTV (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC57jVsLQIX2qCJ7AYJJFLGg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: QuêtamineTV
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC57jVsLQIX2qCJ7AYJJFLGg
+- kind: youtube
+  title: Quist (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCEXDaXzYhqYdLCQ3Ce7U2Og
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Quist
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCEXDaXzYhqYdLCQ3Ce7U2Og
+- kind: youtube
+  title: Radio Metal (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC91j4B-5pSTKwK_C2w_jzUw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Radio Metal
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC91j4B-5pSTKwK_C2w_jzUw
+- kind: youtube
+  title: Rainy Night Creations (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCHs56pMIotQ-ubY6xAPuA8w
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Rainy Night Creations
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCHs56pMIotQ-ubY6xAPuA8w
+- kind: youtube
+  title: Raphael De Stefano (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCPDzDm8Ip0YRFMFGQvCbj2w
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Raphael De Stefano
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCPDzDm8Ip0YRFMFGQvCbj2w
+- kind: youtube
+  title: RATTLESNAKEROCK (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCvR8rFynUdPE7lagYhxfLhg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Will Wallner (RATTLESNAKEROCK)
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCvR8rFynUdPE7lagYhxfLhg
+- kind: youtube
+  title: Read'Em All (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCQtIG8Ttj_3GlH2CvymjLGg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Read'Em All
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCQtIG8Ttj_3GlH2CvymjLGg
+- kind: youtube
+  title: Rick Graham (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCJRLqTorcf9ZgqwrklLCwEw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Rick Graham
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCJRLqTorcf9ZgqwrklLCwEw
+- kind: youtube
+  title: Robert Baker (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCfeviwU6C7kEjpOK4C6myuQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Robert Baker
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCfeviwU6C7kEjpOK4C6myuQ
+- kind: youtube
+  title: Rob Scallon (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCyDZai57BfE_N0SaBkKQyXg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Rob Scallon
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCyDZai57BfE_N0SaBkKQyXg
+- kind: youtube
+  title: Roguelike Celebration (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCKv_QzXft4mD6TXmQBZtzIA
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Roguelike Celebration
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCKv_QzXft4mD6TXmQBZtzIA
+- kind: youtube
+  title: Rôle'n Play (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLklqggxR3UaYiJFiaSi7Ig
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Rôle'n Play
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLklqggxR3UaYiJFiaSi7Ig
+- kind: youtube
+  title: Roman Rouzine (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCHapmk7A4__7IeI0L3mybyg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Roman Rouzine
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCHapmk7A4__7IeI0L3mybyg
+- kind: youtube
+  title: Romsbru Beach Volley (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCCHtETw_byU80yCf1INWd6g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Romsbru Beach Volley
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCCHtETw_byU80yCf1INWd6g
+- kind: youtube
+  title: ROOGUITAR (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCgcrJVINcpa8aIJIfdv1PKA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: ROOGUITAR
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCgcrJVINcpa8aIJIfdv1PKA
+- kind: youtube
+  title: Running Addict (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCmCDB-4GipeUL6N9o4gJLqA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Running Addict
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCmCDB-4GipeUL6N9o4gJLqA
+- kind: youtube
+  title: Ryan Kershaw (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLMKEOCKe2kYeZCK7tBXsnw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Ryan Kershaw
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLMKEOCKe2kYeZCK7tBXsnw
+- kind: youtube
+  title: Sam Bell Guitar (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCp3K1V0buYbrI4h8HhwFhqg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Sam Bell
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCp3K1V0buYbrI4h8HhwFhqg
+- kind: youtube
+  title: SAOR (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCe2gMOs54LhkwD8XHW3GcaA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: SAOR
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCe2gMOs54LhkwD8XHW3GcaA
+- kind: youtube
+  title: Saturax (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCUBjWAQMQP4D9fU1vI1SKhw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Saturax
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCUBjWAQMQP4D9fU1vI1SKhw
+- kind: youtube
+  title: Science4All (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC0NCbj8CxzeCGIF6sODJ-7A
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Science4All (Lê Nguyên Hoang)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC0NCbj8CxzeCGIF6sODJ-7A
+- kind: youtube
+  title: ScienceEtonnante (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCaNlbnghtwlsGF-KzAFThqA
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: ScienceEtonnante (David Louapre)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCaNlbnghtwlsGF-KzAFThqA
+- kind: youtube
+  title: SCOREDATURA (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCv2VdUprsqWNsU9jTBnUB0Q
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: SCOREDATURA
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCv2VdUprsqWNsU9jTBnUB0Q
+- kind: youtube
+  title: Scripta Manent (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCJtwYrE8pk0o_MW6keyLr1g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Scripta Manent
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCJtwYrE8pk0o_MW6keyLr1g
+- kind: youtube
+  title: SD Volleyball English (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCz5BGw9WO_q-dHCDwN-v5Gg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: SD Volleyball English
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCz5BGw9WO_q-dHCDwN-v5Gg
+- kind: youtube
+  title: Seldell - IndieMag (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC-OvBDfZGn1OdsqMBwkOI_A
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Seldell (IndieMag)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC-OvBDfZGn1OdsqMBwkOI_A
+- kind: youtube
+  title: SHEORU (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCEVi-S0ikAkviyKukhCA3gg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: SHEORU
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCEVi-S0ikAkviyKukhCA3gg
+- kind: youtube
+  title: Signals Music Studio (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCRDDHLvQb8HjE2r7_ZuNtWA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Signals Music Studio
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCRDDHLvQb8HjE2r7_ZuNtWA
+- kind: youtube
+  title: Silicon Carne 🌶️ (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCt11zYNefnunOkgCrsO9UYg
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Carlos Diaz / Silicon Carne
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCt11zYNefnunOkgCrsO9UYg
+- kind: youtube
+  title: Sire Ravaillac (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCwItdPrWFQpreItlMgy5PMw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Sire Ravaillac
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCwItdPrWFQpreItlMgy5PMw
+- kind: youtube
+  title: Sithu Aye (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCuD2q7edgCJ3IHyXyB0TOWw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Sithu Aye
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCuD2q7edgCJ3IHyXyB0TOWw
+- kind: youtube
+  title: Skills N' Talents Swimming (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC8wwEsUeTG9cpzvWT5Dsdqw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Skills N' Talents
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC8wwEsUeTG9cpzvWT5Dsdqw
+- kind: youtube
+  title: Société Mathématique de France - SMF (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCtQfQ9La8-NgpW0eJaHSbBg
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Société Mathématique de France (SMF)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCtQfQ9La8-NgpW0eJaHSbBg
+- kind: youtube
+  title: SpectreSoundStudios (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC-f76NUQN5M-Z0cd0MOP5xw
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: SpectreSoundStudios
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC-f76NUQN5M-Z0cd0MOP5xw
+- kind: youtube
+  title: St1ka (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCd1gYKuDp3g4jt14pRu0KYQ
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: St1ka
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCd1gYKuDp3g4jt14pRu0KYQ
+- kind: youtube
+  title: Steve Terreberry (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCl16xaNY2arX3OzZBvTlsPQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Steve Terreberry
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCl16xaNY2arX3OzZBvTlsPQ
+- kind: youtube
+  title: Syracuse Volleyball Club (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCgGv3Ij4hQaapifbtq03aFA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Syracuse Volleyball Club
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCgGv3Ij4hQaapifbtq03aFA
+- kind: youtube
+  title: Tej isMusic (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC8y4T1xhndCZMvtLjeSM0Pg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Tej isMusic
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC8y4T1xhndCZMvtLjeSM0Pg
+- kind: youtube
+  title: TEKA (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCilwKsy5tMTzd9P6_xVXD_w
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Tanguy Kerleroux (TEKA)
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCilwKsy5tMTzd9P6_xVXD_w
+- kind: youtube
+  title: Terence Tao (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCCGfqB7qtWIktmPyf5UMcbw
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Terence Tao
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCCGfqB7qtWIktmPyf5UMcbw
+- kind: youtube
+  title: Tetryl (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC2ZTJja-fGAeIiVSjjS21NA
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Tetryl
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC2ZTJja-fGAeIiVSjjS21NA
+- kind: youtube
+  title: The Doom Dad (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCskm8_PoTCTMl4VxIvuWEcQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: The Doom Dad
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCskm8_PoTCTMl4VxIvuWEcQ
+- kind: youtube
+  title: The Dungeon Synth Archives (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UChmm356a5qe1luUsoatAgjA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: The Dungeon Synth Archives
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UChmm356a5qe1luUsoatAgjA
+- kind: youtube
+  title: The HU (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCs6vRDdkZ8bP8Xt6WHbvrwA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: The HU
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCs6vRDdkZ8bP8Xt6WHbvrwA
+- kind: youtube
+  title: The Late Show with Stephen Colbert (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCMtFAi84ehTSYSE9XoHefig
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Stephen Colbert
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCMtFAi84ehTSYSE9XoHefig
+- kind: youtube
+  title: The Quantified Scientist (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UChNWxrTlmh4IRSevon1X93g
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: The Quantified Scientist
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UChNWxrTlmh4IRSevon1X93g
+- kind: youtube
+  title: The Retro Collective (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCLEoyoOKZK0idGqSc6Pi23w
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: The Retro Collective
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCLEoyoOKZK0idGqSc6Pi23w
+- kind: youtube
+  title: Thomas BRESSEL (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCJTISpFDoYpcFP1_ugM1KvQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Thomas Bressel
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCJTISpFDoYpcFP1_ugM1KvQ
+- kind: youtube
+  title: Thomas Brush (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCuHVjteDW9tCb8QqMrtGvwQ
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Thomas Brush
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCuHVjteDW9tCb8QqMrtGvwQ
+- kind: youtube
+  title: Thomas Lorblanchet (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCvS5seq3BbsX-q7AX9XtoJQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Thomas Lorblanchet
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCvS5seq3BbsX-q7AX9XtoJQ
+- kind: youtube
+  title: Thomas Stewart (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCzW1rJo_rZgBMXP0FTSFsAg
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Thomas Stewart
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCzW1rJo_rZgBMXP0FTSFsAg
+- kind: youtube
+  title: tiswim - Total Immersion Swimming (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCvtVOM5h3jqKLNpVcEViPew
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Total Immersion Swimming
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCvtVOM5h3jqKLNpVcEViPew
+- kind: youtube
+  title: Tobias Rauscher (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCPedKpCHqxD840ZxqXAlUdg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Tobias Rauscher
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCPedKpCHqxD840ZxqXAlUdg
+- kind: youtube
+  title: Trevor Noah (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC8bTQzxgvKkXDAaWkeuUlkg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Trevor Noah
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC8bTQzxgvKkXDAaWkeuUlkg
+- kind: youtube
+  title: Tristan Defeuillet-Vang (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCTAqiGK5Sjjb1IRDGYB04Zg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Tristan Defeuillet-Vang
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCTAqiGK5Sjjb1IRDGYB04Zg
+- kind: youtube
+  title: Troll In The Sky (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCzUEJwIOTME2Y9wbQ6QhYZA
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Troll In The Sky
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCzUEJwIOTME2Y9wbQ6QhYZA
+- kind: youtube
+  title: Two Steps From Hell (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC3swwxiALG5c0Tvom83tPGg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Two Steps From Hell
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC3swwxiALG5c0Tvom83tPGg
+- kind: youtube
+  title: Ubiquity (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCdSdUhT1Ws3IYbnxNILaMJQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Ubiquity
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCdSdUhT1Ws3IYbnxNILaMJQ
+- kind: youtube
+  title: Underscore_ (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCWedHS9qKebauVIK2J7383g
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Micode / Underscore_
+  is_public: true
+  enabled: true
+  discovery_method: creator_youtube_pair
+  site_url: https://www.youtube.com/channel/UCWedHS9qKebauVIK2J7383g
+- kind: youtube
+  title: Université Paris Cité (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC5WhlXe1I_eRCtEx7cj3ZKg
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Université Paris Cité
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC5WhlXe1I_eRCtEx7cj3ZKg
+- kind: youtube
+  title: VERY MATH TRIP - Manu Houdart (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UChbkGPC1SoPkzQuq28ocwRA
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Manu Houdart (Very Math Trip)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UChbkGPC1SoPkzQuq28ocwRA
+- kind: youtube
+  title: Victor Veron (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC8-I_TCRn2uigIbbfeTmQsg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Victor Veron
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC8-I_TCRn2uigIbbfeTmQsg
+- kind: youtube
+  title: Viva La Dirt League (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCchBatdUMZoMfJ3rIzgV84g
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Viva La Dirt League
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCchBatdUMZoMfJ3rIzgV84g
+- kind: youtube
+  title: Vsauce (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC6nSFpj9HTCZ5t-N3Rm3-HA
+  category: science
+  labels:
+  - youtube
+  - science
+  creator: Vsauce
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC6nSFpj9HTCZ5t-N3Rm3-HA
+- kind: youtube
+  title: Webosaures (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCu34Tq5qMR-FiTYwLyy9U6w
+  category: tech
+  labels:
+  - youtube
+  - tech
+  creator: Webosaures (Korben & Remouk)
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCu34Tq5qMR-FiTYwLyy9U6w
+- kind: youtube
+  title: WellThis IsFunSoftware (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCjhmfLq4eZDwU68tWhUAsIw
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: WellThis IsFunSoftware
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCjhmfLq4eZDwU68tWhUAsIw
+- kind: youtube
+  title: Working Memories (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCbP1RSi8wgFcw84o-uV7_FQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Working Memories
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCbP1RSi8wgFcw84o-uV7_FQ
+- kind: youtube
+  title: Xavier de Le Rue (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC7FNrty1fPrhzXTFDGNgJxg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Xavier de Le Rue
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC7FNrty1fPrhzXTFDGNgJxg
+- kind: youtube
+  title: Yes vous aime (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCXQW_V8roJ1UBcJq-fNP1eQ
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: Yes vous aime
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCXQW_V8roJ1UBcJq-fNP1eQ
+- kind: youtube
+  title: Yobob (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UCPqVt0Y743bbi0I29uGq20Q
+  category: gaming-hardware
+  labels:
+  - youtube
+  - gaming-hardware
+  creator: Yobob
+  is_public: true
+  enabled: true
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UCPqVt0Y743bbi0I29uGq20Q
+- kind: youtube
+  title: yunus guitarist (YouTube)
+  url: https://www.youtube.com/feeds/videos.xml?channel_id=UC7l5SssuhbLdxRqQvZFgyGg
+  category: perso
+  labels:
+  - youtube
+  - perso
+  creator: yunus guitarist
+  is_public: true
+  enabled: false
+  discovery_method: youtube_subscriptions_paste
+  site_url: https://www.youtube.com/channel/UC7l5SssuhbLdxRqQvZFgyGg
+newsletter_rules:
+  default_category: tech
+  domain_category_map:
+    radiofrance.fr: actu
+    francetvinfo.fr: actu
+    lemonde.fr: actu
+    nytimes.com: actu
+    legrandcontinent.eu: actu
+    politico.eu: actu
+    usinenouvelle.com: actu
+    pourlascience.fr: science
+    newscientist.com: science
+    quantamagazine.org: science
+    arstechnica.com: science
+    construction-physics.com: science
+    nautil.us: science
+    canardpc.com: gaming-hardware
+    substack.com: tech
+    tldrnewsletter.com: tech
+    DAN@tldrnewsletter.com: tech
+    bytebytego.com: tech
+    pragmaticengineer.com: tech
+    latent.space: tech
+    ben-evans.com: tech
+    medium.com: tech
+    thenewstack.io: tech
+    stratechery.com: tech
+    zdnet.fr: tech
+    frandroid.com: tech
+    lesnumeriques.com: tech
+    numerama.com: tech
+    journaldunet.com: tech
+    usine-digitale.fr: tech

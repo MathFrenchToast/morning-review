@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: morning-review-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-morning}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-morning}
+      POSTGRES_DB: ${POSTGRES_DB:-morning_review}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-morning} -d ${POSTGRES_DB:-morning_review}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  s3:
+    image: chrislusf/seaweedfs:latest
+    container_name: morning-review-s3
+    restart: unless-stopped
+    command: "server -s3 -ip.bind=0.0.0.0 -dir=/data"
+    ports:
+      - "${S3_PORT:-9000}:8333"
+      - "${S3_FILER_PORT:-8888}:8888"
+    volumes:
+      - s3_data:/data
+
+volumes:
+  pg_data:
+  s3_data:

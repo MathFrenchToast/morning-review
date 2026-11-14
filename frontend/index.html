@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Morning Review — Veille & Briefing Quotidien</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-hover: #26354d;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-dark: #0284c7;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --cat-actu: #f97316;
+      --cat-science: #a855f7;
+      --cat-tech: #38bdf8;
+      --cat-gaming: #10b981;
+      --cat-perso: #eab308;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1240px; margin: 0 auto; padding: 1.25rem 1.5rem 3rem; }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.75rem; }
+    .brand h1 { margin: 0; font-size: 1.4rem; letter-spacing: -0.02em; }
+    .pill {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    button {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    button:hover:not(:disabled) { background: var(--surface-hover); border-color: var(--primary); }
+    button:disabled { opacity: 0.5; cursor: wait; }
+    button.primary { background: var(--primary-dark); border-color: var(--primary); color: #fff; font-weight: 600; }
+    button.icon-btn {
+      width: 2.15rem;
+      height: 2.15rem;
+      padding: 0;
+      justify-content: center;
+      border-radius: 0.45rem;
+      font-size: 0.98rem;
+    }
+    button.vote-up.active { background: rgba(34, 197, 94, 0.2); border-color: var(--success); color: #86efac; }
+    button.vote-down.active { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: #fca5a5; }
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+    .tab-btn {
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+    }
+    .tab-btn.active {
+      background: var(--primary-dark);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      background: var(--surface);
+      padding: 0.85rem 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+    }
+    .cat-filters { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .cat-chip {
+      font-size: 0.8rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      font-weight: 600;
+    }
+    .cat-chip.active { background: var(--primary-dark); border-color: var(--primary); color: #fff; }
+    .search-box { display: flex; gap: 0.4rem; flex: 1; max-width: 480px; }
+    input, select {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 0.45rem;
+      padding: 0.45rem 0.75rem;
+      font-size: 0.85rem;
+    }
+    input { flex: 1; }
+    .toast {
+      margin-bottom: 1rem;
+      padding: 0.7rem 1rem;
+      border-radius: 0.5rem;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid var(--primary);
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 0.85rem; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem 1.2rem;
+      transition: border-color 0.15s ease;
+    }
+    .card:hover { border-color: #475569; }
+    .card-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.45rem;
+    }
+    .badges { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.15rem 0.55rem;
+      border-radius: 0.35rem;
+      text-transform: uppercase;
+    }
+    .badge-actu { background: rgba(249, 115, 22, 0.2); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.4); }
+    .badge-science { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .badge-tech { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .badge-gaming-hardware { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-perso { background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.4); }
+    .badge-podcast { background: rgba(236, 72, 153, 0.2); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.45); }
+    .badge-youtube { background: rgba(239, 68, 68, 0.22); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.45); }
+    .badge-newsletter { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); }
+    .card-title { font-size: 1.05rem; font-weight: 600; margin: 0 0 0.4rem; }
+    .card-summary { color: #cbd5e1; font-size: 0.9rem; margin: 0 0 0.8rem; }
+    .card-footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .card-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 0.75rem; overflow: hidden; }
+    th, td { padding: 0.7rem 0.9rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    th { background: rgba(15, 23, 42, 0.6); color: var(--muted); font-weight: 600; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+      z-index: 50;
+    }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.85rem;
+      max-width: 900px;
+      width: 100%;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .modal-head {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .modal-body {
+      padding: 1.25rem;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+      background: #0b1120;
+      color: #e2e8f0;
+    }
+    .hint-box {
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid var(--warning);
+      color: #fde68a;
+      padding: 0.65rem 1rem;
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+      border-radius: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="container">
+    <header>
+      <div class="brand">
+        <h1>☀️ Morning Review</h1>
+        <span class="pill" title="Identifiant utilisateur UUID (multi-tenant ready)">user_id: {{ profile.user_id?.slice(0, 8) }}…</span>
+        <span class="pill">👍 {{ profile.positive_votes || 0 }} | 👎 {{ profile.negative_votes || 0 }}</span>
+      </div>
+      <div class="actions">
+        <button @click="triggerRssIngest" :disabled="busy">🔄 Relever Flux RSS</button>
+        <button @click="triggerGmailIngest" :disabled="busy">✉️ Relever Gmail</button>
+        <button @click="triggerRecluster" :disabled="busy">🔗 Consolider Sujets</button>
+        <button class="primary" @click="triggerDigest" :disabled="busy">✨ Générer Briefing</button>
+      </div>
+    </header>
+
+    <div v-if="statusMessage" class="toast">
+      <span>{{ statusMessage }}</span>
+      <button @click="statusMessage = ''" style="padding: 0.15rem 0.5rem;">✕</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn" :class="{ active: activeTab === 'topics' }" @click="openInboxTab">
+        📰 Sujets &amp; Veille ({{ topics.length }})
+        <span
+          v-if="profile.reactivated_topics_count > 0"
+          style="margin-left: 0.35rem; background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid #f59e0b; padding: 0.08rem 0.45rem; border-radius: 999px; font-size: 0.72rem;"
+          title="Sujets archivés réactivés suite à des nouveautés"
+        >
+          🆕 {{ profile.reactivated_topics_count }}
+        </span>
+      </button>
+      <button class="tab-btn" :class="{ active: activeTab === 'archive' }" @click="openArchiveTab">
+        🗄️ Archives ({{ profile.archived_topics_count ?? archivedTopics.length }})
+      </button>
+      <button class="tab-btn" :class="{ active: activeTab === 'creators' }" @click="openCreatorsTab">
+        🎙️ Créateurs &amp; Chaînes ({{ creators.length }})
+      </button>
+      <button class="tab-btn" :class="{ active: activeTab === 'digest' }" @click="openDigestTab">
+        📄 Rapport Quotidien
+      </button>
+      <button class="tab-btn" :class="{ active: activeTab === 'sources' }" @click="activeTab = 'sources'">
+        📡 Sources maintenues ({{ sources.length }})
+      </button>
+    </div>
+
+    <!-- ONGLET 1 : SUJETS & RECHERCHE HYBRIDE -->
+    <section v-if="activeTab === 'topics'">
+      <div class="toolbar">
+        <div class="cat-filters">
+          <button class="cat-chip" :class="{ active: selectedCategories.length === 0 }" @click="selectCategory('')">
+            Toutes
+          </button>
+          <button
+            v-for="cat in categories"
+            :key="cat.slug"
+            class="cat-chip"
+            :class="{ active: selectedCategories.includes(cat.slug) }"
+            @click="selectCategory(cat.slug)"
+          >
+            {{ cat.slug }}
+          </button>
+          <button
+            class="cat-chip"
+            :class="{ active: selectedCategories.includes('podcast') }"
+            @click="selectCategory('podcast')"
+            title="Filtrer sur les épisodes de podcasts"
+          >
+            🎙️ podcast
+          </button>
+          <button
+            class="cat-chip"
+            :class="{ active: selectedCategories.includes('youtube') }"
+            @click="selectCategory('youtube')"
+            title="Filtrer sur les vidéos YouTube"
+          >
+            ▶️ youtube
+          </button>
+        </div>
+
+        <form class="search-box" @submit.prevent="runSearch">
+          <input v-model="searchQuery" placeholder="Rechercher (mot-clé ou concept sémantique)..." />
+          <select v-model="searchMode">
+            <option value="hybrid">Hybride (RRF)</option>
+            <option value="semantic">Sémantique (pgvector)</option>
+            <option value="keyword">Mot-clé (FTS)</option>
+          </select>
+          <button type="submit" :disabled="busy" title="Lancer la recherche" aria-label="Lancer la recherche">🔍</button>
+          <button v-if="searchQuery" type="button" @click="resetSearch" title="Effacer la recherche" aria-label="Effacer la recherche">✕</button>
+        </form>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; width: 100%; padding-top: 0.55rem; border-top: 1px solid rgba(255, 255, 255, 0.06); font-size: 0.8rem;">
+          <span style="color: var(--muted); font-weight: 600;">Trier :</span>
+          <select v-model="sortBy" @change="refreshTopicsOrSearch" aria-label="Trier les sujets par">
+            <option value="sources">Sources &amp; Fraîcheur</option>
+            <option value="last_seen_at">Date de la source la + récente</option>
+            <option value="first_seen_at">Date de la 1re source</option>
+            <option value="relevance">Pertinence profil</option>
+          </select>
+          <button
+            type="button"
+            @click="toggleSortOrder"
+            :title="sortOrder === 'desc' ? 'Ordre décroissant (plus récents / élevés d\'abord)' : 'Ordre croissant (plus anciens / faibles d\'abord)'"
+            aria-label="Inverser l'ordre de tri"
+            style="padding: 0.38rem 0.65rem;"
+          >
+            {{ sortOrder === 'desc' ? '↓ Récent' : '↑ Ancien' }}
+          </button>
+
+          <span style="color: var(--muted); font-weight: 600; margin-left: 0.4rem;">Filtrer :</span>
+          <select v-model="dateField" @change="refreshTopicsOrSearch" aria-label="Champ de date utilisé pour le filtre">
+            <option value="last_seen_at">Sur date dernière source</option>
+            <option value="first_seen_at">Sur date 1re source</option>
+          </select>
+          <select v-model="selectedPeriod" @change="refreshTopicsOrSearch" aria-label="Période temporelle">
+            <option value="">Toutes périodes</option>
+            <option value="24h">Dernières 24h</option>
+            <option value="48h">Dernières 48h</option>
+            <option value="7d">7 derniers jours</option>
+            <option value="30d">30 derniers jours</option>
+          </select>
+          <label style="display: inline-flex; align-items: center; gap: 0.25rem; color: var(--muted);">
+            Du
+            <input type="date" v-model="dateFrom" @change="refreshTopicsOrSearch" style="flex: 0 1 auto; padding: 0.32rem 0.5rem;" aria-label="Date de début" />
+          </label>
+          <label style="display: inline-flex; align-items: center; gap: 0.25rem; color: var(--muted);">
+            Au
+            <input type="date" v-model="dateTo" @change="refreshTopicsOrSearch" style="flex: 0 1 auto; padding: 0.32rem 0.5rem;" aria-label="Date de fin" />
+          </label>
+          <button
+            v-if="selectedPeriod || dateFrom || dateTo"
+            type="button"
+            @click="resetDateFilters"
+            title="Réinitialiser les filtres de date"
+            aria-label="Réinitialiser les filtres de date"
+            style="padding: 0.32rem 0.55rem;"
+          >
+            ✕ Dates
+          </button>
+
+          <button
+            v-if="topics.length > 0"
+            type="button"
+            @click="markAllDisplayedAsRead"
+            :disabled="busy"
+            title="Archiver tous les sujets actuellement affichés (hygiène Inbox Zero)"
+            style="margin-left: auto; padding: 0.36rem 0.75rem; background: rgba(16, 185, 129, 0.16); border-color: rgba(16, 185, 129, 0.45); color: #6ee7b7; font-weight: 600;"
+          >
+            ✓ Tout marquer comme lu ({{ topics.length }})
+          </button>
+        </div>
+      </div>
+
+      <div
+        v-if="topics.length === 0"
+        style="text-align: center; padding: 3rem 1.5rem; background: var(--surface); border: 1px dashed var(--border); border-radius: 0.85rem; color: var(--muted);"
+      >
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎉</div>
+        <strong style="color: var(--text); font-size: 1.05rem; display: block; margin-bottom: 0.35rem;">Inbox Zero atteint !</strong>
+        <span>Aucun sujet non lu ne correspond aux filtres actuels. Vos sujets lus sont consultables et recherchables dans l'onglet <strong>🗄️ Archives</strong>.</span>
+      </div>
+
+      <div class="grid" v-else>
+        <article
+          v-for="t in topics"
+          :key="t.topic_id"
+          class="card"
+          :style="t.has_updates ? 'border-color: rgba(245, 158, 11, 0.65); box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25);' : ''"
+        >
+          <div class="card-header">
+            <div class="badges">
+              <span
+                v-if="t.has_updates"
+                class="badge"
+                style="background: rgba(245, 158, 11, 0.22); color: #fde68a; border: 1px solid #f59e0b;"
+                title="Ce sujet avait été archivé mais a été réactivé car un nouvel article apporte des éléments inédits"
+              >
+                🆕 Nouveauté (+{{ t.new_articles_count || 1 }})
+              </span>
+              <span class="badge" :class="'badge-' + t.category">{{ t.category }}</span>
+              <span
+                v-for="lb in (t.labels || []).filter((x) => x !== t.category)"
+                :key="lb"
+                class="badge"
+                :class="'badge-' + lb"
+              >
+                {{ lb === 'podcast' ? '🎙️ podcast' : lb === 'youtube' ? '▶️ youtube' : lb }}
+              </span>
+              <span v-if="t.creators && t.creators.length" class="pill" title="Créateur(s) de contenu">
+                👤 {{ t.creators.slice(0, 2).join(' · ') }}
+              </span>
+              <span class="pill">{{ t.source_count }} source(s)</span>
+              <span v-if="t.relevance_score !== undefined" class="pill">score: {{ t.relevance_score }}</span>
+              <span v-if="t.semantic_similarity !== undefined" class="pill">sim: {{ t.semantic_similarity }}</span>
+            </div>
+            <span class="pill">topic_id: {{ t.topic_id.slice(0, 8) }}</span>
+          </div>
+
+          <h3 class="card-title">
+            <a :href="t.primary_url" target="_blank" rel="noopener noreferrer">{{ t.title }} ↗</a>
+          </h3>
+
+          <div
+            v-if="t.has_updates && t.updates_summary"
+            style="margin: 0 0 0.65rem; padding: 0.55rem 0.8rem; background: rgba(245, 158, 11, 0.13); border: 1px solid rgba(245, 158, 11, 0.45); border-radius: 0.5rem; font-size: 0.84rem; color: #fef3c7;"
+          >
+            <strong style="color: #fbbf24;">🆕 Nouveauté depuis votre lecture :</strong>
+            {{ t.updates_summary }}
+          </div>
+
+          <p class="card-summary">{{ t.summary }}</p>
+
+          <details
+            v-if="t.articles && t.articles.length > 1"
+            style="margin: 0 0 0.85rem; padding: 0.5rem 0.85rem; background: rgba(15, 23, 42, 0.55); border-radius: 0.5rem; border-left: 3px solid var(--primary);"
+          >
+            <summary
+              style="font-size: 0.78rem; color: var(--muted); font-weight: 600; cursor: pointer; user-select: none;"
+              title="Cliquer pour afficher ou masquer le détail des sources regroupées"
+            >
+              🔗 {{ t.articles.length }} sources regroupées sous ce sujet (topic_id)
+            </summary>
+            <ul style="margin: 0.45rem 0 0.1rem; padding-left: 1.1rem; font-size: 0.83rem;">
+              <li v-for="(art, idx) in t.articles" :key="idx" style="margin-bottom: 0.2rem;">
+                <a :href="art.url" target="_blank" rel="noopener noreferrer">{{ art.title }}</a>
+                <span style="color: var(--muted);"> — {{ art.source_title }}</span>
+                <time v-if="art.published_at" :datetime="art.published_at" style="color: var(--muted); font-size: 0.76rem; margin-left: 0.25rem;">
+                  ({{ formatDate(art.published_at) }})
+                </time>
+              </li>
+            </ul>
+          </details>
+
+          <div class="card-footer">
+            <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center;">
+              <strong>{{ formatHost(t.primary_url) }}</strong>
+              <span title="Date de publication de la première source ayant mentionné ce sujet">
+                🕒 1re source : <time :datetime="t.first_seen_at">{{ formatDate(t.first_seen_at) }}</time>
+              </span>
+              <span title="Date de publication de la source la plus récente sur ce sujet">
+                🔄 Dernière source : <time :datetime="t.last_seen_at">{{ formatDate(t.last_seen_at) }}</time>
+              </span>
+            </div>
+            <div class="card-actions" role="group" aria-label="Actions sur ce sujet">
+              <button
+                class="icon-btn"
+                style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.45); color: #6ee7b7; font-weight: 600; padding: 0.35rem 0.65rem;"
+                @click="markAsRead(t)"
+                title="Marquer comme lu et archiver (sera réactivé automatiquement si un nouvel article apporte des éléments inédits)"
+                aria-label="Marquer ce sujet comme lu et l'archiver"
+              >
+                ✓ Lu
+              </button>
+              <button
+                class="icon-btn vote-up"
+                :class="{ active: t.user_vote === 1 }"
+                @click="voteTopic(t, 1)"
+                title="Pertinent (+1 : affine votre profil)"
+                aria-label="Marquer ce sujet comme pertinent (+1)"
+                :aria-pressed="t.user_vote === 1"
+              >
+                <span aria-hidden="true">👍</span>
+              </button>
+              <button
+                class="icon-btn vote-down"
+                :class="{ active: t.user_vote === -1 }"
+                @click="voteTopic(t, -1)"
+                title="Non pertinent (-1 : masquer ce type de sujet)"
+                aria-label="Marquer ce sujet comme non pertinent (-1)"
+                :aria-pressed="t.user_vote === -1"
+              >
+                <span aria-hidden="true">👎</span>
+              </button>
+              <button
+                class="icon-btn"
+                @click="corroborateTopic(t)"
+                :disabled="busy"
+                title="Croiser les sources sur le Web et générer une synthèse multi-sources"
+                aria-label="Croiser les sources sur le Web et générer une synthèse multi-sources"
+              >
+                <span aria-hidden="true">🌐</span>
+              </button>
+              <button
+                class="icon-btn"
+                @click="viewContent(t)"
+                title="Lire le contenu Markdown archivé sur S3"
+                aria-label="Lire le contenu Markdown archivé sur S3"
+              >
+                <span aria-hidden="true">📖</span>
+              </button>
+              <button
+                class="icon-btn"
+                @click="enrichTopic(t)"
+                :disabled="busy"
+                title="Enrichir l'article complet (via MCP abonné ou Trafilatura)"
+                aria-label="Enrichir l'article complet via MCP abonné ou Trafilatura"
+              >
+                <span aria-hidden="true">⚡</span>
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ONGLET ARCHIVES (SUJETS LUS & RECHERCHE PAR MOT-CLÉ DANS LES ARCHIVES) -->
+    <section v-if="activeTab === 'archive'">
+      <div class="toolbar">
+        <div class="cat-filters">
+          <button class="cat-chip" :class="{ active: selectedCategories.length === 0 }" @click="selectCategory('')">
+            Toutes
+          </button>
+          <button
+            v-for="cat in categories"
+            :key="cat.slug"
+            class="cat-chip"
+            :class="{ active: selectedCategories.includes(cat.slug) }"
+            @click="selectCategory(cat.slug)"
+          >
+            {{ cat.slug }}
+          </button>
+          <button
+            class="cat-chip"
+            :class="{ active: selectedCategories.includes('podcast') }"
+            @click="selectCategory('podcast')"
+          >
+            🎙️ podcast
+          </button>
+          <button
+            class="cat-chip"
+            :class="{ active: selectedCategories.includes('youtube') }"
+            @click="selectCategory('youtube')"
+          >
+            ▶️ youtube
+          </button>
+        </div>
+
+        <form class="search-box" @submit.prevent="runArchiveSearch">
+          <input v-model="archiveSearchQuery" placeholder="Rechercher par mot-clé dans vos sujets archivés..." />
+          <select v-model="archiveSearchMode" aria-label="Mode de recherche dans les archives">
+            <option value="keyword">Mot-clé (FTS)</option>
+            <option value="hybrid">Hybride (RRF)</option>
+            <option value="semantic">Sémantique (pgvector)</option>
+          </select>
+          <button type="submit" :disabled="busy" title="Rechercher dans les archives" aria-label="Rechercher dans les archives">🔍</button>
+          <button v-if="archiveSearchQuery" type="button" @click="resetArchiveSearch" title="Effacer la recherche" aria-label="Effacer la recherche">✕</button>
+        </form>
+      </div>
+
+      <div
+        v-if="archivedTopics.length === 0"
+        style="text-align: center; padding: 2.5rem 1.5rem; background: var(--surface); border: 1px dashed var(--border); border-radius: 0.85rem; color: var(--muted);"
+      >
+        <span>Aucun sujet archivé trouvé{{ archiveSearchQuery ? ' pour « ' + archiveSearchQuery + ' »' : '' }}. Cliquez sur <strong>✓ Lu</strong> sur un sujet du flux principal pour l'archiver ici.</span>
+      </div>
+
+      <div class="grid" v-else>
+        <article v-for="t in archivedTopics" :key="t.topic_id" class="card" style="opacity: 0.92;">
+          <div class="card-header">
+            <div class="badges">
+              <span class="badge" :class="'badge-' + t.category">{{ t.category }}</span>
+              <span
+                v-for="lb in (t.labels || []).filter((x) => x !== t.category)"
+                :key="lb"
+                class="badge"
+                :class="'badge-' + lb"
+              >
+                {{ lb === 'podcast' ? '🎙️ podcast' : lb === 'youtube' ? '▶️ youtube' : lb }}
+              </span>
+              <span v-if="t.creators && t.creators.length" class="pill">
+                👤 {{ t.creators.slice(0, 2).join(' · ') }}
+              </span>
+              <span class="pill">{{ t.source_count }} source(s)</span>
+              <span v-if="t.archived_at" class="pill" style="color: #6ee7b7;">
+                ✓ Lu le {{ formatDate(t.archived_at) }}
+              </span>
+            </div>
+            <span class="pill">topic_id: {{ t.topic_id.slice(0, 8) }}</span>
+          </div>
+
+          <h3 class="card-title">
+            <a :href="t.primary_url" target="_blank" rel="noopener noreferrer">{{ t.title }} ↗</a>
+          </h3>
+          <p class="card-summary">{{ t.summary }}</p>
+
+          <details
+            v-if="t.articles && t.articles.length > 1"
+            style="margin: 0 0 0.85rem; padding: 0.5rem 0.85rem; background: rgba(15, 23, 42, 0.55); border-radius: 0.5rem; border-left: 3px solid var(--primary);"
+          >
+            <summary style="font-size: 0.78rem; color: var(--muted); font-weight: 600; cursor: pointer; user-select: none;">
+              🔗 {{ t.articles.length }} sources regroupées sous ce sujet (topic_id)
+            </summary>
+            <ul style="margin: 0.45rem 0 0.1rem; padding-left: 1.1rem; font-size: 0.83rem;">
+              <li v-for="(art, idx) in t.articles" :key="idx" style="margin-bottom: 0.2rem;">
+                <a :href="art.url" target="_blank" rel="noopener noreferrer">{{ art.title }}</a>
+                <span style="color: var(--muted);"> — {{ art.source_title }}</span>
+              </li>
+            </ul>
+          </details>
+
+          <div class="card-footer">
+            <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center;">
+              <strong>{{ formatHost(t.primary_url) }}</strong>
+              <span>🔄 Dernière source : <time :datetime="t.last_seen_at">{{ formatDate(t.last_seen_at) }}</time></span>
+            </div>
+            <div class="card-actions" role="group" aria-label="Actions sur ce sujet archivé">
+              <button
+                class="icon-btn"
+                style="padding: 0.35rem 0.65rem;"
+                @click="unarchiveTopic(t)"
+                title="Remettre ce sujet dans le flux actif (non lu)"
+              >
+                ↩️ Remettre dans le flux
+              </button>
+              <button
+                class="icon-btn"
+                @click="viewContent(t)"
+                title="Lire le contenu Markdown archivé sur S3"
+              >
+                <span aria-hidden="true">📖</span>
+              </button>
+              <button
+                class="icon-btn"
+                @click="enrichTopic(t)"
+                :disabled="busy"
+                title="Enrichir l'article complet (via MCP abonné ou Trafilatura)"
+              >
+                <span aria-hidden="true">⚡</span>
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ONGLET CRÉATEURS & CHAÎNES MULTI-CANAUX (Podcasts, YouTube, Blogs...) -->
+    <section v-if="activeTab === 'creators'">
+      <div class="toolbar" style="flex-direction: column; align-items: stretch;">
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: space-between; align-items: center;">
+          <div class="cat-filters">
+            <button class="cat-chip" :class="{ active: creatorStatusFilter === 'all' }" @click="creatorStatusFilter = 'all'">
+              Tous ({{ creators.length }})
+            </button>
+            <button class="cat-chip" :class="{ active: creatorStatusFilter === 'enabled' }" @click="creatorStatusFilter = 'enabled'">
+              ✅ Actifs ({{ creators.filter((c) => c.enabled).length }})
+            </button>
+            <button class="cat-chip" :class="{ active: creatorStatusFilter === 'reserve' }" @click="creatorStatusFilter = 'reserve'">
+              ⏸️ En réserve / Perso ({{ creators.filter((c) => !c.enabled).length }})
+            </button>
+            <button class="cat-chip" :class="{ active: creatorStatusFilter === 'multichannel' }" @click="creatorStatusFilter = 'multichannel'">
+              🔗 Multi-canaux ({{ creators.filter((c) => c.total_channels_count >= 2).length }})
+            </button>
+          </div>
+          <div style="display: flex; gap: 0.4rem; align-items: center;">
+            <input v-model="creatorSearch" placeholder="Filtrer un créateur (ex: Micode, HugoDécrypte, Quanta...)" style="min-width: 240px;" />
+            <select v-model="creatorLabelFilter" aria-label="Filtrer par label de créateur">
+              <option value="">Tous labels</option>
+              <option value="podcast">🎙️ podcast</option>
+              <option value="youtube">▶️ youtube</option>
+              <option value="tech">tech</option>
+              <option value="science">science</option>
+              <option value="actu">actu</option>
+              <option value="gaming-hardware">gaming-hardware</option>
+              <option value="perso">perso</option>
+            </select>
+          </div>
+        </div>
+
+        <details style="margin-top: 0.5rem; padding: 0.65rem 0.9rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--border);">
+          <summary style="cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--primary);">
+            ➕ Connecter / Importer des chaînes YouTube (OAuth API v3, @handle, CSV Google Takeout) ou Podcasts (iTunes API)
+          </summary>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.9rem; margin-top: 0.75rem;">
+            <!-- Méthode 1 : API YouTube Data v3 OAuth -->
+            <div style="padding: 0.75rem; background: var(--surface); border-radius: 0.5rem; border: 1px solid var(--border);">
+              <strong style="font-size: 0.83rem; display: block; margin-bottom: 0.35rem;">1. API YouTube Data v3 (subscriptions.list)</strong>
+              <p style="font-size: 0.76rem; color: var(--muted); margin: 0 0 0.5rem;">
+                Récupère automatiquement toutes vos chaînes abonnées via un token OAuth (scope <code>youtube.readonly</code>) ou <code>YOUTUBE_OAUTH_TOKEN</code> dans <code>.env</code>.
+              </p>
+              <form @submit.prevent="syncYouTubeOAuth" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <input v-model="ytOAuthToken" type="password" placeholder="Token OAuth Bearer (optionnel si dans .env)" />
+                <button type="submit" class="primary" :disabled="busy">🔄 Synchroniser mes abonnements YouTube</button>
+              </form>
+            </div>
+
+            <!-- Méthode 2 : @handle / URL / CSV Google Takeout -->
+            <div style="padding: 0.75rem; background: var(--surface); border-radius: 0.5rem; border: 1px solid var(--border);">
+              <strong style="font-size: 0.83rem; display: block; margin-bottom: 0.35rem;">2. Chaînes YouTube (@handle, URL ou CSV Takeout)</strong>
+              <p style="font-size: 0.76rem; color: var(--muted); margin: 0 0 0.5rem;">
+                Collez des <code>@handles</code> (ex: <code>@Underscore_, @Micode</code>), des URLs ou le contenu d'un fichier <code>subscriptions.csv</code> Google Takeout.
+              </p>
+              <form @submit.prevent="importYouTubeChannels" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <input v-model="ytImportInput" placeholder="@handle, URL YouTube ou lignes CSV..." required />
+                <div style="display: flex; gap: 0.4rem;">
+                  <select v-model="ytImportCategory">
+                    <option v-for="cat in categories" :key="cat.slug" :value="cat.slug">{{ cat.slug }}</option>
+                  </select>
+                  <input v-model="ytImportCreator" placeholder="Créateur (auto si vide)" />
+                  <button type="submit" class="primary" :disabled="busy">+ Ajouter YouTube</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Méthode 3 : Podcast via iTunes Search API ou RSS -->
+            <div style="padding: 0.75rem; background: var(--surface); border-radius: 0.5rem; border: 1px solid var(--border);">
+              <strong style="font-size: 0.83rem; display: block; margin-bottom: 0.35rem;">3. Ajouter un Podcast (nom ou URL RSS)</strong>
+              <p style="font-size: 0.76rem; color: var(--muted); margin: 0 0 0.5rem;">
+                Tapez le nom d'un podcast Spotify/Apple (résolution RSS automatique via iTunes Search API) ou son URL RSS directe.
+              </p>
+              <form @submit.prevent="addPodcastBySearch" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <input v-model="podcastQueryInput" placeholder="Ex: Hard Fork, Darknet Diaries ou URL RSS..." required />
+                <div style="display: flex; gap: 0.4rem;">
+                  <select v-model="podcastCategory">
+                    <option v-for="cat in categories" :key="cat.slug" :value="cat.slug">{{ cat.slug }}</option>
+                  </select>
+                  <input v-model="podcastCreator" placeholder="Créateur (auto si vide)" />
+                  <button type="submit" class="primary" :disabled="busy">+ Ajouter Podcast</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <div class="grid">
+        <article v-for="c in filteredCreators" :key="c.creator_slug" class="card">
+          <div class="card-header">
+            <div class="badges">
+              <strong style="font-size: 1.02rem; color: #f8fafc; margin-right: 0.3rem;">👤 {{ c.creator }}</strong>
+              <span
+                v-for="lb in c.labels"
+                :key="lb"
+                class="badge"
+                :class="'badge-' + lb"
+              >
+                {{ lb === 'podcast' ? '🎙️ podcast' : lb === 'youtube' ? '▶️ youtube' : lb }}
+              </span>
+              <span class="pill">{{ c.enabled_channels_count }}/{{ c.total_channels_count }} canal(aux) actif(s)</span>
+            </div>
+            <button @click="toggleCreatorAll(c)" :disabled="busy">
+              {{ c.enabled ? '✅ Créateur actif' : '⏸️ En réserve (Perso)' }}
+            </button>
+          </div>
+
+          <!-- Liste des canaux agrégés sous ce créateur -->
+          <div style="display: flex; flex-direction: column; gap: 0.35rem; margin: 0.55rem 0;">
+            <div
+              v-for="ch in c.channels"
+              :key="ch.source_id"
+              style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.4rem 0.7rem; background: rgba(15, 23, 42, 0.5); border-radius: 0.45rem; font-size: 0.83rem;"
+            >
+              <div style="display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center;">
+                <span class="badge" :class="'badge-' + ch.media_type">
+                  {{ ch.media_type === 'podcast' ? '🎙️ podcast' : ch.media_type === 'youtube' ? '▶️ youtube' : ch.media_type }}
+                </span>
+                <a :href="ch.site_url || ch.url" target="_blank" rel="noopener noreferrer" style="font-weight: 600;">
+                  {{ ch.title }} ↗
+                </a>
+                <span
+                  v-for="lb in (ch.labels || []).filter((x) => x !== ch.media_type)"
+                  :key="lb"
+                  class="badge"
+                  :class="'badge-' + lb"
+                >
+                  {{ lb }}
+                </span>
+                <span class="pill">{{ ch.item_count }} épisode(s)/article(s)</span>
+              </div>
+              <div style="display: flex; gap: 0.45rem; align-items: center;">
+                <a :href="ch.url" target="_blank" rel="noopener" class="pill" title="Flux XML RSS / Atom">Flux XML</a>
+                <button @click="toggleCreatorChannel(ch)" style="padding: 0.2rem 0.55rem; font-size: 0.76rem;">
+                  {{ ch.enabled ? '✅ Actif' : '⏸️ Inactif' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Derniers épisodes / sujets dédoublonnés pour ce créateur -->
+          <details
+            v-if="c.recent_topics && c.recent_topics.length"
+            style="margin-top: 0.45rem; padding: 0.45rem 0.8rem; background: rgba(15, 23, 42, 0.4); border-radius: 0.45rem; border-left: 3px solid var(--primary);"
+          >
+            <summary style="font-size: 0.78rem; color: var(--muted); font-weight: 600; cursor: pointer; user-select: none;">
+              🎬 {{ c.recent_topics.length }} dernière(s) publication(s) agrégée(s) de {{ c.creator }}
+            </summary>
+            <ul style="margin: 0.4rem 0 0.1rem; padding-left: 1.1rem; font-size: 0.82rem;">
+              <li v-for="rt in c.recent_topics" :key="rt.topic_id" style="margin-bottom: 0.22rem;">
+                <a :href="rt.primary_url" target="_blank" rel="noopener noreferrer">{{ rt.title }}</a>
+                <span style="color: var(--muted);"> — via {{ rt.channels_matched.join(' + ') }}</span>
+                <time v-if="rt.last_seen_at" :datetime="rt.last_seen_at" style="color: var(--muted); font-size: 0.75rem; margin-left: 0.25rem;">
+                  ({{ formatDate(rt.last_seen_at) }})
+                </time>
+              </li>
+            </ul>
+          </details>
+        </article>
+      </div>
+    </section>
+
+    <!-- ONGLET 2 : RAPPORT QUOTIDIEN MARKDOWN -->
+    <section v-if="activeTab === 'digest'">
+      <div class="toolbar">
+        <div>
+          <strong>Rapport du {{ latestDigest.date || 'jour' }}</strong>
+          <span v-if="latestDigest.s3_key" class="pill" style="margin-left:0.5rem;">S3: {{ latestDigest.s3_key }}</span>
+        </div>
+        <button class="primary" @click="triggerDigest" :disabled="busy">🔄 Régénérer le rapport</button>
+      </div>
+      <div class="modal-body" style="border-radius: 0.75rem; border: 1px solid var(--border); max-height: 75vh;">{{ latestDigest.markdown || 'Chargement...' }}</div>
+    </section>
+
+    <!-- ONGLET 3 : GESTION DES SOURCES (sources.yaml <-> PostgreSQL) -->
+    <section v-if="activeTab === 'sources'">
+      <div class="toolbar">
+        <form style="display:flex; flex-wrap:wrap; gap:0.5rem; flex:1;" @submit.prevent="addSource">
+          <input v-model="newSource.title" placeholder="Titre de la source (ex: Radio France Sciences)" required />
+          <input v-model="newSource.url" placeholder="URL du flux RSS (https://...)" required />
+          <select v-model="newSource.category">
+            <option v-for="cat in categories" :key="cat.slug" :value="cat.slug">{{ cat.slug }}</option>
+          </select>
+          <button type="submit" class="primary" :disabled="busy">+ Ajouter Flux</button>
+        </form>
+        <button @click="exportSourcesYaml" :disabled="busy">💾 Exporter vers config/sources.yaml</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Créateur</th>
+            <th>Titre</th>
+            <th>Labels</th>
+            <th>Origine</th>
+            <th>Items</th>
+            <th>URL</th>
+            <th>État</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="s in sources" :key="s.source_id">
+            <td><span class="pill">{{ s.kind }}</span></td>
+            <td><span class="pill">👤 {{ s.creator || s.title }}</span></td>
+            <td><strong>{{ s.title }}</strong></td>
+            <td>
+              <div style="display:flex; flex-wrap:wrap; gap:0.25rem;">
+                <span
+                  v-for="lb in (s.labels && s.labels.length ? s.labels : [s.category])"
+                  :key="lb"
+                  class="badge"
+                  :class="'badge-' + lb"
+                >
+                  {{ lb }}
+                </span>
+              </div>
+            </td>
+            <td><span class="pill">{{ s.discovery_method }}</span></td>
+            <td>{{ s.item_count }}</td>
+            <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              <a :href="s.url" target="_blank" rel="noopener">{{ s.url }}</a>
+            </td>
+            <td>
+              <button @click="toggleSource(s)">
+                {{ s.enabled ? '✅ Actif' : '⏸️ Inactif' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- MODALE DE LECTURE S3 / ENRICHISSEMENT MCP -->
+    <div v-if="readerModal.open" class="modal-backdrop" @click.self="readerModal.open = false">
+      <div class="modal">
+        <div class="modal-head">
+          <div>
+            <strong>{{ readerModal.title }}</strong>
+            <div style="font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem;">
+              <span v-if="readerModal.method" class="pill">méthode: {{ readerModal.method }}</span>
+              <span v-if="readerModal.s3_key" class="pill" style="margin-left:0.35rem;">{{ readerModal.s3_key }}</span>
+            </div>
+          </div>
+          <button @click="readerModal.open = false">✕ Fermer</button>
+        </div>
+        <div class="modal-body">
+          <div v-if="readerModal.mcpHint" class="hint-box">
+            🔐 <strong>Information MCP :</strong> {{ readerModal.mcpHint }}
+          </div>
+          {{ readerModal.markdown }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createApp, ref, computed, onMounted } from "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js";
+
+    createApp({
+      setup() {
+        const activeTab = ref("topics");
+        const busy = ref(false);
+        const statusMessage = ref("");
+        const profile = ref({});
+        const categories = ref([
+          { slug: "actu", name: "Actualités & Monde" },
+          { slug: "science", name: "Sciences & Découvertes" },
+          { slug: "tech", name: "Tech & Engineering" },
+          { slug: "gaming-hardware", name: "Hardware & Jeu Vidéo" },
+          { slug: "perso", name: "Perso & Société" },
+        ]);
+        const STORAGE_KEY_CATEGORIES = "morning_review_selected_categories";
+        function loadSavedCategories() {
+          try {
+            const raw = window.localStorage.getItem(STORAGE_KEY_CATEGORIES);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              return parsed.filter((v) => typeof v === "string" && v.trim().length > 0);
+            }
+          } catch {}
+          return [];
+        }
+
+        const selectedCategories = ref(loadSavedCategories());
+        const searchQuery = ref("");
+        const searchMode = ref("hybrid");
+        const sortBy = ref("sources");
+        const sortOrder = ref("desc");
+        const dateField = ref("last_seen_at");
+        const selectedPeriod = ref("");
+        const dateFrom = ref("");
+        const dateTo = ref("");
+        const topics = ref([]);
+        const archivedTopics = ref([]);
+        const archiveSearchQuery = ref("");
+        const archiveSearchMode = ref("keyword");
+        const sources = ref([]);
+        const creators = ref([]);
+        const creatorStatusFilter = ref("all");
+        const creatorLabelFilter = ref("");
+        const creatorSearch = ref("");
+        const ytOAuthToken = ref("");
+        const ytImportInput = ref("");
+        const ytImportCategory = ref("tech");
+        const ytImportCreator = ref("");
+        const podcastQueryInput = ref("");
+        const podcastCategory = ref("tech");
+        const podcastCreator = ref("");
+        const latestDigest = ref({});
+        const newSource = ref({ title: "", url: "", category: "actu", kind: "rss" });
+        const readerModal = ref({ open: false, title: "", markdown: "", s3_key: "", method: "", mcpHint: "" });
+
+        const filteredCreators = computed(() => {
+          return creators.value.filter((c) => {
+            if (creatorStatusFilter.value === "enabled" && c.enabled_count === 0) return false;
+            if ((creatorStatusFilter.value === "disabled" || creatorStatusFilter.value === "reserve") && c.enabled_count > 0) return false;
+            if ((creatorStatusFilter.value === "multi" || creatorStatusFilter.value === "multichannel") && c.channels_count < 2) return false;
+            if (creatorLabelFilter.value && !(c.labels || []).includes(creatorLabelFilter.value)) return false;
+            if (creatorSearch.value.trim()) {
+              const q = creatorSearch.value.trim().toLowerCase();
+              const matchName = (c.creator_name || "").toLowerCase().includes(q);
+              const matchChannel = (c.channels || []).some((ch) => (ch.title || "").toLowerCase().includes(q));
+              if (!matchName && !matchChannel) return false;
+            }
+            return true;
+          });
+        });
+
+        async function loadProfile() {
+          const r = await fetch("/api/v1/profile");
+          if (r.ok) {
+            const data = await r.json();
+            profile.value = data;
+            if (data.categories?.length) categories.value = data.categories;
+          }
+        }
+
+        function appendFilterAndSortParams(params, isSearch = false) {
+          if (selectedCategories.value.length > 0) {
+            params.set("category", selectedCategories.value.join(","));
+          }
+          params.set("date_field", dateField.value);
+          if (selectedPeriod.value) params.set("period", selectedPeriod.value);
+          if (dateFrom.value) params.set("date_from", dateFrom.value);
+          if (dateTo.value) params.set("date_to", dateTo.value);
+          if (isSearch) {
+            const searchSort = sortBy.value === "relevance" ? "score" : sortBy.value;
+            params.set("sort_by", searchSort);
+          } else {
+            params.set("sort_by", sortBy.value);
+          }
+          params.set("sort_order", sortOrder.value);
+        }
+
+        async function loadTopics() {
+          const params = new URLSearchParams({ limit: "120", archived: "exclude" });
+          appendFilterAndSortParams(params, false);
+          const r = await fetch(`/api/v1/topics?${params}`);
+          if (r.ok) topics.value = await r.json();
+        }
+
+        async function loadArchivedTopics() {
+          const params = new URLSearchParams({ limit: "120", archived: "only" });
+          appendFilterAndSortParams(params, false);
+          const r = await fetch(`/api/v1/topics?${params}`);
+          if (r.ok) archivedTopics.value = await r.json();
+        }
+
+        async function openInboxTab() {
+          activeTab.value = "topics";
+          await Promise.all([loadTopics(), loadProfile()]);
+        }
+
+        async function openArchiveTab() {
+          activeTab.value = "archive";
+          if (archiveSearchQuery.value.trim()) {
+            await runArchiveSearch();
+          } else {
+            await loadArchivedTopics();
+          }
+        }
+
+        async function runArchiveSearch() {
+          if (!archiveSearchQuery.value.trim()) {
+            return loadArchivedTopics();
+          }
+          busy.value = true;
+          try {
+            const params = new URLSearchParams({
+              q: archiveSearchQuery.value.trim(),
+              mode: archiveSearchMode.value,
+              archived: "only",
+              limit: "40",
+            });
+            appendFilterAndSortParams(params, true);
+            const r = await fetch(`/api/v1/search?${params}`);
+            if (r.ok) archivedTopics.value = await r.json();
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function resetArchiveSearch() {
+          archiveSearchQuery.value = "";
+          await loadArchivedTopics();
+        }
+
+        async function markAsRead(t) {
+          const r = await fetch(`/api/v1/topics/${t.topic_id}/archive`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ archived: true }),
+          });
+          if (r.ok) {
+            topics.value = topics.value.filter((item) => item.topic_id !== t.topic_id);
+            statusMessage.value = `✓ Sujet marqué comme lu et archivé : "${t.title.slice(0, 55)}..." (sera réactivé si un nouvel article apporte des éléments inédits).`;
+            await loadProfile();
+          }
+        }
+
+        async function markAllDisplayedAsRead() {
+          if (!topics.value.length) return;
+          busy.value = true;
+          try {
+            const ids = topics.value.map((t) => t.topic_id);
+            const r = await fetch("/api/v1/topics/archive-batch", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ topic_ids: ids, archived: true }),
+            });
+            if (r.ok) {
+              const data = await r.json();
+              topics.value = [];
+              statusMessage.value = `🎉 Inbox Zero : ${data.updated_count} sujet(s) marqué(s) comme lu(s) et déplacé(s) dans 🗄️ Archives.`;
+              await loadProfile();
+            }
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function unarchiveTopic(t) {
+          const r = await fetch(`/api/v1/topics/${t.topic_id}/archive`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ archived: false }),
+          });
+          if (r.ok) {
+            archivedTopics.value = archivedTopics.value.filter((item) => item.topic_id !== t.topic_id);
+            statusMessage.value = `↩️ Sujet remis dans le flux principal : "${t.title.slice(0, 55)}..."`;
+            await Promise.all([loadTopics(), loadProfile()]);
+          }
+        }
+
+        async function loadSources() {
+          const r = await fetch("/api/v1/sources");
+          if (r.ok) sources.value = await r.json();
+        }
+
+        async function refreshTopicsOrSearch() {
+          if (activeTab.value === "archive") {
+            if (archiveSearchQuery.value.trim()) {
+              await runArchiveSearch();
+            } else {
+              await loadArchivedTopics();
+            }
+            return;
+          }
+          if (searchQuery.value.trim()) {
+            await runSearch();
+          } else {
+            await loadTopics();
+          }
+        }
+
+        async function toggleSortOrder() {
+          sortOrder.value = sortOrder.value === "desc" ? "asc" : "desc";
+          await refreshTopicsOrSearch();
+        }
+
+        async function resetDateFilters() {
+          selectedPeriod.value = "";
+          dateFrom.value = "";
+          dateTo.value = "";
+          await refreshTopicsOrSearch();
+        }
+
+        async function selectCategory(slug) {
+          if (!slug) {
+            selectedCategories.value = [];
+          } else {
+            const idx = selectedCategories.value.indexOf(slug);
+            if (idx >= 0) {
+              selectedCategories.value.splice(idx, 1);
+            } else {
+              selectedCategories.value.push(slug);
+            }
+          }
+          try {
+            window.localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(selectedCategories.value));
+          } catch {}
+          await refreshTopicsOrSearch();
+        }
+
+        async function runSearch() {
+          if (!searchQuery.value.trim()) {
+            return loadTopics();
+          }
+          busy.value = true;
+          try {
+            const params = new URLSearchParams({
+              q: searchQuery.value.trim(),
+              mode: searchMode.value,
+              archived: "exclude",
+              limit: "30",
+            });
+            appendFilterAndSortParams(params, true);
+            const r = await fetch(`/api/v1/search?${params}`);
+            if (r.ok) topics.value = await r.json();
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function resetSearch() {
+          searchQuery.value = "";
+          await loadTopics();
+        }
+
+        async function voteTopic(t, vote) {
+          const r = await fetch(`/api/v1/topics/${t.topic_id}/feedback`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ vote }),
+          });
+          if (r.ok) {
+            t.user_vote = vote;
+            await loadProfile();
+            statusMessage.value = `Vote enregistré (${vote === 1 ? "+1 Pertinent" : "-1 Non pertinent"}) sur "${t.title.slice(0, 50)}..."`;
+          }
+        }
+
+        async function viewContent(t) {
+          const r = await fetch(`/api/v1/topics/${t.topic_id}/content`);
+          if (r.ok) {
+            const data = await r.json();
+            readerModal.value = {
+              open: true,
+              title: data.title,
+              markdown: data.markdown,
+              s3_key: data.s3_key,
+              method: "s3_archive",
+              mcpHint: "",
+            };
+          }
+        }
+
+        async function corroborateTopic(t) {
+          busy.value = true;
+          statusMessage.value = `Recherche Web de sources corroborantes pour "${t.title.slice(0, 50)}..."`;
+          try {
+            const r = await fetch(`/api/v1/topics/${t.topic_id}/corroborate`, { method: "POST" });
+            const data = await r.json();
+            if (r.ok) {
+              statusMessage.value = `Croisement terminé : +${data.corroborating_sources_added} source(s) web ajoutée(s) (${data.total_source_count} sources au total).`;
+              await loadTopics();
+            } else {
+              statusMessage.value = `Erreur lors du croisement : ${data.detail || r.statusText}`;
+            }
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function enrichTopic(t) {
+          busy.value = true;
+          statusMessage.value = `Enrichissement en cours pour "${t.title.slice(0, 50)}..."`;
+          try {
+            const r = await fetch(`/api/v1/topics/${t.topic_id}/enrich`, { method: "POST" });
+            const data = await r.json();
+            if (r.ok) {
+              t.summary = data.summary_preview || t.summary;
+              statusMessage.value = `Article enrichi (${data.chars_extracted} caractères via ${data.enrichment_method}).`;
+              const contentResp = await fetch(`/api/v1/topics/${t.topic_id}/content`);
+              const contentData = contentResp.ok ? await contentResp.json() : {};
+              readerModal.value = {
+                open: true,
+                title: data.title,
+                markdown: contentData.markdown || data.summary_preview,
+                s3_key: data.s3_key,
+                method: data.enrichment_method,
+                mcpHint: data.mcp_hint || "",
+              };
+            } else {
+              statusMessage.value = `Erreur d'enrichissement : ${data.detail || r.statusText}`;
+            }
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function triggerRssIngest() {
+          busy.value = true;
+          statusMessage.value = "Relève des flux RSS publics (Radio France, Franceinfo, Le Monde, Sciences, Tech)...";
+          try {
+            const r = await fetch("/api/v1/ingest/rss?max_entries_per_feed=6", { method: "POST" });
+            const data = await r.json();
+            statusMessage.value = `Flux RSS relevés : ${data.feeds_polled} flux, ${data.items_ingested} nouveaux articles (${data.unique_topics_touched} sujets).`;
+            await Promise.all([loadTopics(), loadSources()]);
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function triggerGmailIngest() {
+          busy.value = true;
+          statusMessage.value = "Relève des newsletters Gmail en cours (30 derniers jours, max 100 messages)...";
+          try {
+            const r = await fetch("/api/v1/ingest/gmail?max_messages=100&since_days=30", { method: "POST" });
+            const data = await r.json();
+            statusMessage.value = `Gmail relevé : ${data.newsletters_matched} newsletters, ${data.items_ingested} sujets extraits.`;
+            await Promise.all([loadTopics(), loadSources()]);
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function triggerDigest() {
+          busy.value = true;
+          statusMessage.value = "Génération du rapport quotidien Morning Review...";
+          try {
+            const r = await fetch("/api/v1/digests/generate?max_topics=30", { method: "POST" });
+            const data = await r.json();
+            statusMessage.value = `Rapport généré (${data.topics_count} sujets) dans ${data.local_report_path}`;
+            await openDigestTab();
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function triggerRecluster() {
+          busy.value = true;
+          statusMessage.value = "Consolidation hybride des sujets (Hybrid Story Clustering)...";
+          try {
+            const r = await fetch("/api/v1/topics/recluster", { method: "POST" });
+            const data = await r.json();
+            statusMessage.value = `Consolidation terminée : ${data.topics_merged_count} sujets fusionnés (${data.remaining_topics_count} sujets uniques).`;
+            await loadTopics();
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function openDigestTab() {
+          activeTab.value = "digest";
+          const r = await fetch("/api/v1/digests/latest");
+          if (r.ok) latestDigest.value = await r.json();
+        }
+
+        async function loadCreators() {
+          const r = await fetch("/api/v1/creators?include_disabled=true&max_topics_per_creator=8");
+          if (r.ok) creators.value = await r.json();
+        }
+
+        async function openCreatorsTab() {
+          activeTab.value = "creators";
+          await loadCreators();
+        }
+
+        async function toggleCreatorAll(c) {
+          const targetEnabled = !c.all_enabled;
+          const r = await fetch(`/api/v1/creators/${encodeURIComponent(c.creator_slug)}/toggle`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enabled: targetEnabled }),
+          });
+          if (r.ok) {
+            statusMessage.value = `${c.creator_name} : ${targetEnabled ? "tous les canaux activés" : "tous les canaux mis en réserve"}.`;
+            await Promise.all([loadCreators(), loadSources(), loadTopics()]);
+          }
+        }
+
+        async function toggleCreatorChannel(ch) {
+          const r = await fetch(`/api/v1/sources/${ch.source_id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enabled: !ch.enabled }),
+          });
+          if (r.ok) {
+            ch.enabled = !ch.enabled;
+            await Promise.all([loadCreators(), loadSources(), loadTopics()]);
+          }
+        }
+
+        async function syncYouTubeOAuth() {
+          busy.value = true;
+          statusMessage.value = "Synchronisation de vos abonnements YouTube via YouTube Data API v3...";
+          try {
+            const r = await fetch("/api/v1/creators/youtube/sync-oauth", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                oauth_token: ytOAuthToken.value.trim() || null,
+                default_category: ytImportCategory.value || "tech",
+                max_subscriptions: 150,
+              }),
+            });
+            const data = await r.json();
+            if (r.ok) {
+              statusMessage.value = `YouTube OAuth synchronisé : ${data.subscriptions_found} abonnements trouvés (${data.created} créés, ${data.updated} mis à jour).`;
+              await Promise.all([loadCreators(), loadSources()]);
+            } else {
+              statusMessage.value = `Erreur YouTube OAuth : ${data.detail || r.statusText}`;
+            }
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function importYouTubeChannels() {
+          if (!ytImportInput.value.trim()) return;
+          busy.value = true;
+          statusMessage.value = "Résolution et import des chaînes YouTube (@handles / URLs / CSV)...";
+          try {
+            const raw = ytImportInput.value.trim();
+            const isCsv = raw.includes("Channel Id") || raw.includes("Identifiant de la chaîne") || (raw.includes(",http") && raw.includes("UC"));
+            const payload = isCsv
+              ? { csv_text: raw, category: ytImportCategory.value }
+              : {
+                  channels: raw.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean),
+                  category: ytImportCategory.value,
+                  creator_override: ytImportCreator.value.trim() || null,
+                };
+            const r = await fetch("/api/v1/creators/youtube/import", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            const data = await r.json();
+            if (r.ok) {
+              statusMessage.value = `Chaînes YouTube importées : ${data.imported_count} résolue(s) (${data.created} créée(s), ${data.updated} mise(s) à jour).`;
+              ytImportInput.value = "";
+              ytImportCreator.value = "";
+              await Promise.all([loadCreators(), loadSources()]);
+            } else {
+              statusMessage.value = `Erreur import YouTube : ${data.detail || r.statusText}`;
+            }
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function addPodcastBySearch() {
+          if (!podcastQueryInput.value.trim()) return;
+          busy.value = true;
+          statusMessage.value = `Recherche du flux RSS Podcast pour "${podcastQueryInput.value.trim()}"...`;
+          try {
+            const r = await fetch("/api/v1/creators/podcast/add", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                query_or_feed_url: podcastQueryInput.value.trim(),
+                category: podcastCategory.value || "tech",
+                creator_name: podcastCreator.value.trim() || null,
+                enabled: true,
+              }),
+            });
+            const data = await r.json();
+            if (r.ok) {
+              statusMessage.value = `Podcast ajouté : ${data.title} (Créateur : ${data.creator}) — ${data.feed_url}`;
+              podcastQueryInput.value = "";
+              podcastCreator.value = "";
+              await Promise.all([loadCreators(), loadSources()]);
+            } else {
+              statusMessage.value = `Podcast introuvable : ${data.detail || r.statusText}`;
+            }
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function addSource() {
+          busy.value = true;
+          try {
+            const r = await fetch("/api/v1/sources", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(newSource.value),
+            });
+            if (r.ok) {
+              statusMessage.value = `Source ajoutée : ${newSource.value.title}`;
+              newSource.value = { title: "", url: "", category: "actu", kind: "rss" };
+              await Promise.all([loadSources(), loadCreators()]);
+            }
+          } finally {
+            busy.value = false;
+          }
+        }
+
+        async function toggleSource(s) {
+          const r = await fetch(`/api/v1/sources/${s.source_id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enabled: !s.enabled }),
+          });
+          if (r.ok) {
+            s.enabled = !s.enabled;
+            await loadCreators();
+          }
+        }
+
+        async function exportSourcesYaml() {
+          const r = await fetch("/api/v1/sources/export-yaml", { method: "POST" });
+          if (r.ok) {
+            const data = await r.json();
+            statusMessage.value = `Sources exportées vers ${data.exported_to}`;
+          }
+        }
+
+        function formatHost(url) {
+          if (!url) return "";
+          try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; }
+        }
+
+        function formatDate(iso) {
+          if (!iso) return "";
+          return new Date(iso).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+        }
+
+        onMounted(async () => {
+          await Promise.all([loadProfile(), loadTopics(), loadSources(), loadCreators()]);
+        });
+
+        return {
+          activeTab, busy, statusMessage, profile, categories, selectedCategories,
+          searchQuery, searchMode, sortBy, sortOrder, dateField, selectedPeriod, dateFrom, dateTo,
+          topics, archivedTopics, archiveSearchQuery, archiveSearchMode,
+          sources, creators, filteredCreators,
+          creatorStatusFilter, creatorLabelFilter, creatorSearch,
+          ytOAuthToken, ytImportInput, ytImportCategory, ytImportCreator,
+          podcastQueryInput, podcastCategory, podcastCreator,
+          latestDigest, newSource, readerModal,
+          selectCategory, refreshTopicsOrSearch, toggleSortOrder, resetDateFilters,
+          runSearch, resetSearch, voteTopic, viewContent, corroborateTopic, enrichTopic,
+          openInboxTab, openArchiveTab, loadArchivedTopics, runArchiveSearch, resetArchiveSearch,
+          markAsRead, markAllDisplayedAsRead, unarchiveTopic,
+          triggerRssIngest, triggerGmailIngest, triggerDigest, triggerRecluster, openDigestTab,
+          loadCreators, openCreatorsTab, toggleCreatorAll, toggleCreatorChannel,
+          syncYouTubeOAuth, importYouTubeChannels, addPodcastBySearch,
+          addSource, toggleSource, exportSourcesYaml, formatHost, formatDate,
+        };
+      }
+    }).mount("#app");
+  </script>
+</body>
+</html>

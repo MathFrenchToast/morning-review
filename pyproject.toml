@@ -1,0 +1,49 @@
+[project]
+name = "morning-review"
+version = "0.1.0"
+description = "Système de veille multi-sources, recherche hybride pgvector/FTS, auto-profilage et génération du Morning Review"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "sqlalchemy>=2.0.35",
+    "psycopg[binary]>=3.2.0",
+    "pgvector>=0.3.5",
+    "boto3>=1.35.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.5.0",
+    "pyyaml>=6.0.2",
+    "httpx>=0.27.0",
+    "feedparser>=6.0.11",
+    "trafilatura>=1.12.0",
+    "beautifulsoup4>=4.12.3",
+    "lxml>=5.3.0",
+    "fastembed>=0.3.6",
+    "numpy>=1.26.0",
+    "cryptography>=43.0.0",
+    "jinja2>=3.1.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[project.scripts]
+morning-review = "morning_review.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "backend/src/morning_review",
+    "edge_sync/src/mr_edge_sync",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["backend/src", "edge_sync/src"]
+testpaths = ["backend/tests"]
