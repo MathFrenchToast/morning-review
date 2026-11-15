@@ -14,7 +14,7 @@
   "schedules": [
     {
       "id": "morning-review-daily-06h30",
-      "enabled": true,
+      "enabled": false,
       "cronExpression": "30 6 * * *",
       "exactTiming": true,
       "isDaemon": true,

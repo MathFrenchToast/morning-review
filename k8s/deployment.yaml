@@ -133,7 +133,7 @@ spec:
               memory: 384Mi
             limits:
               cpu: 1000m
-              memory: 1Gi
+              memory: 2Gi
       volumes:
         - name: cache-volume
           persistentVolumeClaim:
@@ -161,7 +161,7 @@ spec:
       template:
         metadata:
           labels:
-            app.kubernetes.io/name: morning-review
+            app.kubernetes.io/name: morning-review-cron
             app.kubernetes.io/component: cron-refresh
         spec:
           restartPolicy: OnFailure
@@ -222,7 +222,7 @@ spec:
                   memory: 384Mi
                 limits:
                   cpu: 1000m
-                  memory: 1Gi
+                  memory: 2Gi
           volumes:
             - name: cache-volume
               persistentVolumeClaim:
@@ -250,7 +250,7 @@ spec:
       template:
         metadata:
           labels:
-            app.kubernetes.io/name: morning-review
+            app.kubernetes.io/name: morning-review-cron
             app.kubernetes.io/component: cron-daily-digest
         spec:
           restartPolicy: OnFailure
@@ -312,7 +312,7 @@ spec:
                   memory: 384Mi
                 limits:
                   cpu: 1000m
-                  memory: 1Gi
+                  memory: 2Gi
           volumes:
             - name: cache-volume
               persistentVolumeClaim:
