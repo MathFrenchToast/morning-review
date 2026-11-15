@@ -44,7 +44,7 @@ def infer_newsletter_category(
     combined = f"{title} {subject} {email_lower}".lower()
     if any(k in combined for k in ("science", "scientist", "nature", "cnrs", "physique", "astronomie")):
         return "science"
-    if any(k in combined for k in ("canardpc", "hardware", "gaming", "steam", "jeu")):
+    if any(k in combined for k in ("canardpc", "jeuxvideo", "hardware", "gaming", "steam", "jeu")):
         return "gaming-hardware"
     if any(
         k in combined
@@ -60,6 +60,7 @@ def infer_newsletter_category(
             "golang",
             "tldr",
             "bytebytego",
+            "medium",
             "programming",
             "engineering",
             "cyber",
@@ -91,12 +92,15 @@ CREATOR_NORMALIZATION_RULES: list[tuple[tuple[str, ...], str]] = [
     (("le monde fantastique de danou",), "Le Monde Fantastique De Danou"),
     (("lemonde.fr", "le monde -", "(le monde)", "heure du monde", "chaleur humaine"), "Le Monde"),
     (("canard pc", "canardpc"), "Canard PC"),
+    (("jeuxvideo.com", "jv.com"), "JeuxVideo.com"),
     (("new scientist", "world, the universe and us"), "New Scientist"),
     (("pour la science", "écoute de la science", "ecoute de la science"), "Pour la Science"),
     (("bbc", "global news podcast", "learning english"), "BBC"),
     (("radio france", "franceinfo"), "Radio France / franceinfo"),
     (("tldr",), "TLDR"),
+    (("medium daily digest", "noreply@medium.com"), "Medium Daily Digest"),
     (("next.ink", "entre la chaise et le clavier"), "Next.ink"),
+    (("cafzone", "cafzone.net"), "Cafzone"),
     (("geekzone", "torréfaction", "torrefaction"), "Geekzone"),
     (("clever cloud", "message à caractère informatique"), "Clever Cloud"),
     (("404 media",), "404 Media"),

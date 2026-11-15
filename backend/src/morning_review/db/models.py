@@ -189,6 +189,7 @@ class Topic(Base):
     )
     title: Mapped[str] = mapped_column(String(512), nullable=False)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    subtopics_json: Mapped[list[dict[str, Any]] | None] = mapped_column(JSONB, nullable=True)
     category_slug: Mapped[str] = mapped_column(String(64), default="tech", nullable=False, index=True)
     primary_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     source_count: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
@@ -423,4 +424,42 @@ class UserDigest(Base):
     digest_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     s3_key: Mapped[str] = mapped_column(String(512), nullable=False)
     topics_json: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list, nullable=False)
+    emailed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    emailed_to: Mapped[str | None] = mapped_column(String(320), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class NewsletterConfirmation(Base):
+    """Suivi idempotent des emails de confirmation d'inscription newsletter (double opt-in)."""
+
+    __tablename__ = "newsletter_confirmations"
+    __table_args__ = (
+        UniqueConstraint("user_id", "message_id", name="uq_newsletter_confirmations_user_msgid"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        primary_key=True,
+        default=new_uuid,
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    message_id: Mapped[str] = mapped_column(String(512), nullable=False)
+    sender_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    sender_email: Mapped[str] = mapped_column(String(320), nullable=False)
+    subject: Mapped[str] = mapped_column(String(512), nullable=False)
+    confirmation_url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(32),
+        default="manual_required",
+        nullable=False,
+        index=True,
+        doc="confirmed | manual_required | dismissed",
+    )
+    status_detail: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    processed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

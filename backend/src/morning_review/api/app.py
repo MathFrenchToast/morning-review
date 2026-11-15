@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
+import asyncio
+from contextlib import asynccontextmanager, suppress
+from datetime import datetime, timedelta, timezone
+import logging
 from typing import Any
 from uuid import UUID
 
@@ -10,7 +13,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from morning_review.connectors.gmail_imap import fetch_gmail_newsletters
+from morning_review.connectors.gmail_imap import (
+    dismiss_newsletter_confirmation,
+    fetch_gmail_newsletters,
+    list_newsletter_confirmations,
+)
 from morning_review.connectors.mcp_enricher import enrich_topic_content
 from morning_review.connectors.rss import fetch_rss_sources
 from morning_review.connectors.source_registry import (
@@ -44,7 +51,9 @@ from morning_review.db.models import (
 from morning_review.db.session import SessionLocal, get_db, init_db
 from morning_review.pipeline.ingestion import recluster_existing_topics
 from morning_review.pipeline.synthesizer import (
+    build_topic_deep_detail,
     corroborate_topic_via_web,
+    extract_topic_subtopics,
     get_deduplicated_topic_articles,
     set_topic_archive_state,
 )
@@ -66,12 +75,79 @@ def get_current_user_id() -> UUID:
     return settings.bootstrap_user_id
 
 
+logger = logging.getLogger(__name__)
+
+
+def _run_periodic_ingest_sync(user_id: UUID) -> None:
+    """Exécute en tâche de fond une relève incrémentale Gmail + RSS si la dernière relève date de > 25 min."""
+    try:
+        with SessionLocal() as session:
+            sync_sources_from_yaml(session, user_id=user_id)
+            latest_fetch = session.scalar(select(func.max(Source.last_fetched_at)))
+            now = datetime.now(timezone.utc)
+            if latest_fetch is not None:
+                if latest_fetch.tzinfo is None:
+                    latest_fetch = latest_fetch.replace(tzinfo=timezone.utc)
+                if (now - latest_fetch) < timedelta(minutes=25):
+                    return
+            if settings.gmail_account and settings.gmail_pwd:
+                try:
+                    fetch_gmail_newsletters(session, user_id=user_id, max_messages=25, since_days=7)
+                    export_sources_to_yaml(session, user_id=user_id)
+                except Exception as exc:
+                    logger.warning("Auto-poll Gmail warning: %s", exc)
+            try:
+                fetch_rss_sources(session, user_id=user_id, max_entries_per_feed=5)
+            except Exception as exc:
+                logger.warning("Auto-poll RSS warning: %s", exc)
+
+            # Filet de sécurité autonome : après DAILY_DIGEST_SEND_HOUR (07h00 local), si le digest du jour
+            # n'a pas encore été expédié par e-mail, le démon le génère et l'envoie automatiquement (1 seule fois/jour).
+            local_now = datetime.now().astimezone()
+            if (
+                local_now.hour >= settings.daily_digest_send_hour
+                and settings.gmail_account
+                and settings.gmail_pwd
+                and settings.digest_recipient_email
+            ):
+                today_digest = session.scalar(
+                    select(UserDigest).where(
+                        UserDigest.user_id == user_id,
+                        UserDigest.digest_date == now.date(),
+                    )
+                )
+                if today_digest is None or today_digest.emailed_at is None:
+                    try:
+                        generate_daily_digest(session, user_id=user_id, max_topics=25, send_email=True)
+                    except Exception as exc:
+                        logger.warning("Auto-email daily digest warning: %s", exc)
+    except Exception as exc:
+        logger.warning("Periodic ingest loop error: %s", exc)
+
+
+async def _periodic_ingest_loop(user_id: UUID, interval_seconds: int = 1800) -> None:
+    while True:
+        await asyncio.to_thread(_run_periodic_ingest_sync, user_id)
+        await asyncio.sleep(interval_seconds)
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     user_id = init_db()
     with SessionLocal() as session:
         sync_sources_from_yaml(session, user_id=user_id)
-    yield
+    bg_task = (
+        asyncio.create_task(_periodic_ingest_loop(user_id, interval_seconds=1800))
+        if settings.enable_background_ingest
+        else None
+    )
+    try:
+        yield
+    finally:
+        if bg_task is not None:
+            bg_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await bg_task
 
 
 app = FastAPI(
@@ -137,7 +213,7 @@ class CreatorToggleRequest(BaseModel):
 
 
 class FeedbackRequest(BaseModel):
-    vote: int = Field(..., description="+1 pour pertinent, -1 pour non pertinent")
+    vote: int = Field(..., description="+1 pour pertinent, 0 pour neutre (retirer le vote), -1 pour non pertinent")
 
 
 class TopicArchiveRequest(BaseModel):
@@ -455,8 +531,8 @@ def api_list_topics(
     date_to: str | None = Query(default=None, description="Borne de fin (YYYY-MM-DD ou ISO-8601)"),
     sort_by: str = Query(
         default="sources",
-        pattern="^(sources|last_seen_at|first_seen_at|latest_source|first_source|relevance)$",
-        description="Critère de tri : sources | last_seen_at (dernière source) | first_seen_at (1re source) | relevance",
+        pattern="^(sources|sources_all|last_seen_at|first_seen_at|latest_source|first_source|relevance)$",
+        description="Critère de tri : sources (jour + sources) | sources_all (total sources) | last_seen_at | first_seen_at | relevance",
     ),
     sort_order: str = Query(default="desc", pattern="^(desc|asc)$"),
     limit: int = Query(default=40, ge=1, le=200),
@@ -514,6 +590,7 @@ def api_list_topics(
         stmt = stmt.where(target_date_col <= end_dt)
 
     is_asc = sort_order.lower() == "asc"
+    day_bucket = func.date_trunc("day", Topic.last_seen_at)
     if sort_by in ("first_seen_at", "first_source"):
         stmt = stmt.order_by(
             Topic.first_seen_at.asc() if is_asc else Topic.first_seen_at.desc(),
@@ -524,8 +601,16 @@ def api_list_topics(
             Topic.last_seen_at.asc() if is_asc else Topic.last_seen_at.desc(),
             Topic.source_count.desc(),
         )
-    else:
+    elif sort_by == "sources_all":
         stmt = stmt.order_by(
+            Topic.source_count.asc() if is_asc else Topic.source_count.desc(),
+            Topic.last_seen_at.asc() if is_asc else Topic.last_seen_at.desc(),
+        )
+    else:
+        # Tri par défaut 'sources' (Fraîcheur du jour & Sources) :
+        # regroupe par jour calendaire (ex: aujourd'hui 14 nov. d'abord), puis par nombre de sources décroissant !
+        stmt = stmt.order_by(
+            day_bucket.asc() if is_asc else day_bucket.desc(),
             Topic.source_count.asc() if is_asc else Topic.source_count.desc(),
             Topic.last_seen_at.asc() if is_asc else Topic.last_seen_at.desc(),
         )
@@ -551,6 +636,7 @@ def api_list_topics(
                 {
                     "title": a["title"],
                     "url": a["url"],
+                    "excerpt": a.get("excerpt") or "",
                     "source_title": a["source_title"],
                     "kind": a.get("kind"),
                     "labels": a.get("labels") or [],
@@ -560,6 +646,7 @@ def api_list_topics(
             )
         first_iso = t.first_seen_at.isoformat() if t.first_seen_at else None
         last_iso = t.last_seen_at.isoformat() if t.last_seen_at else None
+        subtopics = extract_topic_subtopics(db, t, dedup_articles)
         result.append(
             {
                 "topic_id": str(t.id),
@@ -568,12 +655,14 @@ def api_list_topics(
                 "labels": topic_labels,
                 "creators": topic_creators,
                 "summary": t.summary,
+                "subtopics": subtopics,
                 "primary_url": t.primary_url,
                 "source_count": len(dedup_articles) or t.source_count,
                 "visibility": t.visibility,
                 "user_vote": feedback_map.get(t.id, 0),
                 "is_archived": bool(st.is_archived) if st else False,
                 "archived_at": st.archived_at.isoformat() if (st and st.archived_at) else None,
+                "reactivated_at": st.reactivated_at.isoformat() if (st and st.reactivated_at) else None,
                 "has_updates": bool(st.has_updates) if st else False,
                 "updates_summary": st.updates_summary if st else None,
                 "new_articles_count": (st.new_articles_count or 0) if st else 0,
@@ -631,6 +720,24 @@ def api_archive_topic(
             user_id=user_id,
             topic_id=topic_id,
             archived=payload.archived,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/topics/{topic_id}/detail")
+def api_get_topic_detail(
+    topic_id: UUID,
+    auto_enrich: bool = Query(default=True, description="Enrichit automatiquement le sujet si le texte stocké est court"),
+    db: Session = Depends(get_db),
+    user_id: UUID = Depends(get_current_user_id),
+) -> dict[str, Any]:
+    try:
+        return build_topic_deep_detail(
+            db,
+            user_id=user_id,
+            topic_id=topic_id,
+            auto_enrich=auto_enrich,
         )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
@@ -768,6 +875,8 @@ def api_get_latest_digest(
         "user_id": str(user_id),
         "date": digest.digest_date.isoformat(),
         "s3_key": digest.s3_key,
+        "emailed_at": digest.emailed_at.isoformat() if digest.emailed_at else None,
+        "emailed_to": digest.emailed_to,
         "topics": digest.topics_json,
         "markdown": md_text,
     }
@@ -776,10 +885,120 @@ def api_get_latest_digest(
 @app.post("/api/v1/digests/generate")
 def api_generate_digest(
     max_topics: int = Query(default=25, ge=1, le=100),
+    send_email: bool = Query(default=False, description="Expédier le digest par e-mail (idempotent 1 fois/jour)"),
+    force_send: bool = Query(default=False, description="Forcer le renvoi même si déjà expédié aujourd'hui"),
     db: Session = Depends(get_db),
     user_id: UUID = Depends(get_current_user_id),
 ) -> dict[str, Any]:
-    return generate_daily_digest(db, user_id=user_id, max_topics=max_topics)
+    return generate_daily_digest(
+        db,
+        user_id=user_id,
+        max_topics=max_topics,
+        send_email=send_email,
+        force_send=force_send,
+    )
+
+
+@app.get("/api/v1/newsletters/confirmations")
+def api_list_newsletter_confirmations(
+    include_dismissed: bool = Query(default=False),
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    user_id: UUID = Depends(get_current_user_id),
+) -> list[dict[str, Any]]:
+    return list_newsletter_confirmations(
+        db,
+        user_id=user_id,
+        include_dismissed=include_dismissed,
+        limit=limit,
+    )
+
+
+@app.post("/api/v1/newsletters/confirmations/{conf_id}/dismiss")
+def api_dismiss_newsletter_confirmation(
+    conf_id: UUID,
+    db: Session = Depends(get_db),
+    user_id: UUID = Depends(get_current_user_id),
+) -> dict[str, Any]:
+    try:
+        return dismiss_newsletter_confirmation(db, user_id=user_id, conf_id=conf_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/pourlascience/latest")
+def api_pourlascience_latest(
+    category: str = Query(default="", description="Rubrique optionnelle (ex: physique, biologie, astrophysique, mathematiques)"),
+    limit: int = Query(default=20, ge=1, le=60),
+) -> list[dict[str, Any]]:
+    from morning_review.connectors.mcp_enricher import list_pourlascience_latest_articles
+
+    try:
+        return list_pourlascience_latest_articles(category=category, limit=limit)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/pourlascience/issues")
+def api_pourlascience_issues(
+    source: str = Query(default="all", description="all | pls (mensuels) | dpls (hors-séries)"),
+    year: int | None = Query(default=None, description="Année de parution (ex: 2026, 2025...)"),
+    issue_number: int | None = Query(default=None, description="Numéro (ex: 589, 580, 133)"),
+    q: str = Query(default="", description="Recherche dans le titre du dossier"),
+    page: int = Query(default=1, ge=1, le=100),
+    limit: int = Query(default=24, ge=1, le=60),
+) -> list[dict[str, Any]]:
+    from morning_review.connectors.mcp_enricher import list_pourlascience_issues
+
+    try:
+        return list_pourlascience_issues(
+            source=source,
+            year=year,
+            issue_number=issue_number,
+            query=q,
+            page=page,
+            limit=limit,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/pourlascience/issues/{issue_ref}")
+def api_pourlascience_issue_sommaire(
+    issue_ref: str,
+) -> dict[str, Any]:
+    from morning_review.connectors.mcp_enricher import get_pourlascience_issue_articles
+
+    try:
+        return get_pourlascience_issue_articles(issue_ref)
+    except (RuntimeError, ValueError) as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/pourlascience/search")
+def api_pourlascience_search(
+    q: str = Query(..., min_length=2, description="Mots-clés à rechercher dans les archives Pour la Science"),
+    page: int = Query(default=1, ge=1, le=50),
+    limit: int = Query(default=20, ge=1, le=50),
+) -> list[dict[str, Any]]:
+    from morning_review.connectors.mcp_enricher import search_pourlascience_articles
+
+    try:
+        return search_pourlascience_articles(query=q, page=page, limit=limit)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/pourlascience/article")
+def api_pourlascience_read_article(
+    url: str = Query(..., description="URL de l'article sur www.pourlascience.fr"),
+) -> dict[str, Any]:
+    from morning_review.connectors.mcp_enricher import _fetch_via_agent_auth_mcp
+
+    try:
+        return _fetch_via_agent_auth_mcp("tools.pourlascience.client:PourLaScienceClient", url)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 if FRONTEND_DIR.exists():

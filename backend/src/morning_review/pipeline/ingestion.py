@@ -69,6 +69,25 @@ GENERIC_OR_STOPWORDS = {
     "devops", "infosec", "dev", "pro", "explore", "edition", "guide", "guides", "started",
     "today", "hours", "github", "repo", "internet", "customer", "customers", "traffic",
     "company", "companies", "tech", "science", "news", "article", "podcast", "podcasts",
+    # Jours, mois et termes génériques de grilles d'antenne (exclus des entités nommées)
+    "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche",
+    "janvier", "fevrier", "février", "mars", "avril", "mai", "juin", "juillet",
+    "aout", "août", "septembre", "octobre", "novembre", "decembre", "décembre",
+    "journal", "emission", "émission", "invite", "invité", "entretien", "chronique",
+    "revue", "presse", "internationale", "episode", "épisode", "video", "vidéo",
+    # Termes génériques de listicles, tutoriels et formats éditoriaux
+    "top", "best", "tool", "tools", "outil", "outils", "list", "liste", "tips", "tricks",
+    "ways", "things", "every", "need", "know", "use", "using", "build", "building",
+    "intro", "introduction", "tutorial", "complet", "complete", "review", "overview",
+    "comparison", "versus", "comment", "pourquoi", "quand", "quel", "quelle", "quels", "quelles",
+    "home", "self", "hosted", "local", "modern", "simple", "fast", "free", "part",
+    # Grands domaines académiques ou disciplinaires (catégories, non événements spécifiques)
+    "physique", "physics", "quantique", "quantum", "chimie", "biologie", "mathématiques",
+    "mathematiques", "maths", "histoire", "philosophie", "économie", "economie", "politique",
+    "société", "societe", "culture", "numérique", "numerique", "informatique", "software",
+    "hardware", "engineering", "architecture", "system", "systems", "système", "systèmes",
+    "network", "networks", "réseau", "réseaux", "database", "databases", "infrastructure",
+    " révolution", "revolution", "invisible", "devenu", "devient",
 }
 
 EVENT_CONCEPT_GROUPS = [
@@ -297,15 +316,90 @@ def is_promotional_or_self_promo_link(
     return False, ""
 
 
+GENERIC_BROADCAST_PLACEHOLDER_RE = re.compile(
+    r"(?:,?\s*émission)?\s+du\s+(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+\d{1,2}\s+"
+    r"(?:janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre)"
+    r"\s+20\d{2}\s*$",
+    re.IGNORECASE,
+)
+
+
+def is_generic_dated_broadcast_placeholder(title: str | None, excerpt: str | None = None) -> bool:
+    """Détecte les entrées génériques de grille horaire radio/podcast sans sujet éditorial
+    (ex: 'JOURNAL DE 09H00 du samedi 14 novembre 2026', 'Le 18/20 du vendredi 13 novembre 2026')
+    qui n'ont pas de description spécifique.
+    """
+    t = " ".join((title or "").split())
+    if not t or not GENERIC_BROADCAST_PLACEHOLDER_RE.search(t):
+        return False
+    clean_ex = clean_aggregator_noise(excerpt or "")
+    if clean_ex.lower() == t.lower():
+        clean_ex = ""
+    return len(clean_ex) < 35
+
+
 def clean_aggregator_noise(text_str: str) -> str:
     if not text_str:
         return ""
     s = re.sub(r"Article URL:\s*https?://\S+\s*", "", text_str)
     s = re.sub(r"Comments URL:\s*https?://\S+\s*", "", s)
     s = re.sub(r"Points:\s*\d+\s*#?\s*Comments:\s*\d+", "", s)
-    s = re.sub(r"\(\d+\s*minute\s*read\)", "", s, flags=re.IGNORECASE)
+    s = re.sub(r"\(\d+\s*min(?:ute)?s?\s*read\)", "", s, flags=re.IGNORECASE)
+    s = re.sub(r"\([^()]{1,40}·\s*\d+\s*min(?:ute)?s?\s*read\)", "", s, flags=re.IGNORECASE)
     s = re.sub(r"\(GitHub\s*Repo\)", "", s, flags=re.IGNORECASE)
+    s = re.sub(r"\bMember-only story\b", "", s, flags=re.IGNORECASE)
+    s = re.sub(
+        r"\bHi everyone,\s*welcome back\.?\s*(?:Today,\s*I will be going over\s*[.…]*\s*)?",
+        "",
+        s,
+        flags=re.IGNORECASE,
+    )
+    # Supprime les encarts autopromotionnels multi-lignes [Entretien ...](url) ou [Ajouter ... Google](url)
+    s = re.sub(
+        r"\[\s*(?:Entretien|À lire aussi|Lire aussi|Ajouter [^\]]+ à vos sources)[\s\S]*?\]\(https?://[^)]*\)",
+        " ",
+        s,
+        flags=re.IGNORECASE,
+    )
+    # Nettoie les liens Markdown coupés en fin de chaîne ex: "...](https://www.pourlascience.fr/sr/..."
+    s = re.sub(r"\]\(https?://\S*$", "", s)
+    # Nettoie les métadonnées techniques d'en-tête Markdown (- **Source RSS** : ..., - **Lien** : ...)
+    s = re.sub(
+        r"-\s*\*\*(?:Source(?:\s+RSS|\s+croisée)?|Lien|URL|Édition\s+Newsletter|Newsletter\s+NYT|Article\s+principal|Catégorie|Publié)[^*]*\*\*\s*:\s*(?:https?://\S+|[^\n•]+?(?=\s+-\s+\*\*|\s*•|\n|$))",
+        " ",
+        s,
+        flags=re.IGNORECASE,
+    )
+    # Supprime les titres Markdown '#' répétés en tête d'extrait ou derrière un tag [Source]
+    s = re.sub(r"(^|\[\s*[^\]]+\s*\]\s*)#+\s*", r"\1", s)
     return " ".join(s.split())
+
+
+def _extract_editorial_body_without_headers(markdown_body: str, title: str = "") -> str:
+    """Extrait uniquement les paragraphes éditoriaux d'un corps Markdown en ignorant
+    le titre `# ...` et les lignes de métadonnées `- **Source RSS** : ...`, `- **Lien** : ...`.
+    """
+    if not markdown_body:
+        return ""
+    kept_lines: list[str] = []
+    norm_title = " ".join((title or "").split()).lower()
+    for raw_line in markdown_body.splitlines():
+        line = raw_line.strip()
+        if not line or line == "---":
+            continue
+        if line.startswith("#"):
+            continue
+        if re.match(
+            r"^-\s*\*\*(?:Source|Lien|URL|Édition|Newsletter|Article|Catégorie|Publié|Méthode|Paywall)[^*]*\*\*\s*:",
+            line,
+            flags=re.IGNORECASE,
+        ):
+            continue
+        cleaned = clean_aggregator_noise(line)
+        if not cleaned or cleaned.lower() == norm_title:
+            continue
+        kept_lines.append(cleaned)
+    return " ".join(kept_lines).strip()
 
 
 def extract_story_profile(title: str, summary: str) -> tuple[set[str], set[int]]:
@@ -358,8 +452,8 @@ def compute_hybrid_story_match(
         bonus += 0.18
     hybrid_score = round(cos_sim + bonus, 4)
 
-    # 1. Forte proximité sémantique + au moins 1 sujet commun
-    if cos_sim >= 0.74 and len(shared_subj) >= 1:
+    # 1. Très forte proximité sémantique + au moins 1 entité spécifique commune
+    if cos_sim >= 0.78 and len(shared_subj) >= 1:
         return True, hybrid_score
     # 2. Même événement caractérisé (ex: panne/outage, faille/breach) sur la même entité (y compris FR <-> EN)
     if cos_sim >= 0.40 and bool(shared_concepts) and len(shared_subj) >= 1:
@@ -367,8 +461,8 @@ def compute_hybrid_story_match(
     # 3. Proximité sémantique modérée-haute + au moins 2 entités spécifiques communes dans le titre
     if cos_sim >= 0.62 and len(shared_subj) >= 2:
         return True, hybrid_score
-    # 4. Quasi-identique sémantiquement (ex: même titre traduit ou reformulé)
-    if cos_sim >= settings.topic_similarity_threshold:
+    # 4. Quasi-identique sémantiquement (ex: même titre traduit ou reformulé) avec garde-fou sur les entités distinctes
+    if cos_sim >= settings.topic_similarity_threshold and (len(shared_subj) >= 1 or not (title_subj_a and title_subj_b)):
         return True, hybrid_score
 
     return False, hybrid_score
@@ -461,7 +555,8 @@ def ingest_content_item(
     """
     clean_title = " ".join((title or "Sans titre").split())[:500]
     clean_body = (markdown_body or clean_title).strip()
-    raw_excerpt = " ".join((excerpt or clean_body[:500]).split())[:600]
+    editorial_fallback = _extract_editorial_body_without_headers(clean_body, clean_title)
+    raw_excerpt = " ".join(((excerpt or "").strip() or editorial_fallback).split())[:600]
     clean_excerpt = clean_aggregator_noise(raw_excerpt)
     norm_url = canonicalize_url(raw_url) or f"urn:morning-review:{source.id}:{external_id or clean_title[:64]}"
     meta_dict = source.metadata_json or {}
@@ -591,7 +686,7 @@ def ingest_content_item(
             visibility=visibility,
             user_id=owner_id,
             title=clean_title,
-            summary=curator_note or clean_excerpt or raw_excerpt,
+            summary=curator_note or clean_excerpt or clean_title,
             category_slug=category_slug,
             primary_url=norm_url,
             source_count=1,
@@ -621,7 +716,8 @@ def ingest_content_item(
             TopicItem.item_id == item.id,
         )
     )
-    if existing_link is None:
+    is_new_topic_item = existing_link is None
+    if is_new_topic_item:
         session.add(
             TopicItem(
                 topic_id=topic.id,
@@ -661,15 +757,27 @@ def ingest_content_item(
             session,
             topic=topic,
             new_title=clean_title,
-            new_text=f"{curator_note or ''}\n{clean_excerpt or clean_body[:800]}".strip(),
+            new_text=f"{curator_note or ''}\n{clean_excerpt or editorial_fallback[:800]}".strip(),
             source_title=source.title,
         )
 
     sync_topic_source_dates(session, topic)
     dedup_articles = get_deduplicated_topic_articles(session, topic.id)
     topic.source_count = max(1, len(dedup_articles))
-    if topic.source_count >= 2:
-        synthesize_topic_summary(session, topic)
+
+    # Enrichissement profond automatique dès l'ingestion pour les articles de digests tronqués (ex: Medium Daily Digest)
+    import os
+    if not os.environ.get("PYTEST_CURRENT_TEST") and norm_url.startswith(("http://", "https://")):
+        from morning_review.connectors.mcp_enricher import _detect_mcp_tool, enrich_topic_content
+
+        mcp_tool, _ = _detect_mcp_tool(norm_url)
+        if mcp_tool and len(clean_excerpt) < 280:
+            try:
+                enrich_topic_content(session, user_id=user_id, topic_id=topic.id)
+            except Exception:
+                pass
+
+    synthesize_topic_summary(session, topic)
 
     return item, topic, True
 
@@ -727,9 +835,33 @@ def recluster_existing_topics(session: Session, user_id: UUID) -> dict[str, Any]
             session.delete(pt)
     session.flush()
 
-    # 2. Nettoyage des résumés hnrss.org ("Article URL: ... Comments URL: ...") et recalcul de leur embedding
+    # 1d. Purge des grilles horaires génériques sans description ("JOURNAL DE 09H00 du samedi...")
+    for ci in session.scalars(select(CanonicalItem)).all():
+        if is_generic_dated_broadcast_placeholder(ci.title, ci.excerpt):
+            session.delete(ci)
+        elif ci.excerpt and ("Source RSS" in ci.excerpt or "Source croisée" in ci.excerpt or ci.excerpt.startswith("# ")):
+            cleaned_ex = clean_aggregator_noise(ci.excerpt)
+            if cleaned_ex.lower() == (ci.title or "").lower():
+                cleaned_ex = ""
+            ci.excerpt = cleaned_ex
+    session.flush()
+
+    for orphan_tp in session.scalars(select(Topic)).all():
+        rem_items = session.scalars(select(CanonicalItem).where(CanonicalItem.topic_id == orphan_tp.id)).all()
+        if not rem_items:
+            session.delete(orphan_tp)
+    session.flush()
+
+    # 2. Nettoyage des résumés hnrss.org / Source RSS et recalcul de leur embedding
     noisy_topics = session.scalars(
-        select(Topic).where(Topic.summary.like("%Comments URL: https://news.ycombinator.com%"))
+        select(Topic).where(
+            or_(
+                Topic.summary.like("%Comments URL: https://news.ycombinator.com%"),
+                Topic.summary.ilike("%Source RSS%"),
+                Topic.summary.ilike("%Source croisée%"),
+                Topic.summary.like("# %"),
+            )
+        )
     ).all()
     for nt in noisy_topics:
         cleaned = clean_aggregator_noise(nt.summary or "")

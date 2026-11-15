@@ -1,0 +1,19 @@
+{
+  "auto-rearm-schedules": {
+    "enabled": true,
+    "SessionStart": [
+      {
+        "type": "command",
+        "timeout": 10,
+        "command": "python3 ./rearm_hook.py"
+      }
+    ],
+    "PreInvocation": [
+      {
+        "type": "command",
+        "timeout": 10,
+        "command": "python3 ./rearm_hook.py"
+      }
+    ]
+  }
+}

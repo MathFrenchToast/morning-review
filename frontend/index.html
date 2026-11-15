@@ -148,9 +148,105 @@
       border: 1px solid var(--border);
       border-radius: 0.75rem;
       padding: 1rem 1.2rem;
-      transition: border-color 0.15s ease;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+      cursor: pointer;
     }
     .card:hover { border-color: #475569; }
+    .card.selected-card {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35), inset 4px 0 0 var(--primary);
+      background: #223049;
+    }
+    .kbd-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: center;
+      padding: 0.5rem 0.9rem;
+      margin-bottom: 0.9rem;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      font-size: 0.79rem;
+      color: var(--muted);
+    }
+    kbd {
+      display: inline-block;
+      padding: 0.1rem 0.42rem;
+      font-size: 0.74rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: #f8fafc;
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-bottom-width: 2px;
+      border-radius: 0.3rem;
+      margin-right: 0.2rem;
+    }
+    .detail-body {
+      padding: 1.35rem 1.5rem;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      background: #0f172a;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 1.15rem;
+    }
+    .core-box {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-left: 4px solid var(--primary);
+      border-radius: 0.65rem;
+      padding: 1rem 1.2rem;
+    }
+    .core-box h4 {
+      margin: 0 0 0.55rem;
+      font-size: 0.95rem;
+      color: #7dd3fc;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .core-paragraph {
+      margin: 0 0 0.7rem;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: #f1f5f9;
+    }
+    .core-paragraph:last-child { margin-bottom: 0; }
+    .takeaways-box {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 0.65rem;
+      padding: 0.95rem 1.2rem;
+    }
+    .takeaways-box h4 {
+      margin: 0 0 0.6rem;
+      font-size: 0.92rem;
+      color: #e2e8f0;
+    }
+    .takeaway-list {
+      margin: 0;
+      padding-left: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+    .sources-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .source-card {
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 0.55rem;
+      padding: 0.75rem 1rem;
+    }
     .card-header {
       display: flex;
       flex-wrap: wrap;
@@ -335,8 +431,9 @@
         <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; width: 100%; padding-top: 0.55rem; border-top: 1px solid rgba(255, 255, 255, 0.06); font-size: 0.8rem;">
           <span style="color: var(--muted); font-weight: 600;">Trier :</span>
           <select v-model="sortBy" @change="refreshTopicsOrSearch" aria-label="Trier les sujets par">
-            <option value="sources">Sources &amp; Fraîcheur</option>
-            <option value="last_seen_at">Date de la source la + récente</option>
+            <option value="sources">Fraîcheur (jour) &amp; Sources</option>
+            <option value="last_seen_at">Date/heure exacte (+ récente)</option>
+            <option value="sources_all">Max sources (toutes dates)</option>
             <option value="first_seen_at">Date de la 1re source</option>
             <option value="relevance">Pertinence profil</option>
           </select>
@@ -395,6 +492,51 @@
       </div>
 
       <div
+        v-if="newsletterConfirmations.length > 0"
+        style="margin-bottom: 0.9rem; padding: 0.75rem 1rem; background: rgba(30, 41, 59, 0.92); border: 1px solid rgba(56, 189, 248, 0.45); border-radius: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;"
+      >
+        <div style="font-size: 0.85rem; font-weight: 700; color: #7dd3fc;">
+          ✉️ Inscriptions Newsletters détectées sur mathieuv.alterai@gmail.com ({{ newsletterConfirmations.length }})
+        </div>
+        <div
+          v-for="c in newsletterConfirmations"
+          :key="c.id"
+          style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; font-size: 0.84rem; padding: 0.45rem 0.65rem; background: rgba(15, 23, 42, 0.65); border-radius: 0.5rem;"
+        >
+          <div>
+            <span v-if="c.status === 'confirmed'" class="badge" style="background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.45); margin-right: 0.45rem;">✅ Auto-validée</span>
+            <span v-else class="badge" style="background: rgba(245,158,11,0.22); color: #fcd34d; border: 1px solid rgba(245,158,11,0.45); margin-right: 0.45rem;">⚠️ 1-clic requis</span>
+            <strong>{{ c.sender_name }}</strong>
+            <span style="color: var(--muted);">({{ c.sender_email }}) — {{ c.subject }}</span>
+          </div>
+          <div style="display: flex; gap: 0.45rem; align-items: center;">
+            <a
+              v-if="c.status !== 'confirmed'"
+              :href="c.confirmation_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="padding: 0.28rem 0.65rem; border-radius: 0.4rem; background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.55); color: #fde68a; text-decoration: none; font-weight: 600;"
+            >
+              Valider l'inscription ↗
+            </a>
+            <button type="button" @click="dismissConfirmation(c.id)" style="padding: 0.25rem 0.55rem; font-size: 0.78rem;">
+              ✓ Masquer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="kbd-bar" role="region" aria-label="Raccourcis clavier">
+        <strong style="color: var(--text);">⌨️ Raccourcis clavier :</strong>
+        <span><kbd>↑</kbd><kbd>↓</kbd> Monter / Descendre ({{ topics.length ? (selectedTopicIndex + 1) + '/' + topics.length : '0/0' }})</span>
+        <span><kbd>Entrée</kbd> Vue détail approfondie</span>
+        <span><kbd>Espace</kbd> Marquer comme lu</span>
+        <span><kbd>Suppr</kbd> Dislike + Archiver (👎+🗄️)</span>
+        <span><kbd>+</kbd> Liker (👍)</span>
+        <span><kbd>-</kbd> Enlever le like / J'aime pas (👎)</span>
+      </div>
+
+      <div
         v-if="topics.length === 0"
         style="text-align: center; padding: 3rem 1.5rem; background: var(--surface); border: 1px dashed var(--border); border-radius: 0.85rem; color: var(--muted);"
       >
@@ -405,20 +547,32 @@
 
       <div class="grid" v-else>
         <article
-          v-for="t in topics"
+          v-for="(t, idx) in topics"
           :key="t.topic_id"
+          :id="'topic-card-' + idx"
           class="card"
-          :style="t.has_updates ? 'border-color: rgba(245, 158, 11, 0.65); box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25);' : ''"
+          :class="{ 'selected-card': selectedTopicIndex === idx }"
+          :style="t.has_updates && selectedTopicIndex !== idx ? 'border-color: rgba(245, 158, 11, 0.65); box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25);' : ''"
+          @click="selectedTopicIndex = idx"
+          @dblclick="openTopicDetail(t, idx)"
         >
           <div class="card-header">
             <div class="badges">
               <span
+                v-if="selectedTopicIndex === idx"
+                class="badge"
+                style="background: rgba(56, 189, 248, 0.22); color: #7dd3fc; border: 1px solid var(--primary);"
+                title="Article sélectionné au clavier — Appuyez sur Entrée pour ouvrir la Vue Détail approfondie"
+              >
+                ⌨️ Sélectionné
+              </span>
+              <span
                 v-if="t.has_updates"
                 class="badge"
                 style="background: rgba(245, 158, 11, 0.22); color: #fde68a; border: 1px solid #f59e0b;"
-                title="Ce sujet avait été archivé mais a été réactivé car un nouvel article apporte des éléments inédits"
+                title="Ce sujet avait été archivé mais a été réactivé suite à l'analyse LLM d'un nouvel apport factuel"
               >
-                🆕 Nouveauté (+{{ t.new_articles_count || 1 }})
+                🆕 màj ({{ formatDate(t.reactivated_at || t.last_seen_at) }})
               </span>
               <span class="badge" :class="'badge-' + t.category">{{ t.category }}</span>
               <span
@@ -439,23 +593,40 @@
             <span class="pill">topic_id: {{ t.topic_id.slice(0, 8) }}</span>
           </div>
 
-          <h3 class="card-title">
-            <a :href="t.primary_url" target="_blank" rel="noopener noreferrer">{{ t.title }} ↗</a>
+          <h3 class="card-title" style="display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem;">
+            <a :href="t.primary_url" target="_blank" rel="noopener noreferrer" @click.stop>{{ t.title }} ↗</a>
           </h3>
 
           <div
             v-if="t.has_updates && t.updates_summary"
             style="margin: 0 0 0.65rem; padding: 0.55rem 0.8rem; background: rgba(245, 158, 11, 0.13); border: 1px solid rgba(245, 158, 11, 0.45); border-radius: 0.5rem; font-size: 0.84rem; color: #fef3c7;"
           >
-            <strong style="color: #fbbf24;">🆕 Nouveauté depuis votre lecture :</strong>
+            <strong style="color: #fbbf24;">màj ({{ formatDate(t.reactivated_at || t.last_seen_at) }}) :</strong>
             {{ t.updates_summary }}
           </div>
 
           <p class="card-summary">{{ t.summary }}</p>
 
+          <div
+            v-if="t.subtopics && t.subtopics.length > 1"
+            style="margin: 0 0 0.75rem; padding: 0.5rem 0.8rem; background: rgba(30, 41, 59, 0.5); border-radius: 0.5rem; border-left: 3px solid #a78bfa; font-size: 0.82rem;"
+          >
+            <div style="font-size: 0.75rem; font-weight: 700; color: #c4b5fd; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.3rem;">
+              🧩 Sous-sujets couverts ({{ t.subtopics.length }})
+            </div>
+            <ul style="margin: 0; padding-left: 1.1rem; color: #cbd5e1; line-height: 1.45;">
+              <li v-for="(st, stIdx) in t.subtopics" :key="stIdx" style="margin-bottom: 0.2rem;">
+                <strong style="color: #f1f5f9;">{{ st.title }}</strong>
+                <span v-if="st.summary && st.summary !== st.title" style="color: #cbd5e1;"> — {{ st.summary }}</span>
+                <span v-if="st.sources && st.sources.length" style="color: var(--muted); font-size: 0.76rem;"> ({{ st.sources.join(', ') }})</span>
+              </li>
+            </ul>
+          </div>
+
           <details
             v-if="t.articles && t.articles.length > 1"
             style="margin: 0 0 0.85rem; padding: 0.5rem 0.85rem; background: rgba(15, 23, 42, 0.55); border-radius: 0.5rem; border-left: 3px solid var(--primary);"
+            @click.stop
           >
             <summary
               style="font-size: 0.78rem; color: var(--muted); font-weight: 600; cursor: pointer; user-select: none;"
@@ -464,7 +635,7 @@
               🔗 {{ t.articles.length }} sources regroupées sous ce sujet (topic_id)
             </summary>
             <ul style="margin: 0.45rem 0 0.1rem; padding-left: 1.1rem; font-size: 0.83rem;">
-              <li v-for="(art, idx) in t.articles" :key="idx" style="margin-bottom: 0.2rem;">
+              <li v-for="(art, aIdx) in t.articles" :key="aIdx" style="margin-bottom: 0.2rem;">
                 <a :href="art.url" target="_blank" rel="noopener noreferrer">{{ art.title }}</a>
                 <span style="color: var(--muted);"> — {{ art.source_title }}</span>
                 <time v-if="art.published_at" :datetime="art.published_at" style="color: var(--muted); font-size: 0.76rem; margin-left: 0.25rem;">
@@ -484,12 +655,20 @@
                 🔄 Dernière source : <time :datetime="t.last_seen_at">{{ formatDate(t.last_seen_at) }}</time>
               </span>
             </div>
-            <div class="card-actions" role="group" aria-label="Actions sur ce sujet">
+            <div class="card-actions" role="group" aria-label="Actions sur ce sujet" @click.stop>
+              <button
+                style="background: rgba(56, 189, 248, 0.16); border-color: rgba(56, 189, 248, 0.5); color: #7dd3fc; font-weight: 600; padding: 0.35rem 0.7rem;"
+                @click="openTopicDetail(t, idx)"
+                title="Ouvrir la vue détail approfondie : cœur du sujet, points clés et liste complète des sources (Raccourci : Entrée)"
+                aria-label="Ouvrir la vue détail approfondie de ce sujet"
+              >
+                🔍 Détail
+              </button>
               <button
                 class="icon-btn"
-                style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.45); color: #6ee7b7; font-weight: 600; padding: 0.35rem 0.65rem;"
-                @click="markAsRead(t)"
-                title="Marquer comme lu et archiver (sera réactivé automatiquement si un nouvel article apporte des éléments inédits)"
+                style="width: auto; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.45); color: #6ee7b7; font-weight: 600; padding: 0.35rem 0.65rem;"
+                @click="markAsRead(t, idx)"
+                title="Marquer comme lu et archiver (Raccourci : Espace)"
                 aria-label="Marquer ce sujet comme lu et l'archiver"
               >
                 ✓ Lu
@@ -497,8 +676,8 @@
               <button
                 class="icon-btn vote-up"
                 :class="{ active: t.user_vote === 1 }"
-                @click="voteTopic(t, 1)"
-                title="Pertinent (+1 : affine votre profil)"
+                @click="voteTopic(t, t.user_vote === 1 ? 0 : 1)"
+                title="Pertinent (+1 : affine votre profil — Raccourci : +)"
                 aria-label="Marquer ce sujet comme pertinent (+1)"
                 :aria-pressed="t.user_vote === 1"
               >
@@ -507,9 +686,9 @@
               <button
                 class="icon-btn vote-down"
                 :class="{ active: t.user_vote === -1 }"
-                @click="voteTopic(t, -1)"
-                title="Non pertinent (-1 : masquer ce type de sujet)"
-                aria-label="Marquer ce sujet comme non pertinent (-1)"
+                @click="handleMinusClick(t)"
+                title="Non pertinent (-1, ou retire le like en premier si déjà liké — Raccourci : -)"
+                aria-label="Marquer ce sujet comme non pertinent (-1) ou retirer le like"
                 :aria-pressed="t.user_vote === -1"
               >
                 <span aria-hidden="true">👎</span>
@@ -526,8 +705,8 @@
               <button
                 class="icon-btn"
                 @click="viewContent(t)"
-                title="Lire le contenu Markdown archivé sur S3"
-                aria-label="Lire le contenu Markdown archivé sur S3"
+                title="Lire le contenu Markdown brut archivé sur S3"
+                aria-label="Lire le contenu Markdown brut archivé sur S3"
               >
                 <span aria-hidden="true">📖</span>
               </button>
@@ -590,6 +769,15 @@
         </form>
       </div>
 
+      <div class="kbd-bar" role="region" aria-label="Raccourcis clavier (Archives)">
+        <strong style="color: var(--text);">⌨️ Raccourcis clavier :</strong>
+        <span><kbd>↑</kbd><kbd>↓</kbd> Monter / Descendre ({{ archivedTopics.length ? (selectedTopicIndex + 1) + '/' + archivedTopics.length : '0/0' }})</span>
+        <span><kbd>Entrée</kbd> Vue détail approfondie</span>
+        <span><kbd>Suppr</kbd> Remettre dans le flux</span>
+        <span><kbd>+</kbd> Liker (👍)</span>
+        <span><kbd>-</kbd> Enlever le like / J'aime pas (👎)</span>
+      </div>
+
       <div
         v-if="archivedTopics.length === 0"
         style="text-align: center; padding: 2.5rem 1.5rem; background: var(--surface); border: 1px dashed var(--border); border-radius: 0.85rem; color: var(--muted);"
@@ -598,9 +786,25 @@
       </div>
 
       <div class="grid" v-else>
-        <article v-for="t in archivedTopics" :key="t.topic_id" class="card" style="opacity: 0.92;">
+        <article
+          v-for="(t, idx) in archivedTopics"
+          :key="t.topic_id"
+          :id="'topic-card-' + idx"
+          class="card"
+          :class="{ 'selected-card': selectedTopicIndex === idx }"
+          style="opacity: 0.94;"
+          @click="selectedTopicIndex = idx"
+          @dblclick="openTopicDetail(t, idx)"
+        >
           <div class="card-header">
             <div class="badges">
+              <span
+                v-if="selectedTopicIndex === idx"
+                class="badge"
+                style="background: rgba(56, 189, 248, 0.22); color: #7dd3fc; border: 1px solid var(--primary);"
+              >
+                ⌨️ Sélectionné
+              </span>
               <span class="badge" :class="'badge-' + t.category">{{ t.category }}</span>
               <span
                 v-for="lb in (t.labels || []).filter((x) => x !== t.category)"
@@ -622,19 +826,20 @@
           </div>
 
           <h3 class="card-title">
-            <a :href="t.primary_url" target="_blank" rel="noopener noreferrer">{{ t.title }} ↗</a>
+            <a :href="t.primary_url" target="_blank" rel="noopener noreferrer" @click.stop>{{ t.title }} ↗</a>
           </h3>
           <p class="card-summary">{{ t.summary }}</p>
 
           <details
             v-if="t.articles && t.articles.length > 1"
             style="margin: 0 0 0.85rem; padding: 0.5rem 0.85rem; background: rgba(15, 23, 42, 0.55); border-radius: 0.5rem; border-left: 3px solid var(--primary);"
+            @click.stop
           >
             <summary style="font-size: 0.78rem; color: var(--muted); font-weight: 600; cursor: pointer; user-select: none;">
               🔗 {{ t.articles.length }} sources regroupées sous ce sujet (topic_id)
             </summary>
             <ul style="margin: 0.45rem 0 0.1rem; padding-left: 1.1rem; font-size: 0.83rem;">
-              <li v-for="(art, idx) in t.articles" :key="idx" style="margin-bottom: 0.2rem;">
+              <li v-for="(art, aIdx) in t.articles" :key="aIdx" style="margin-bottom: 0.2rem;">
                 <a :href="art.url" target="_blank" rel="noopener noreferrer">{{ art.title }}</a>
                 <span style="color: var(--muted);"> — {{ art.source_title }}</span>
               </li>
@@ -646,12 +851,19 @@
               <strong>{{ formatHost(t.primary_url) }}</strong>
               <span>🔄 Dernière source : <time :datetime="t.last_seen_at">{{ formatDate(t.last_seen_at) }}</time></span>
             </div>
-            <div class="card-actions" role="group" aria-label="Actions sur ce sujet archivé">
+            <div class="card-actions" role="group" aria-label="Actions sur ce sujet archivé" @click.stop>
+              <button
+                style="background: rgba(56, 189, 248, 0.16); border-color: rgba(56, 189, 248, 0.5); color: #7dd3fc; font-weight: 600; padding: 0.35rem 0.7rem;"
+                @click="openTopicDetail(t, idx)"
+                title="Ouvrir la vue détail approfondie (Raccourci : Entrée)"
+              >
+                🔍 Détail
+              </button>
               <button
                 class="icon-btn"
-                style="padding: 0.35rem 0.65rem;"
-                @click="unarchiveTopic(t)"
-                title="Remettre ce sujet dans le flux actif (non lu)"
+                style="width: auto; padding: 0.35rem 0.65rem;"
+                @click="unarchiveTopic(t, idx)"
+                title="Remettre ce sujet dans le flux actif (Raccourci : Espace)"
               >
                 ↩️ Remettre dans le flux
               </button>
@@ -911,6 +1123,163 @@
       </table>
     </section>
 
+    <!-- MODALE VUE DÉTAIL APPROFONDIE ("ZERO-CLICK BRIEFING" — TOUCHE ENTRÉE) -->
+    <div v-if="detailModal.open" class="modal-backdrop" @click.self="detailModal.open = false">
+      <div class="modal" style="max-width: 980px; max-height: 90vh;">
+        <div class="modal-head" style="flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 280px;">
+            <div class="badges" style="margin-bottom: 0.35rem;">
+              <span v-if="detailModal.category" class="badge" :class="'badge-' + detailModal.category">{{ detailModal.category }}</span>
+              <span class="pill">{{ detailModal.source_count || (detailModal.sources_breakdown && detailModal.sources_breakdown.length) || 1 }} source(s)</span>
+              <span v-if="detailModal.loading" class="pill" style="color: #7dd3fc; border-color: var(--primary);">⏳ Extraction approfondie en cours...</span>
+              <span v-else class="pill" style="color: #86efac;">✓ Synthèse complète prête</span>
+            </div>
+            <strong style="font-size: 1.15rem; display: block; line-height: 1.35;">
+              <a :href="detailModal.primary_url" target="_blank" rel="noopener noreferrer">{{ detailModal.title }} ↗</a>
+            </strong>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;">
+            <button
+              v-if="detailModal.topicRef && !detailModal.is_archived"
+              style="background: rgba(16, 185, 129, 0.16); border-color: rgba(16, 185, 129, 0.5); color: #6ee7b7; font-weight: 600;"
+              @click="markAsReadFromModal"
+              title="Marquer comme lu et passer au sujet suivant (Raccourci : Espace)"
+            >
+              ✓ Lu (Espace)
+            </button>
+            <button
+              v-if="detailModal.topicRef && !detailModal.is_archived"
+              style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.45); color: #fca5a5; font-weight: 600;"
+              @click="dislikeAndArchiveFromModal"
+              title="Disliker (-1) et archiver immédiatement (Raccourci : Suppr)"
+            >
+              👎+🗄️ (Suppr)
+            </button>
+            <button
+              v-if="detailModal.topicRef"
+              class="icon-btn vote-up"
+              :class="{ active: detailModal.topicRef.user_vote === 1 }"
+              @click="handlePlusKey(detailModal.topicRef)"
+              title="Liker (+1) — Raccourci : +"
+            >
+              👍
+            </button>
+            <button
+              v-if="detailModal.topicRef"
+              class="icon-btn vote-down"
+              :class="{ active: detailModal.topicRef.user_vote === -1 }"
+              @click="handleMinusClick(detailModal.topicRef)"
+              title="Retirer le like en premier ou Disliker (-1) — Raccourci : -"
+            >
+              👎
+            </button>
+            <button @click="detailModal.open = false" title="Fermer la vue détail (Échap ou Entrée)">✕ Fermer</button>
+          </div>
+        </div>
+
+        <div id="detail-modal-body" class="detail-body">
+          <div class="kbd-bar" style="margin-bottom: 0;">
+            <span><kbd>↑</kbd><kbd>↓</kbd> Défiler le détail</span>
+            <span><kbd>←</kbd><kbd>→</kbd> Sujet précédent / suivant</span>
+            <span><kbd>Espace</kbd> Marquer comme lu</span>
+            <span><kbd>Suppr</kbd> Dislike + Archiver</span>
+            <span><kbd>+</kbd> Liker</span>
+            <span><kbd>-</kbd> Retirer like / Disliker</span>
+            <span><kbd>Échap</kbd> ou <kbd>Entrée</kbd> Fermer</span>
+          </div>
+
+          <div
+            v-if="detailModal.has_updates && detailModal.updates_summary"
+            style="padding: 0.65rem 0.95rem; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.5); border-radius: 0.55rem; font-size: 0.88rem; color: #fef3c7;"
+          >
+            <strong style="color: #fbbf24;">màj ({{ formatDate(detailModal.reactivated_at || detailModal.last_seen_at) }}) :</strong>
+            {{ detailModal.updates_summary }}
+          </div>
+
+          <!-- SECTION 1 : CŒUR DU SUJET (SYNTHÈSE APPROFONDIE AUTO-SUFFISANTE) -->
+          <div class="core-box">
+            <h4>🎯 Cœur du sujet — Synthèse approfondie</h4>
+            <p
+              v-for="(para, pIdx) in detailCoreParagraphs"
+              :key="pIdx"
+              class="core-paragraph"
+            >
+              {{ para }}
+            </p>
+          </div>
+
+          <!-- SECTION 1B : SOUS-SUJETS & ANGLES COUVERTS -->
+          <div v-if="detailModal.subtopics && detailModal.subtopics.length" class="takeaways-box" style="border-color: rgba(167, 139, 250, 0.35);">
+            <h4 style="color: #c4b5fd;">🧩 Sous-sujets &amp; angles couverts ({{ detailModal.subtopics.length }})</h4>
+            <ul class="takeaway-list">
+              <li v-for="(st, stIdx) in detailModal.subtopics" :key="stIdx">
+                <span v-if="st.sources && st.sources.length" class="pill" style="margin-right: 0.4rem; color: #c4b5fd; border-color: rgba(167, 139, 250, 0.4);">
+                  {{ st.sources.join(', ') }}
+                </span>
+                <strong style="color: #f8fafc;">{{ st.title }}</strong>
+                <span v-if="st.summary && st.summary !== st.title" style="color: #cbd5e1;"> — {{ st.summary }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- SECTION 2 : POINTS CLÉS & FAITS SAILLANTS À RETENIR -->
+          <div v-if="detailModal.key_takeaways && detailModal.key_takeaways.length" class="takeaways-box">
+            <h4>📌 Points clés &amp; faits saillants à retenir ({{ detailModal.key_takeaways.length }})</h4>
+            <ul class="takeaway-list">
+              <li v-for="(pt, kIdx) in detailModal.key_takeaways" :key="kIdx">
+                <span class="pill" style="margin-right: 0.4rem; color: #7dd3fc; border-color: rgba(56, 189, 248, 0.35);">
+                  {{ pt.source || 'Source' }}
+                </span>
+                <span>{{ pt.text }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- SECTION 3 : LISTE COMPLÈTE DES SOURCES REGROUPÉES & EXTRAITS PAR MÉDIA -->
+          <div>
+            <h4 style="margin: 0 0 0.6rem; font-size: 0.93rem; color: #e2e8f0;">
+              🔗 Sources regroupées sous ce sujet ({{ (detailModal.sources_breakdown && detailModal.sources_breakdown.length) || 0 }})
+            </h4>
+            <div class="sources-grid">
+              <div
+                v-for="(src, sIdx) in detailModal.sources_breakdown"
+                :key="sIdx"
+                class="source-card"
+              >
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.45rem; margin-bottom: 0.35rem;">
+                  <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;">
+                    <span class="pill" style="color: #f8fafc; font-weight: 600;">{{ src.source_title }}</span>
+                    <span v-if="src.creator" class="pill">👤 {{ src.creator }}</span>
+                    <span v-if="src.kind" class="badge" :class="'badge-' + src.kind">{{ src.kind }}</span>
+                  </div>
+                  <time v-if="src.published_at" :datetime="src.published_at" style="font-size: 0.78rem; color: var(--muted);">
+                    {{ formatDate(src.published_at) }}
+                  </time>
+                </div>
+                <div style="font-weight: 600; font-size: 0.92rem; margin-bottom: 0.3rem;">
+                  <a :href="src.url" target="_blank" rel="noopener noreferrer">{{ src.title }} ↗</a>
+                </div>
+                <p v-if="src.detailed_excerpt" style="margin: 0; font-size: 0.85rem; color: #cbd5e1; line-height: 1.55;">
+                  {{ src.detailed_excerpt }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 4 : TEXTE INTÉGRAL EXTRAIT (S3 / TRAFILATURA / MCP) -->
+          <details
+            v-if="detailModal.full_markdown"
+            style="background: #0b1120; border: 1px solid var(--border); border-radius: 0.6rem; padding: 0.75rem 1rem;"
+          >
+            <summary style="cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--primary);">
+              📖 Afficher le contenu intégral extrait ({{ detailModal.full_markdown.length }} caractères)
+            </summary>
+            <pre style="margin: 0.75rem 0 0; white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; color: #cbd5e1; max-height: 45vh; overflow-y: auto;">{{ detailModal.full_markdown }}</pre>
+          </details>
+        </div>
+      </div>
+    </div>
+
     <!-- MODALE DE LECTURE S3 / ENRICHISSEMENT MCP -->
     <div v-if="readerModal.open" class="modal-backdrop" @click.self="readerModal.open = false">
       <div class="modal">
@@ -924,7 +1293,7 @@
           </div>
           <button @click="readerModal.open = false">✕ Fermer</button>
         </div>
-        <div class="modal-body">
+        <div id="reader-modal-body" class="modal-body">
           <div v-if="readerModal.mcpHint" class="hint-box">
             🔐 <strong>Information MCP :</strong> {{ readerModal.mcpHint }}
           </div>
@@ -935,7 +1304,7 @@
   </div>
 
   <script type="module">
-    import { createApp, ref, computed, onMounted } from "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js";
+    import { createApp, ref, computed, watch, onMounted, onUnmounted, nextTick } from "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js";
 
     createApp({
       setup() {
@@ -943,6 +1312,7 @@
         const busy = ref(false);
         const statusMessage = ref("");
         const profile = ref({});
+        const selectedTopicIndex = ref(0);
         const categories = ref([
           { slug: "actu", name: "Actualités & Monde" },
           { slug: "science", name: "Sciences & Découvertes" },
@@ -977,6 +1347,7 @@
         const archiveSearchQuery = ref("");
         const archiveSearchMode = ref("keyword");
         const sources = ref([]);
+        const newsletterConfirmations = ref([]);
         const creators = ref([]);
         const creatorStatusFilter = ref("all");
         const creatorLabelFilter = ref("");
@@ -991,6 +1362,137 @@
         const latestDigest = ref({});
         const newSource = ref({ title: "", url: "", category: "actu", kind: "rss" });
         const readerModal = ref({ open: false, title: "", markdown: "", s3_key: "", method: "", mcpHint: "" });
+        const detailModal = ref({
+          open: false,
+          loading: false,
+          topic_id: "",
+          title: "",
+          category: "",
+          primary_url: "",
+          source_count: 1,
+          is_archived: false,
+          has_updates: false,
+          updates_summary: "",
+          core_synthesis: "",
+          key_takeaways: [],
+          sources_breakdown: [],
+          full_markdown: "",
+          topicRef: null,
+        });
+
+        const detailCoreParagraphs = computed(() => {
+          const raw = (detailModal.value.core_synthesis || "").trim();
+          if (!raw) return [];
+          return raw.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+        });
+
+        function getActiveList() {
+          if (activeTab.value === "archive") return archivedTopics.value;
+          if (activeTab.value === "topics") return topics.value;
+          return [];
+        }
+
+        function clampSelectedTopicIndex(resetToZero = false) {
+          const list = getActiveList();
+          if (!list.length) {
+            selectedTopicIndex.value = 0;
+            return;
+          }
+          if (resetToZero) {
+            selectedTopicIndex.value = 0;
+          } else if (selectedTopicIndex.value >= list.length) {
+            selectedTopicIndex.value = Math.max(0, list.length - 1);
+          } else if (selectedTopicIndex.value < 0) {
+            selectedTopicIndex.value = 0;
+          }
+        }
+
+        async function scrollSelectedIntoView() {
+          await nextTick();
+          const el = document.getElementById(`topic-card-${selectedTopicIndex.value}`);
+          if (el && typeof el.scrollIntoView === "function") {
+            el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          }
+        }
+
+        watch(
+          () => Boolean(detailModal.value.open || readerModal.value.open),
+          (isOpen) => {
+            document.body.style.overflow = isOpen ? "hidden" : "";
+            if (!isOpen) {
+              scrollSelectedIntoView();
+            }
+          }
+        );
+
+        async function openTopicDetail(t, idx = null) {
+          if (!t) return;
+          if (typeof idx === "number") {
+            selectedTopicIndex.value = idx;
+          }
+          const initialBreakdown = (t.articles || []).map((a) => ({
+            title: a.title,
+            url: a.url,
+            source_title: a.source_title,
+            kind: a.kind || "rss",
+            creator: a.creator || "",
+            published_at: a.published_at,
+            detailed_excerpt: a.excerpt || "",
+          }));
+
+          detailModal.value = {
+            open: true,
+            loading: true,
+            topic_id: t.topic_id,
+            title: t.title,
+            category: t.category,
+            primary_url: t.primary_url,
+            source_count: t.source_count || initialBreakdown.length || 1,
+            is_archived: Boolean(t.is_archived),
+            reactivated_at: t.reactivated_at || null,
+            last_seen_at: t.last_seen_at || null,
+            has_updates: Boolean(t.has_updates),
+            updates_summary: t.updates_summary || "",
+            subtopics: t.subtopics || [],
+            core_synthesis: t.summary || t.title,
+            key_takeaways: [],
+            sources_breakdown: initialBreakdown,
+            full_markdown: "",
+            topicRef: t,
+          };
+
+          await nextTick();
+          const bodyEl = document.getElementById("detail-modal-body");
+          if (bodyEl) {
+            bodyEl.scrollTop = 0;
+          }
+
+          const requestedTopicId = t.topic_id;
+          try {
+            const r = await fetch(`/api/v1/topics/${t.topic_id}/detail?auto_enrich=true`);
+            if (r.ok) {
+              const data = await r.json();
+              if (detailModal.value.open && detailModal.value.topic_id === requestedTopicId) {
+                detailModal.value.loading = false;
+                detailModal.value.core_synthesis = data.core_synthesis || t.summary || t.title;
+                detailModal.value.subtopics = data.subtopics || t.subtopics || [];
+                detailModal.value.reactivated_at = data.reactivated_at || t.reactivated_at || null;
+                detailModal.value.last_seen_at = data.last_seen_at || t.last_seen_at || null;
+                detailModal.value.key_takeaways = data.key_takeaways || [];
+                detailModal.value.sources_breakdown = data.sources_breakdown || initialBreakdown;
+                detailModal.value.full_markdown = data.full_markdown || "";
+                detailModal.value.source_count = data.source_count || detailModal.value.source_count;
+                if (data.summary && data.summary.length > (t.summary || "").length) {
+                  t.summary = data.summary;
+                }
+              }
+            } else {
+              detailModal.value.loading = false;
+            }
+          } catch {
+            detailModal.value.loading = false;
+          }
+        }
 
         const filteredCreators = computed(() => {
           return creators.value.filter((c) => {
@@ -1034,37 +1536,45 @@
           params.set("sort_order", sortOrder.value);
         }
 
-        async function loadTopics() {
+        async function loadTopics(resetSelection = true) {
           const params = new URLSearchParams({ limit: "120", archived: "exclude" });
           appendFilterAndSortParams(params, false);
           const r = await fetch(`/api/v1/topics?${params}`);
-          if (r.ok) topics.value = await r.json();
+          if (r.ok) {
+            topics.value = await r.json();
+            clampSelectedTopicIndex(resetSelection);
+          }
         }
 
-        async function loadArchivedTopics() {
+        async function loadArchivedTopics(resetSelection = true) {
           const params = new URLSearchParams({ limit: "120", archived: "only" });
           appendFilterAndSortParams(params, false);
           const r = await fetch(`/api/v1/topics?${params}`);
-          if (r.ok) archivedTopics.value = await r.json();
+          if (r.ok) {
+            archivedTopics.value = await r.json();
+            clampSelectedTopicIndex(resetSelection);
+          }
         }
 
         async function openInboxTab() {
           activeTab.value = "topics";
-          await Promise.all([loadTopics(), loadProfile()]);
+          selectedTopicIndex.value = 0;
+          await Promise.all([loadTopics(true), loadProfile()]);
         }
 
         async function openArchiveTab() {
           activeTab.value = "archive";
+          selectedTopicIndex.value = 0;
           if (archiveSearchQuery.value.trim()) {
             await runArchiveSearch();
           } else {
-            await loadArchivedTopics();
+            await loadArchivedTopics(true);
           }
         }
 
         async function runArchiveSearch() {
           if (!archiveSearchQuery.value.trim()) {
-            return loadArchivedTopics();
+            return loadArchivedTopics(true);
           }
           busy.value = true;
           try {
@@ -1076,7 +1586,10 @@
             });
             appendFilterAndSortParams(params, true);
             const r = await fetch(`/api/v1/search?${params}`);
-            if (r.ok) archivedTopics.value = await r.json();
+            if (r.ok) {
+              archivedTopics.value = await r.json();
+              clampSelectedTopicIndex(true);
+            }
           } finally {
             busy.value = false;
           }
@@ -1084,10 +1597,15 @@
 
         async function resetArchiveSearch() {
           archiveSearchQuery.value = "";
-          await loadArchivedTopics();
+          await loadArchivedTopics(true);
         }
 
-        async function markAsRead(t) {
+        async function markAsRead(t, idx = null) {
+          if (!t) return;
+          if (typeof idx === "number") {
+            selectedTopicIndex.value = idx;
+          }
+          const wasDetailOpen = detailModal.value.open && detailModal.value.topic_id === t.topic_id;
           const r = await fetch(`/api/v1/topics/${t.topic_id}/archive`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1095,8 +1613,66 @@
           });
           if (r.ok) {
             topics.value = topics.value.filter((item) => item.topic_id !== t.topic_id);
+            clampSelectedTopicIndex(false);
             statusMessage.value = `✓ Sujet marqué comme lu et archivé : "${t.title.slice(0, 55)}..." (sera réactivé si un nouvel article apporte des éléments inédits).`;
             await loadProfile();
+            if (wasDetailOpen) {
+              const nextTopic = topics.value[selectedTopicIndex.value];
+              if (nextTopic) {
+                await openTopicDetail(nextTopic, selectedTopicIndex.value);
+              } else {
+                detailModal.value.open = false;
+              }
+            }
+            await scrollSelectedIntoView();
+          }
+        }
+
+        async function markAsReadFromModal() {
+          if (detailModal.value.topicRef) {
+            await markAsRead(detailModal.value.topicRef, selectedTopicIndex.value);
+          }
+        }
+
+        async function dislikeAndArchive(t, idx = null) {
+          if (!t) return;
+          if (typeof idx === "number") {
+            selectedTopicIndex.value = idx;
+          }
+          const wasDetailOpen = detailModal.value.open && detailModal.value.topic_id === t.topic_id;
+          // 1. Enregistre le vote négatif (-1) pour affiner le profil utilisateur
+          await fetch(`/api/v1/topics/${t.topic_id}/feedback`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ vote: -1 }),
+          });
+          t.user_vote = -1;
+          // 2. Archive le sujet hors du flux actif
+          const r = await fetch(`/api/v1/topics/${t.topic_id}/archive`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ archived: true }),
+          });
+          if (r.ok) {
+            topics.value = topics.value.filter((item) => item.topic_id !== t.topic_id);
+            clampSelectedTopicIndex(false);
+            statusMessage.value = `👎+🗄️ Sujet disliké (-1) et archivé : "${t.title.slice(0, 55)}..."`;
+            await loadProfile();
+            if (wasDetailOpen) {
+              const nextTopic = topics.value[selectedTopicIndex.value];
+              if (nextTopic) {
+                await openTopicDetail(nextTopic, selectedTopicIndex.value);
+              } else {
+                detailModal.value.open = false;
+              }
+            }
+            await scrollSelectedIntoView();
+          }
+        }
+
+        async function dislikeAndArchiveFromModal() {
+          if (detailModal.value.topicRef) {
+            await dislikeAndArchive(detailModal.value.topicRef, selectedTopicIndex.value);
           }
         }
 
@@ -1113,6 +1689,8 @@
             if (r.ok) {
               const data = await r.json();
               topics.value = [];
+              selectedTopicIndex.value = 0;
+              detailModal.value.open = false;
               statusMessage.value = `🎉 Inbox Zero : ${data.updated_count} sujet(s) marqué(s) comme lu(s) et déplacé(s) dans 🗄️ Archives.`;
               await loadProfile();
             }
@@ -1121,7 +1699,11 @@
           }
         }
 
-        async function unarchiveTopic(t) {
+        async function unarchiveTopic(t, idx = null) {
+          if (!t) return;
+          if (typeof idx === "number") {
+            selectedTopicIndex.value = idx;
+          }
           const r = await fetch(`/api/v1/topics/${t.topic_id}/archive`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1129,8 +1711,9 @@
           });
           if (r.ok) {
             archivedTopics.value = archivedTopics.value.filter((item) => item.topic_id !== t.topic_id);
+            clampSelectedTopicIndex(false);
             statusMessage.value = `↩️ Sujet remis dans le flux principal : "${t.title.slice(0, 55)}..."`;
-            await Promise.all([loadTopics(), loadProfile()]);
+            await Promise.all([loadTopics(false), loadProfile()]);
           }
         }
 
@@ -1186,7 +1769,7 @@
 
         async function runSearch() {
           if (!searchQuery.value.trim()) {
-            return loadTopics();
+            return loadTopics(true);
           }
           busy.value = true;
           try {
@@ -1198,7 +1781,10 @@
             });
             appendFilterAndSortParams(params, true);
             const r = await fetch(`/api/v1/search?${params}`);
-            if (r.ok) topics.value = await r.json();
+            if (r.ok) {
+              topics.value = await r.json();
+              clampSelectedTopicIndex(true);
+            }
           } finally {
             busy.value = false;
           }
@@ -1206,10 +1792,11 @@
 
         async function resetSearch() {
           searchQuery.value = "";
-          await loadTopics();
+          await loadTopics(true);
         }
 
         async function voteTopic(t, vote) {
+          if (!t) return;
           const r = await fetch(`/api/v1/topics/${t.topic_id}/feedback`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1218,7 +1805,183 @@
           if (r.ok) {
             t.user_vote = vote;
             await loadProfile();
-            statusMessage.value = `Vote enregistré (${vote === 1 ? "+1 Pertinent" : "-1 Non pertinent"}) sur "${t.title.slice(0, 50)}..."`;
+            const label =
+              vote === 1
+                ? "👍 +1 Pertinent"
+                : vote === -1
+                ? "👎 -1 Non pertinent"
+                : "➖ Vote retiré (neutre)";
+            statusMessage.value = `Vote mis à jour (${label}) sur "${t.title.slice(0, 50)}..."`;
+          }
+        }
+
+        async function handlePlusKey(t) {
+          if (!t) return;
+          // Si le sujet était disliké (-1), un premier '+' enlève le dislike (0), sinon il like (+1)
+          const nextVote = t.user_vote === -1 ? 0 : 1;
+          await voteTopic(t, nextVote);
+        }
+
+        async function handleMinusClick(t) {
+          if (!t) return;
+          // Comme demandé : '-' enlève le like en premier (1 -> 0), puis passe à j'aime pas (0 -> -1)
+          const nextVote = t.user_vote === 1 ? 0 : -1;
+          await voteTopic(t, nextVote);
+        }
+
+        async function handleKeyDown(event) {
+          const target = event.target;
+          const tag = target && target.tagName ? target.tagName.toUpperCase() : "";
+          const isInputFocused =
+            tag === "INPUT" ||
+            tag === "TEXTAREA" ||
+            tag === "SELECT" ||
+            (target && target.isContentEditable);
+
+          if (event.key === "Escape") {
+            if (detailModal.value.open) {
+              event.preventDefault();
+              detailModal.value.open = false;
+              return;
+            }
+            if (readerModal.value.open) {
+              event.preventDefault();
+              readerModal.value.open = false;
+              return;
+            }
+            if (isInputFocused && typeof target.blur === "function") {
+              target.blur();
+            }
+            return;
+          }
+
+          if (isInputFocused || event.ctrlKey || event.metaKey || event.altKey) {
+            return;
+          }
+
+          if (readerModal.value.open) {
+            const readerBody = document.getElementById("reader-modal-body");
+            if (event.key === "ArrowDown" && readerBody) {
+              event.preventDefault();
+              readerBody.scrollBy({ top: 140, behavior: "smooth" });
+              return;
+            }
+            if (event.key === "ArrowUp" && readerBody) {
+              event.preventDefault();
+              readerBody.scrollBy({ top: -140, behavior: "smooth" });
+              return;
+            }
+          }
+
+          if (activeTab.value !== "topics" && activeTab.value !== "archive") {
+            return;
+          }
+
+          const list = getActiveList();
+          if (!list.length) return;
+          clampSelectedTopicIndex(false);
+          const currentTopic = list[selectedTopicIndex.value];
+
+          if (detailModal.value.open) {
+            const detailBody = document.getElementById("detail-modal-body");
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              if (detailBody) {
+                detailBody.scrollBy({ top: 140, behavior: "smooth" });
+              }
+              return;
+            }
+            if (event.key === "ArrowUp") {
+              event.preventDefault();
+              if (detailBody) {
+                detailBody.scrollBy({ top: -140, behavior: "smooth" });
+              }
+              return;
+            }
+            if (event.key === "PageDown") {
+              event.preventDefault();
+              if (detailBody) {
+                detailBody.scrollBy({ top: 420, behavior: "smooth" });
+              }
+              return;
+            }
+            if (event.key === "PageUp") {
+              event.preventDefault();
+              if (detailBody) {
+                detailBody.scrollBy({ top: -420, behavior: "smooth" });
+              }
+              return;
+            }
+            if (event.key === "ArrowRight") {
+              event.preventDefault();
+              if (selectedTopicIndex.value < list.length - 1) {
+                selectedTopicIndex.value += 1;
+                await openTopicDetail(list[selectedTopicIndex.value], selectedTopicIndex.value);
+              }
+              return;
+            }
+            if (event.key === "ArrowLeft") {
+              event.preventDefault();
+              if (selectedTopicIndex.value > 0) {
+                selectedTopicIndex.value -= 1;
+                await openTopicDetail(list[selectedTopicIndex.value], selectedTopicIndex.value);
+              }
+              return;
+            }
+          }
+
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            if (selectedTopicIndex.value < list.length - 1) {
+              selectedTopicIndex.value += 1;
+              await scrollSelectedIntoView();
+            }
+          } else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            if (selectedTopicIndex.value > 0) {
+              selectedTopicIndex.value -= 1;
+              await scrollSelectedIntoView();
+            }
+          } else if (event.key === "Enter") {
+            // Si le focus est explicitement sur un lien <a> ou un bouton spécifique, laisser le comportement natif
+            if (tag === "A" || tag === "BUTTON" || tag === "SUMMARY") {
+              return;
+            }
+            event.preventDefault();
+            if (detailModal.value.open && detailModal.value.topic_id === currentTopic?.topic_id) {
+              detailModal.value.open = false;
+            } else if (currentTopic) {
+              await openTopicDetail(currentTopic, selectedTopicIndex.value);
+            }
+          } else if (event.key === " " || event.code === "Space") {
+            if (tag === "BUTTON" || tag === "A" || tag === "SUMMARY") {
+              return;
+            }
+            event.preventDefault();
+            if (!currentTopic) return;
+            if (activeTab.value === "topics") {
+              await markAsRead(currentTopic, selectedTopicIndex.value);
+            } else if (activeTab.value === "archive") {
+              await unarchiveTopic(currentTopic, selectedTopicIndex.value);
+            }
+          } else if (event.key === "Delete" || event.key === "Backspace") {
+            event.preventDefault();
+            if (!currentTopic) return;
+            if (activeTab.value === "topics") {
+              await dislikeAndArchive(currentTopic, selectedTopicIndex.value);
+            } else if (activeTab.value === "archive") {
+              await voteTopic(currentTopic, -1);
+            }
+          } else if (event.key === "+" || event.key === "=") {
+            event.preventDefault();
+            if (currentTopic) {
+              await handlePlusKey(currentTopic);
+            }
+          } else if (event.key === "-" || event.key === "_") {
+            event.preventDefault();
+            if (currentTopic) {
+              await handleMinusClick(currentTopic);
+            }
           }
         }
 
@@ -1294,14 +2057,33 @@
           }
         }
 
+        async function loadConfirmations() {
+          try {
+            const r = await fetch("/api/v1/newsletters/confirmations?limit=10");
+            if (r.ok) {
+              newsletterConfirmations.value = await r.json();
+            }
+          } catch {}
+        }
+
+        async function dismissConfirmation(confId) {
+          const r = await fetch(`/api/v1/newsletters/confirmations/${confId}/dismiss`, { method: "POST" });
+          if (r.ok) {
+            newsletterConfirmations.value = newsletterConfirmations.value.filter((c) => c.id !== confId);
+          }
+        }
+
         async function triggerGmailIngest() {
           busy.value = true;
-          statusMessage.value = "Relève des newsletters Gmail en cours (30 derniers jours, max 100 messages)...";
+          statusMessage.value = "Relève des newsletters & confirmations d'inscription Gmail en cours...";
           try {
             const r = await fetch("/api/v1/ingest/gmail?max_messages=100&since_days=30", { method: "POST" });
             const data = await r.json();
-            statusMessage.value = `Gmail relevé : ${data.newsletters_matched} newsletters, ${data.items_ingested} sujets extraits.`;
-            await Promise.all([loadTopics(), loadSources()]);
+            const confInfo = (data.confirmations_auto_validated || data.confirmations_manual_required)
+              ? ` | Inscriptions : ${data.confirmations_auto_validated || 0} auto-validée(s), ${data.confirmations_manual_required || 0} en attente 1-clic`
+              : "";
+            statusMessage.value = `Gmail relevé : ${data.newsletters_detected ?? 0} newsletters, ${data.items_ingested ?? 0} sujets extraits${confInfo}.`;
+            await Promise.all([loadTopics(), loadSources(), loadConfirmations()]);
           } finally {
             busy.value = false;
           }
@@ -1510,23 +2292,32 @@
         }
 
         onMounted(async () => {
-          await Promise.all([loadProfile(), loadTopics(), loadSources(), loadCreators()]);
+          window.addEventListener("keydown", handleKeyDown);
+          await Promise.all([loadProfile(), loadTopics(true), loadSources(), loadCreators(), loadConfirmations()]);
+        });
+
+        onUnmounted(() => {
+          window.removeEventListener("keydown", handleKeyDown);
+          document.body.style.overflow = "";
         });
 
         return {
           activeTab, busy, statusMessage, profile, categories, selectedCategories,
+          selectedTopicIndex, detailModal, detailCoreParagraphs,
           searchQuery, searchMode, sortBy, sortOrder, dateField, selectedPeriod, dateFrom, dateTo,
           topics, archivedTopics, archiveSearchQuery, archiveSearchMode,
-          sources, creators, filteredCreators,
+          sources, newsletterConfirmations, creators, filteredCreators,
           creatorStatusFilter, creatorLabelFilter, creatorSearch,
           ytOAuthToken, ytImportInput, ytImportCategory, ytImportCreator,
           podcastQueryInput, podcastCategory, podcastCreator,
           latestDigest, newSource, readerModal,
           selectCategory, refreshTopicsOrSearch, toggleSortOrder, resetDateFilters,
-          runSearch, resetSearch, voteTopic, viewContent, corroborateTopic, enrichTopic,
+          runSearch, resetSearch, voteTopic, handlePlusKey, handleMinusClick,
+          openTopicDetail, markAsReadFromModal, dislikeAndArchive, dislikeAndArchiveFromModal,
+          viewContent, corroborateTopic, enrichTopic,
           openInboxTab, openArchiveTab, loadArchivedTopics, runArchiveSearch, resetArchiveSearch,
           markAsRead, markAllDisplayedAsRead, unarchiveTopic,
-          triggerRssIngest, triggerGmailIngest, triggerDigest, triggerRecluster, openDigestTab,
+          triggerRssIngest, triggerGmailIngest, dismissConfirmation, triggerDigest, triggerRecluster, openDigestTab,
           loadCreators, openCreatorsTab, toggleCreatorAll, toggleCreatorChannel,
           syncYouTubeOAuth, importYouTubeChannels, addPodcastBySearch,
           addSource, toggleSource, exportSourcesYaml, formatHost, formatDate,

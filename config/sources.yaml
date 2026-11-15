@@ -51,8 +51,69 @@ sources:
   discovery_method: yaml_seed
   site_url: https://www.pourlascience.fr
 - kind: newsletter
+  title: 404 Media (404-media@ghost.io)
+  url: newsletter://404-media@ghost.io/404-media
+  category: tech
+  labels:
+  - newsletter
+  - tech
+  creator: 404 Media
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: 404-media@ghost.io
+- kind: newsletter
+  title: Courrier international (info@redaction.courrierinternational.com)
+  url: newsletter://35.89784.redaction.courrierinternational.com
+  category: tech
+  labels:
+  - newsletter
+  - tech
+  creator: Courrier international
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: info@redaction.courrierinternational.com
+  list_id: 35.89784.redaction.courrierinternational.com
+- kind: newsletter
+  title: Medium Daily Digest (noreply@medium.com)
+  url: newsletter://noreply@medium.com/medium-daily-digest
+  category: tech
+  labels:
+  - newsletter
+  - tech
+  creator: Medium Daily Digest
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: noreply@medium.com
+- kind: newsletter
+  title: Pour la Science (newsletters@pourlascience.fr)
+  url: newsletter://newsletters@pourlascience.fr/pour-la-science
+  category: science
+  labels:
+  - newsletter
+  - science
+  creator: Pour la Science
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: newsletters@pourlascience.fr
+- kind: newsletter
   title: TLDR AI (dan@tldrnewsletter.com)
   url: newsletter://dan@tldrnewsletter.com/tldr-ai
+  category: tech
+  labels:
+  - newsletter
+  - tech
+  creator: TLDR
+  is_public: false
+  enabled: true
+  discovery_method: gmail_auto
+  sender_email: dan@tldrnewsletter.com
+- kind: newsletter
+  title: TLDR (dan@tldrnewsletter.com)
+  url: newsletter://dan@tldrnewsletter.com/tldr
   category: tech
   labels:
   - newsletter
@@ -75,18 +136,6 @@ sources:
   discovery_method: gmail_auto
   sender_email: dan@tldrnewsletter.com
   list_id: tldr.tech
-- kind: newsletter
-  title: TLDR (dan@tldrnewsletter.com)
-  url: newsletter://dan@tldrnewsletter.com/tldr
-  category: tech
-  labels:
-  - newsletter
-  - tech
-  creator: TLDR
-  is_public: false
-  enabled: true
-  discovery_method: gmail_auto
-  sender_email: dan@tldrnewsletter.com
 - kind: newsletter
   title: TLDR Dev (dan@tldrnewsletter.com)
   url: newsletter://dan@tldrnewsletter.com/tldr-dev
@@ -623,7 +672,7 @@ sources:
   labels:
   - podcast
   - actu
-  creator: Le Monde
+  creator: Julien Devaureix (Sismique)
   is_public: true
   enabled: true
   discovery_method: spotify_screenshot
@@ -854,6 +903,19 @@ sources:
   discovery_method: yaml_seed
   site_url: https://blog.bytebytego.com/
 - kind: rss
+  title: Cafzone (Caf / Geekzone)
+  url: https://www.cafzone.net/feed/
+  category: tech
+  labels:
+  - tech
+  - gaming-hardware
+  - perso
+  creator: Cafzone
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.cafzone.net
+- kind: rss
   title: CERT-FR — Avis & Alertes (ANSSI)
   url: https://www.cert.ssi.gouv.fr/feed/
   category: tech
@@ -974,6 +1036,28 @@ sources:
   enabled: true
   discovery_method: yaml_seed
   site_url: https://importai.substack.com/
+- kind: rss
+  title: JeuxVideo.com - Actualités PC & Hardware
+  url: https://www.jeuxvideo.com/rss/rss-pc.xml
+  category: gaming-hardware
+  labels:
+  - gaming-hardware
+  creator: JeuxVideo.com
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.jeuxvideo.com
+- kind: rss
+  title: JeuxVideo.com - Les derniers Tests
+  url: https://www.jeuxvideo.com/rss/rss-tests.xml
+  category: gaming-hardware
+  labels:
+  - gaming-hardware
+  creator: JeuxVideo.com
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.jeuxvideo.com
 - kind: rss
   title: Journal du Net (JDN)
   url: https://www.journaldunet.com/rss/
@@ -1304,6 +1388,17 @@ sources:
   enabled: true
   discovery_method: yaml_seed
   site_url: https://www.zdnet.fr/
+- kind: web
+  title: Microsoft 365 Service Health Status
+  url: https://status.cloud.microsoft/m365
+  category: tech
+  labels:
+  - tech
+  creator: Microsoft
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://status.cloud.microsoft/m365
 - kind: youtube
   title: 331Erock (YouTube)
   url: https://www.youtube.com/feeds/videos.xml?channel_id=UCtJVZjY6xsZUV-sYdcIFpZw
@@ -3363,7 +3458,7 @@ sources:
   labels:
   - youtube
   - perso
-  creator: Le Monde
+  creator: Le Monde Fantastique De Danou
   is_public: true
   enabled: false
   discovery_method: youtube_subscriptions_paste

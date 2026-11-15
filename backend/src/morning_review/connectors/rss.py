@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from morning_review.db.models import Source, UserSubscription, utcnow
 from morning_review.pipeline.ingestion import (
     ingest_content_item,
+    is_generic_dated_broadcast_placeholder,
     is_promotional_or_self_promo_link,
 )
 
@@ -241,6 +242,92 @@ def _ingest_lemonde_newsletters_hub(
     return items_ingested, topics_touched
 
 
+def _ingest_microsoft_status_hub(
+    session: Session,
+    client: httpx.Client,
+    user_id: UUID,
+    source: Source,
+    default_category: str,
+) -> tuple[int, set[str]]:
+    """Interroge l'API JSON officielle de https://status.cloud.microsoft/m365
+    (`/api/posts/m365Consumer` et `/api/posts/mac`) pour ingérer les incidents majeurs
+    et leur statut de résolution ("Service restored").
+    """
+    items_ingested = 0
+    topics_touched: set[str] = set()
+
+    try:
+        resp = client.get("https://status.cloud.microsoft/api/posts/m365Consumer", timeout=10.0)
+        if resp.status_code == 200:
+            entries = resp.json()
+            if isinstance(entries, list):
+                for entry in entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    raw_title = (entry.get("Title") or "").strip()
+                    raw_msg = (entry.get("Message") or "").strip()
+                    status_str = (entry.get("Status") or "Operational").strip()
+                    service_name = (entry.get("ServiceDisplayName") or "Microsoft 365").strip()
+                    workload = (entry.get("ServiceWorkloadName") or "M365Consumer").strip()
+                    last_updated = (entry.get("LastUpdatedTime") or "").strip()
+
+                    # On ignore les workloads purement nominaux sans message d'incident ni de rétablissement
+                    if not raw_title and not raw_msg:
+                        continue
+
+                    pub_dt = utcnow()
+                    if last_updated and not last_updated.startswith("0001-"):
+                        try:
+                            iso_str = last_updated[:-1] + "+00:00" if last_updated.endswith("Z") else last_updated
+                            dt = datetime.fromisoformat(iso_str)
+                            pub_dt = dt if dt.tzinfo is not None else dt.replace(tzinfo=timezone.utc)
+                        except Exception:
+                            pass
+
+                    clean_msg = " ".join(raw_msg.split())
+                    if status_str.lower() in ("service restored", "restored", "resolved", "available"):
+                        title = (
+                            f"Panne Microsoft 365 / Outlook résolue ({status_str}) — "
+                            f"{service_name} : {raw_title or 'Service intégralement rétabli'}"
+                        )
+                    else:
+                        title = f"Incident {service_name} ({status_str}) : {raw_title or clean_msg[:100]}"
+
+                    excerpt = f"[{service_name} — {status_str}] {clean_msg}"[:580]
+                    status_slug = re.sub(r"[^a-z0-9]+", "-", status_str.lower()).strip("-")
+                    item_url = f"https://status.cloud.microsoft/m365?workload={workload}&status={status_slug}"
+                    ext_id = f"ms-status::{workload}::{status_slug}::{last_updated[:16]}"
+                    md_body = (
+                        f"# {title}\n\n"
+                        f"- **Source officielle** : Microsoft Service Health (`https://status.cloud.microsoft/m365`)\n"
+                        f"- **Service** : {service_name} (`{workload}`)\n"
+                        f"- **Statut** : **{status_str}**\n"
+                        f"- **Dernière mise à jour** : {last_updated}\n\n"
+                        f"{raw_msg}\n"
+                    )
+                    _, topic, created = ingest_content_item(
+                        session,
+                        user_id=user_id,
+                        source=source,
+                        raw_url=item_url,
+                        title=title,
+                        markdown_body=md_body,
+                        excerpt=excerpt,
+                        published_at=pub_dt,
+                        external_id=ext_id[:500],
+                        visibility="public",
+                        category_slug=default_category or "tech",
+                    )
+                    topics_touched.add(str(topic.id))
+                    if created:
+                        items_ingested += 1
+    except Exception as exc:
+        logger.warning("Microsoft status hub fetch error: %s", exc)
+
+    source.last_fetched_at = utcnow()
+    return items_ingested, topics_touched
+
+
 def fetch_rss_sources(
     session: Session,
     user_id: UUID,
@@ -306,6 +393,23 @@ def fetch_rss_sources(
                     errors.append(f"{source.title}: {exc}")
                 continue
 
+            # Cas 2b : Page officielle de statut Microsoft 365 (https://status.cloud.microsoft/m365)
+            if "status.cloud.microsoft" in source.url:
+                try:
+                    feeds_polled += 1
+                    ing, touched = _ingest_microsoft_status_hub(
+                        session,
+                        client,
+                        user_id,
+                        source,
+                        sub.category_slug,
+                    )
+                    items_ingested += ing
+                    topics_touched |= touched
+                except Exception as exc:
+                    errors.append(f"{source.title}: {exc}")
+                continue
+
             # Cas 3 : Flux RSS / Atom standard, Podcast RSS ou Flux Atom YouTube
             feed_url = source.url
             if "thenewstack.io/rss-feeds" in feed_url:
@@ -358,7 +462,21 @@ def fetch_rss_sources(
                         title,
                         flags=re.IGNORECASE,
                     ).strip()
-                raw_summary = getattr(entry, "summary", "") or getattr(entry, "description", "") or ""
+                raw_summary = (
+                    getattr(entry, "summary", "")
+                    or getattr(entry, "description", "")
+                    or getattr(entry, "media_description", "")
+                    or ""
+                )
+                full_content_html = ""
+                if getattr(entry, "content", None):
+                    first_c = entry.content[0] if isinstance(entry.content, list) and entry.content else None
+                    if isinstance(first_c, dict):
+                        full_content_html = first_c.get("value") or ""
+                    elif hasattr(first_c, "value"):
+                        full_content_html = getattr(first_c, "value") or ""
+                if not raw_summary and full_content_html:
+                    raw_summary = full_content_html
                 clean_excerpt = _clean_summary_html(raw_summary)
                 if "news.google.com/rss/" in feed_url:
                     clean_excerpt = re.sub(
@@ -368,6 +486,10 @@ def fetch_rss_sources(
                         flags=re.IGNORECASE,
                     ).strip()
                 entry_id = getattr(entry, "id", "") or link or title
+
+                # Filtre les grilles horaires radio génériques sans description éditoriale (ex: "JOURNAL DE 09H00 du samedi...")
+                if is_generic_dated_broadcast_placeholder(title, clean_excerpt):
+                    continue
 
                 # Filtre les articles taggés comme sponsorisés dans les catégories RSS (ex: The New Stack 'sponsor-*', 'Sponsored')
                 entry_tags = [
@@ -396,12 +518,86 @@ def fetch_rss_sources(
                 pub_dt = _parse_feed_entry_datetime(entry)
                 if is_creator_media and idx > 0 and (now_utc - pub_dt).days > 45:
                     continue
+                if not is_creator_media and idx > 0 and (now_utc - pub_dt).days > 90:
+                    continue
 
+                # Si le flux RSS fournit le corps complet dans <content:encoded> (ex: WordPress / Cafzone),
+                # on l'extrait directement en Markdown pour disposer de l'article intégral dans S3
+                extra_body_md = ""
+                if full_content_html and len(full_content_html) > len(raw_summary) + 200:
+                    extracted_full = (
+                        trafilatura.extract(f"<html><body>{full_content_html}</body></html>", output_format="markdown")
+                        or _clean_summary_html(full_content_html)
+                    )
+                    if len(extracted_full.strip()) > len(clean_excerpt):
+                        extra_body_md = extracted_full.strip()
+
+                # Si un article provient de Pour la Science et que le jeton abonné est actif,
+                # récupère le texte abonné intégral dès l'ingestion lorsque l'article n'est pas encore enrichi
+                if "pourlascience.fr/" in link:
+                    from morning_review.connectors.mcp_enricher import (
+                        _fetch_via_agent_auth_mcp,
+                        _get_runtime_token_path,
+                    )
+                    from morning_review.core.url_utils import canonicalize_url
+                    from morning_review.db.models import CanonicalItem
+
+                    pls_token = _get_runtime_token_path("pourlascience")
+                    if pls_token.exists():
+                        canon_link = canonicalize_url(link)
+                        existing_ci = session.scalar(
+                            select(CanonicalItem).where(CanonicalItem.canonical_url == canon_link)
+                        )
+                        already_enriched = bool(
+                            existing_ci and (existing_ci.s3_key or "").startswith("enriched/")
+                        )
+                        if not already_enriched:
+                            try:
+                                pls_data = _fetch_via_agent_auth_mcp(
+                                    "tools.pourlascience.client:PourLaScienceClient",
+                                    link,
+                                )
+                                pls_md = (pls_data.get("markdown_body") or "").strip()
+                                if len(pls_md) > 400:
+                                    extra_body_md = pls_md
+                                    paras = [
+                                        " ".join(p.split())
+                                        for p in pls_md.split("\n\n")
+                                        if len(p.strip()) >= 50 and not p.strip().startswith("#") and not p.strip().startswith("[")
+                                    ]
+                                    if paras:
+                                        clean_excerpt = " ".join(paras[:2])[:500]
+                            except Exception as exc:
+                                logger.debug("Pour la Science inline subscriber fetch skipped for %s: %s", link, exc)
+
+                # Si un article RSS web (ex: Hacker News, Hugging Face Blog) n'a pas de description dans le flux,
+                # tente d'extraire les premiers paragraphes éditoriaux de la page cible
+                if not extra_body_md and len(clean_excerpt) < 40 and link.startswith(("http://", "https://")):
+                    if "youtube.com/" in link or "youtu.be/" in link:
+                        creator_lbl = str((source.metadata_json or {}).get("creator") or source.title.replace("(YouTube)", "").strip())
+                        clean_excerpt = f"Vidéo publiée par {creator_lbl} : « {title} »."
+                    elif "radiofrance.fr/" not in link:
+                        try:
+                            art_resp = client.get(link, timeout=6.0)
+                            if art_resp.status_code == 200 and "text/html" in art_resp.headers.get("content-type", "").lower():
+                                extracted_md = trafilatura.extract(art_resp.text, output_format="markdown", include_links=False) or ""
+                                paras = [
+                                    " ".join(p.split())
+                                    for p in extracted_md.split("\n\n")
+                                    if len(p.strip()) >= 45 and not p.strip().startswith("#")
+                                ]
+                                if paras:
+                                    clean_excerpt = " ".join(paras[:2])[:520]
+                                    extra_body_md = "\n\n".join(paras[:6])
+                        except Exception:
+                            pass
+
+                body_content = extra_body_md or clean_excerpt
                 md_body = (
                     f"# {title}\n\n"
                     f"- **Source RSS** : {source.title}\n"
                     f"- **Lien** : {link}\n\n"
-                    f"{clean_excerpt}\n"
+                    f"{body_content}\n"
                 )
                 _, topic, created = ingest_content_item(
                     session,

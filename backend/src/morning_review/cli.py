@@ -75,8 +75,16 @@ def main() -> None:
     )
     p_corrob.add_argument("topic_id", type=str, help="UUID du sujet (topic_id)")
 
-    p_digest = sub.add_parser("digest", help="Génère le rapport quotidien Morning Review (BDD + S3 + reports/)")
+    p_digest = sub.add_parser("digest", help="Génère le rapport quotidien Morning Review (BDD + S3 + reports/) et l'envoie optionnellement par e-mail")
     p_digest.add_argument("--max-topics", type=int, default=25)
+    p_digest.add_argument("--send-email", action="store_true", help="Expédie le digest par e-mail (idempotent 1 fois/jour)")
+    p_digest.add_argument("--force-send", action="store_true", help="Force le renvoi par e-mail même si déjà envoyé aujourd'hui")
+    p_digest.add_argument("--to", type=str, default=None, help="Destinataire e-mail optionnel (défaut: DIGEST_RECIPIENT_EMAIL)")
+
+    sub.add_parser(
+        "automations",
+        help="Affiche les automations déclaratives (.agents/schedules.json) et l'état du démon / dernier envoi quotidien",
+    )
 
     p_creators = sub.add_parser("creators", help="Affiche les créateurs de contenu agrégés multi-canaux (Podcast, YouTube, RSS, Newsletter)")
     p_creators.add_argument("--active-only", action="store_true", help="N'affiche que les créateurs avec au moins un canal actif")
@@ -173,8 +181,57 @@ def main() -> None:
             print(json.dumps(res, indent=2, ensure_ascii=False))
 
         elif args.command == "digest":
-            res = generate_daily_digest(session, user_id=user_id, max_topics=args.max_topics)
+            res = generate_daily_digest(
+                session,
+                user_id=user_id,
+                max_topics=args.max_topics,
+                send_email=args.send_email,
+                force_send=args.force_send,
+                recipient_email=args.to,
+            )
             print(json.dumps(res, indent=2, ensure_ascii=False))
+
+        elif args.command == "automations":
+            import socket
+            from morning_review.core.config import PROJECT_ROOT, settings
+            from morning_review.db.models import UserDigest
+            from sqlalchemy import select
+
+            sched_path = PROJECT_ROOT / ".agents" / "schedules.json"
+            sched_data = (
+                json.loads(sched_path.read_text(encoding="utf-8"))
+                if sched_path.exists()
+                else {"daemons": [], "schedules": []}
+            )
+            port_open = False
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.settimeout(1.0)
+                port_open = sock.connect_ex(("127.0.0.1", 8000)) == 0
+            latest_digest = session.scalar(
+                select(UserDigest)
+                .where(UserDigest.user_id == user_id)
+                .order_by(UserDigest.digest_date.desc())
+                .limit(1)
+            )
+            print(
+                json.dumps(
+                    {
+                        "schedules_file": str(sched_path),
+                        "uvicorn_port_8000_up": port_open,
+                        "digest_recipient_email": settings.digest_recipient_email,
+                        "latest_digest_date": latest_digest.digest_date.isoformat() if latest_digest else None,
+                        "latest_digest_emailed_at": (
+                            latest_digest.emailed_at.isoformat()
+                            if (latest_digest and latest_digest.emailed_at)
+                            else None
+                        ),
+                        "declared_daemons": sched_data.get("daemons", []),
+                        "declared_schedules": sched_data.get("schedules", []),
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
 
         elif args.command == "creators":
             res = list_creators_aggregated(

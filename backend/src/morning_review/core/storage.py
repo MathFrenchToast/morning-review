@@ -25,23 +25,31 @@ class ContentStorage:
     """
 
     def __init__(self) -> None:
-        self.bucket = settings.s3_bucket_name
+        self.bucket = settings.effective_s3_bucket
+        self.prefix = settings.effective_s3_prefix
+        self.endpoint_url = settings.effective_s3_endpoint
         self.local_fallback_dir = PROJECT_ROOT / ".data" / "s3" / self.bucket
         self._bucket_ensured = False
         self._s3 = boto3.client(
             "s3",
-            endpoint_url=settings.aws_endpoint_url_s3,
-            aws_access_key_id=settings.aws_access_key_id,
-            aws_secret_access_key=settings.aws_secret_access_key,
-            region_name=settings.aws_region,
+            endpoint_url=self.endpoint_url,
+            aws_access_key_id=settings.effective_s3_access_key,
+            aws_secret_access_key=settings.effective_s3_secret_key,
+            region_name=settings.effective_s3_region,
             config=Config(
                 signature_version="s3v4",
-                s3={"addressing_style": settings.s3_addressing_style},
-                connect_timeout=3,
-                read_timeout=5,
+                s3={"addressing_style": settings.effective_s3_addressing_style},
+                connect_timeout=4,
+                read_timeout=8,
                 retries={"max_attempts": 2},
             ),
         )
+
+    def _s3_key(self, key: str) -> str:
+        clean_key = key.lstrip("/")
+        if self.prefix:
+            return f"{self.prefix}/{clean_key}"
+        return clean_key
 
     @staticmethod
     def compute_sha256(content: str) -> str:
@@ -70,6 +78,10 @@ class ContentStorage:
     def ensure_bucket(self) -> bool:
         if self._bucket_ensured:
             return True
+        if "backblazeb2.com" in (self.endpoint_url or "").lower():
+            # Sur Backblaze B2, le bucket pré-existe et les Application Keys restreintes n'ont pas createBucket
+            self._bucket_ensured = True
+            return True
         try:
             self._s3.head_bucket(Bucket=self.bucket)
             self._bucket_ensured = True
@@ -92,7 +104,7 @@ class ContentStorage:
             try:
                 self._s3.put_object(
                     Bucket=self.bucket,
-                    Key=key,
+                    Key=self._s3_key(key),
                     Body=body,
                     ContentType="text/markdown; charset=utf-8",
                 )
@@ -108,7 +120,7 @@ class ContentStorage:
     def get_markdown(self, key: str) -> str | None:
         if self.ensure_bucket():
             try:
-                resp = self._s3.get_object(Bucket=self.bucket, Key=key)
+                resp = self._s3.get_object(Bucket=self.bucket, Key=self._s3_key(key))
                 return resp["Body"].read().decode("utf-8")
             except (ClientError, BotoCoreError):
                 pass

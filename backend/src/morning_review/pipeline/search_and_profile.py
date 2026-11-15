@@ -207,7 +207,10 @@ def search_topics(
     else:
         scored.sort(key=lambda pair: pair[0], reverse=rev)
 
-    from morning_review.pipeline.synthesizer import get_deduplicated_topic_articles
+    from morning_review.pipeline.synthesizer import (
+        extract_topic_subtopics,
+        get_deduplicated_topic_articles,
+    )
 
     state_map: dict[UUID, UserTopicState] = {
         st.topic_id: st
@@ -240,6 +243,7 @@ def search_topics(
                 {
                     "title": a["title"],
                     "url": a["url"],
+                    "excerpt": a.get("excerpt") or "",
                     "source_title": a["source_title"],
                     "kind": a.get("kind"),
                     "labels": a.get("labels") or [],
@@ -249,6 +253,7 @@ def search_topics(
             )
         first_iso = t.first_seen_at.isoformat() if t.first_seen_at else None
         last_iso = t.last_seen_at.isoformat() if t.last_seen_at else None
+        subtopics = extract_topic_subtopics(session, t, dedup_articles)
         results.append(
             {
                 "topic_id": str(t.id),
@@ -257,11 +262,13 @@ def search_topics(
                 "labels": topic_labels,
                 "creators": topic_creators,
                 "summary": t.summary,
+                "subtopics": subtopics,
                 "primary_url": t.primary_url,
                 "source_count": len(dedup_articles) or t.source_count,
                 "user_vote": feedback_map.get(t.id, 0),
                 "is_archived": bool(st.is_archived) if st else False,
                 "archived_at": st.archived_at.isoformat() if (st and st.archived_at) else None,
+                "reactivated_at": st.reactivated_at.isoformat() if (st and st.reactivated_at) else None,
                 "has_updates": bool(st.has_updates) if st else False,
                 "updates_summary": st.updates_summary if st else None,
                 "new_articles_count": (st.new_articles_count or 0) if st else 0,
@@ -284,23 +291,29 @@ def record_topic_feedback(
     topic_id: UUID,
     vote: int,
 ) -> dict[str, Any]:
-    """Enregistre l'avis Pertinent (+1) / Pas pertinent (-1) sur un topic_id et met à jour
-    le vecteur centroïde d'intérêt de l'utilisateur (algorithme de Rocchio).
+    """Enregistre l'avis Pertinent (+1) / Neutre (0, retrait du vote) / Pas pertinent (-1)
+    sur un topic_id et met à jour le vecteur centroïde d'intérêt de l'utilisateur (algorithme de Rocchio).
     """
-    if vote not in (1, -1):
-        raise ValueError("Le vote doit valoir +1 (pertinent) ou -1 (non pertinent).")
+    if vote not in (1, 0, -1):
+        raise ValueError("Le vote doit valoir +1 (pertinent), 0 (neutre) ou -1 (non pertinent).")
 
     topic = session.get(Topic, topic_id)
     if topic is None:
         raise ValueError(f"Topic introuvable: {topic_id}")
 
     fb = session.get(UserTopicFeedback, {"user_id": user_id, "topic_id": topic_id})
-    if fb is None:
-        fb = UserTopicFeedback(user_id=user_id, topic_id=topic_id, vote=vote, voted_at=utcnow())
-        session.add(fb)
+    prev_vote = fb.vote if fb is not None else 0
+
+    if vote == 0:
+        if fb is not None:
+            session.delete(fb)
     else:
-        fb.vote = vote
-        fb.voted_at = utcnow()
+        if fb is None:
+            fb = UserTopicFeedback(user_id=user_id, topic_id=topic_id, vote=vote, voted_at=utcnow())
+            session.add(fb)
+        else:
+            fb.vote = vote
+            fb.voted_at = utcnow()
 
     profile = session.get(UserProfile, user_id)
     if profile is None:
@@ -308,31 +321,49 @@ def record_topic_feedback(
         session.add(profile)
         session.flush()
 
-    if topic.centroid_embedding is not None:
+    delta_vote = vote - prev_vote
+
+    if topic.centroid_embedding is not None and delta_vote != 0:
         t_vec = np.asarray(list(topic.centroid_embedding), dtype=np.float32)
         if profile.interest_embedding is None:
-            new_vec = t_vec if vote == 1 else (-0.25 * t_vec)
+            if vote != 0:
+                new_vec = t_vec if vote == 1 else (-0.25 * t_vec)
+                norm = float(np.linalg.norm(new_vec)) or 1.0
+                profile.interest_embedding = (new_vec / norm).astype(float).tolist()
         else:
             u_vec = np.asarray(list(profile.interest_embedding), dtype=np.float32)
-            weight = 0.35 if vote == 1 else -0.20
+            if vote == 1:
+                weight = 0.35
+            elif vote == -1:
+                weight = -0.20
+            else:
+                # Retrait d'un vote précédent (retour à 0)
+                weight = -0.35 if prev_vote == 1 else 0.20
             new_vec = u_vec + (weight * t_vec)
-        norm = float(np.linalg.norm(new_vec)) or 1.0
-        profile.interest_embedding = (new_vec / norm).astype(float).tolist()
+            norm = float(np.linalg.norm(new_vec)) or 1.0
+            profile.interest_embedding = (new_vec / norm).astype(float).tolist()
 
     cat_aff = dict(profile.category_affinities or {})
-    cat_aff[topic.category_slug] = round(cat_aff.get(topic.category_slug, 0.0) + (0.2 * vote), 3)
+    cat_aff[topic.category_slug] = round(cat_aff.get(topic.category_slug, 0.0) + (0.2 * delta_vote), 3)
     profile.category_affinities = cat_aff
 
-    if vote == 1:
+    if prev_vote == 1 and vote != 1:
+        profile.positive_votes = max(0, (profile.positive_votes or 0) - 1)
+    elif prev_vote == -1 and vote != -1:
+        profile.negative_votes = max(0, (profile.negative_votes or 0) - 1)
+
+    if prev_vote != 1 and vote == 1:
         profile.positive_votes = (profile.positive_votes or 0) + 1
-    else:
+    elif prev_vote != -1 and vote == -1:
         profile.negative_votes = (profile.negative_votes or 0) + 1
+
     profile.updated_at = utcnow()
 
     session.commit()
     return {
         "user_id": str(user_id),
         "topic_id": str(topic_id),
+        "previous_vote": prev_vote,
         "vote": vote,
         "category": topic.category_slug,
         "positive_votes": profile.positive_votes,
@@ -367,8 +398,15 @@ def generate_daily_digest(
     *,
     digest_date: date | None = None,
     max_topics: int = 25,
+    recent_hours: int = 48,
+    send_email: bool = False,
+    force_send: bool = False,
+    recipient_email: str | None = None,
+    smtp_factory: Any = None,
 ) -> dict[str, Any]:
-    """Génère le rapport quotidien Morning Review (persisté en BDD, sur S3 et dans reports/)."""
+    """Génère le rapport quotidien Morning Review (persisté en BDD, sur S3 et dans reports/),
+    et l'expédie optionnellement par e-mail de manière idempotente (une fois par jour sauf `force_send=True`).
+    """
     target_date = digest_date or utcnow().date()
     profile = session.get(UserProfile, user_id)
 
@@ -376,6 +414,12 @@ def generate_daily_digest(
         fb.topic_id: fb.vote
         for fb in session.scalars(
             select(UserTopicFeedback).where(UserTopicFeedback.user_id == user_id)
+        ).all()
+    }
+    state_map: dict[UUID, UserTopicState] = {
+        st.topic_id: st
+        for st in session.scalars(
+            select(UserTopicState).where(UserTopicState.user_id == user_id)
         ).all()
     }
 
@@ -386,8 +430,28 @@ def generate_daily_digest(
         .limit(300)
     ).all()
 
+    unarchived_topics = [
+        t for t in topics if not (state_map.get(t.id) and state_map[t.id].is_archived)
+    ]
+    window_cutoff = utcnow() - timedelta(hours=recent_hours)
+    fresh_topics = [
+        t
+        for t in unarchived_topics
+        if (
+            t.last_seen_at is not None
+            and (
+                t.last_seen_at.replace(tzinfo=timezone.utc)
+                if t.last_seen_at.tzinfo is None
+                else t.last_seen_at
+            )
+            >= window_cutoff
+        )
+        or bool(state_map.get(t.id) and state_map[t.id].has_updates)
+    ]
+    candidate_topics = fresh_topics if len(fresh_topics) >= 5 else unarchived_topics
+
     scored_by_cat: dict[str, list[tuple[float, Topic]]] = defaultdict(list)
-    for t in topics:
+    for t in candidate_topics:
         vote = feedback_map.get(t.id)
         rel = compute_topic_relevance(t, profile, vote)
         if rel < 0:
@@ -422,7 +486,10 @@ def generate_daily_digest(
     by_category: dict[str, list[dict[str, Any]]] = defaultdict(list)
     digest_topics_payload: list[dict[str, Any]] = []
 
-    from morning_review.pipeline.synthesizer import get_deduplicated_topic_articles
+    from morning_review.pipeline.synthesizer import (
+        extract_topic_subtopics,
+        get_deduplicated_topic_articles,
+    )
 
     for rel_score, t in selected:
         dedup_articles = get_deduplicated_topic_articles(session, t.id)
@@ -438,6 +505,9 @@ def generate_daily_digest(
         ]
         first_iso = t.first_seen_at.isoformat() if t.first_seen_at else None
         last_iso = t.last_seen_at.isoformat() if t.last_seen_at else None
+        t_state = state_map.get(t.id)
+        has_upd = bool(t_state and t_state.has_updates)
+        upd_sum = (t_state.updates_summary or "") if t_state else ""
         entry = {
             "topic_id": str(t.id),
             "title": t.title,
@@ -449,7 +519,10 @@ def generate_daily_digest(
             "last_seen_at": last_iso,
             "first_source_at": first_iso,
             "latest_source_at": last_iso,
-            "summary": (t.summary or "")[:360],
+            "summary": (t.summary or "")[:480],
+            "has_updates": has_upd,
+            "updates_summary": upd_sum[:400],
+            "subtopics": (t.subtopics_json or [])[:4] if isinstance(t.subtopics_json, list) else [],
             "sources": sources_list,
         }
         by_category[t.category_slug].append(entry)
@@ -468,12 +541,55 @@ def generate_daily_digest(
         "",
     ]
 
+    from morning_review.core.config import settings
+    from morning_review.db.models import NewsletterConfirmation
+
+    recent_cutoff = utcnow() - timedelta(hours=48)
+    conf_rows = session.scalars(
+        select(NewsletterConfirmation)
+        .where(
+            NewsletterConfirmation.user_id == user_id,
+            NewsletterConfirmation.status != "dismissed",
+            or_(
+                NewsletterConfirmation.status == "manual_required",
+                NewsletterConfirmation.processed_at >= recent_cutoff,
+            ),
+        )
+        .order_by(NewsletterConfirmation.processed_at.desc())
+        .limit(15)
+    ).all()
+    conf_payloads = [
+        {
+            "sender_name": cr.sender_name,
+            "sender_email": cr.sender_email,
+            "subject": cr.subject,
+            "confirmation_url": cr.confirmation_url,
+            "status": cr.status,
+            "status_detail": cr.status_detail,
+        }
+        for cr in conf_rows
+    ]
+    if conf_rows:
+        md_lines.append("## ✉️ Inscriptions Newsletters (Double Opt-In)")
+        md_lines.append("")
+        for cr in conf_rows:
+            if cr.status == "confirmed":
+                md_lines.append(
+                    f"- ✅ **Auto-validée** : **{cr.sender_name}** (`{cr.sender_email}`) — *{cr.subject}* ({cr.status_detail})"
+                )
+            else:
+                md_lines.append(
+                    f"- ⚠️ **Validation 1-clic requise** : **{cr.sender_name}** (`{cr.sender_email}`) — [Cliquer pour confirmer l'inscription]({cr.confirmation_url}) ({cr.status_detail})"
+                )
+        md_lines.append("")
+
     for cat_slug, items in sorted(by_category.items()):
         md_lines.append(f"## Catégorie : `{cat_slug}` ({len(items)} sujets)")
         md_lines.append("")
         for item in items:
+            upd_prefix = "🔄 **[MISE À JOUR]** " if item.get("has_updates") else ""
             md_lines.append(
-                f"### [{item['title']}]({item['primary_url']}) "
+                f"### {upd_prefix}[{item['title']}]({item['primary_url']}) "
                 f"*(score: {item['relevance_score']} | {item['source_count']} source(s))*"
             )
             md_lines.append(
@@ -481,6 +597,8 @@ def generate_daily_digest(
                 f"**1re source** : `{item['first_seen_at'] or 'n/a'}` | "
                 f"**Dernière source** : `{item['last_seen_at'] or 'n/a'}`"
             )
+            if item.get("has_updates") and item.get("updates_summary"):
+                md_lines.append(f"- **Nouveauté détectée** : {item['updates_summary']}")
             if item["summary"]:
                 md_lines.append(f"- **Synthèse** : {item['summary']}")
             if item["sources"]:
@@ -522,6 +640,45 @@ def generate_daily_digest(
         digest_row.s3_key = s3_key
         digest_row.topics_json = digest_topics_payload
 
+    email_status = "not_requested"
+    if send_email:
+        if digest_row.emailed_at is not None and not force_send:
+            email_status = "already_sent"
+        else:
+            from morning_review.connectors.gmail_smtp import (
+                build_digest_html,
+                build_digest_plain_text,
+                send_digest_email,
+            )
+
+            updates_cnt = sum(1 for it in digest_topics_payload if it.get("has_updates"))
+            subj = f"Morning Review — {target_date.isoformat()} ({len(digest_topics_payload)} sujets"
+            if updates_cnt:
+                subj += f" | {updates_cnt} màj"
+            subj += ")"
+            plain_body = build_digest_plain_text(
+                target_date=target_date,
+                by_category=by_category,
+                confirmations=conf_payloads,
+                ui_url=settings.public_ui_url,
+            )
+            html_body = build_digest_html(
+                target_date=target_date,
+                by_category=by_category,
+                confirmations=conf_payloads,
+                ui_url=settings.public_ui_url,
+            )
+            sent_info = send_digest_email(
+                subject=subj,
+                plain_markdown=plain_body,
+                html_body=html_body,
+                recipient_email=recipient_email,
+                smtp_factory=smtp_factory,
+            )
+            digest_row.emailed_at = utcnow()
+            digest_row.emailed_to = sent_info["to"]
+            email_status = "sent"
+
     session.commit()
     return {
         "digest_id": str(digest_row.id),
@@ -531,4 +688,7 @@ def generate_daily_digest(
         "s3_key": s3_key,
         "local_report_path": str(local_report_path),
         "categories": {k: len(v) for k, v in by_category.items()},
+        "email_status": email_status,
+        "emailed_at": digest_row.emailed_at.isoformat() if digest_row.emailed_at else None,
+        "emailed_to": digest_row.emailed_to,
     }

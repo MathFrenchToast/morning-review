@@ -49,28 +49,97 @@ def _get_runtime_token_path(tool_name: str) -> Path:
     return Path(runtime_dir) / "agent-tokens" / f"{tool_name}.token"
 
 
-def _fetch_via_agent_auth_mcp(client_spec: str, url: str) -> dict[str, Any]:
-    """Appelle en lecture seule le client correspondant du projet frère agent-auth-mcp."""
-    module_name, class_name = client_spec.split(":")
-    code = (
-        f"import json; "
-        f"from {module_name} import {class_name}; "
-        f"with {class_name}() as c: "
-        f"    res = c.read_article({url!r}); "
-        f"print(json.dumps(res, ensure_ascii=False))"
-    )
+def _run_agent_auth_mcp_script(code: str, timeout: int = 35) -> Any:
+    """Exécute un snippet Python en lecture seule dans l'environnement `agent-auth-mcp` et décode la sortie JSON."""
+    env = {**os.environ, "PYTHONPATH": str(AGENT_AUTH_MCP_DIR)}
     proc = subprocess.run(
         ["uv", "run", "python", "-c", code],
         cwd=str(AGENT_AUTH_MCP_DIR),
+        env=env,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=timeout,
         check=False,
     )
     if proc.returncode != 0:
         raise RuntimeError(f"agent-auth-mcp error: {proc.stderr.strip() or proc.stdout.strip()}")
     lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    if not lines:
+        return {}
     return json.loads(lines[-1])
+
+
+def _fetch_via_agent_auth_mcp(client_spec: str, url: str) -> dict[str, Any]:
+    """Appelle en lecture seule le client correspondant du projet frère agent-auth-mcp."""
+    module_name, class_name = client_spec.split(":")
+    code = (
+        f"import json\n"
+        f"from {module_name} import {class_name}\n"
+        f"with {class_name}() as c:\n"
+        f"    res = c.read_article({url!r})\n"
+        f"print(json.dumps(res, ensure_ascii=False))\n"
+    )
+    res = _run_agent_auth_mcp_script(code, timeout=30)
+    return res if isinstance(res, dict) else {}
+
+
+def list_pourlascience_latest_articles(category: str = "", limit: int = 20) -> list[dict[str, Any]]:
+    """Liste les derniers articles publiés sur `www.pourlascience.fr` (accueil ou rubrique thématique)."""
+    code = (
+        "import json\n"
+        "from tools.pourlascience.client import PourLaScienceClient\n"
+        "with PourLaScienceClient() as c:\n"
+        f"    res = c.list_latest_articles(category={category!r}, limit={int(limit)})\n"
+        "print(json.dumps(res, ensure_ascii=False))\n"
+    )
+    res = _run_agent_auth_mcp_script(code, timeout=30)
+    return res if isinstance(res, list) else []
+
+
+def list_pourlascience_issues(
+    source: str = "all",
+    year: int | None = None,
+    issue_number: int | None = None,
+    query: str = "",
+    page: int = 1,
+    limit: int = 24,
+) -> list[dict[str, Any]]:
+    """Liste les numéros mensuels (`pls`), Hors-Séries (`dpls`) ou l'ensemble des archives (`all`) de Pour la Science."""
+    code = (
+        "import json\n"
+        "from tools.pourlascience.client import PourLaScienceClient\n"
+        "with PourLaScienceClient() as c:\n"
+        f"    res = c.list_issues(source={source!r}, year={year!r}, issue_number={issue_number!r}, query={query!r}, page={int(page)}, limit={int(limit)})\n"
+        "print(json.dumps(res, ensure_ascii=False))\n"
+    )
+    res = _run_agent_auth_mcp_script(code, timeout=35)
+    return res if isinstance(res, list) else []
+
+
+def get_pourlascience_issue_articles(issue_url_or_number: str) -> dict[str, Any]:
+    """Récupère le sommaire complet et les articles d'un numéro ou Hors-Série Pour la Science (ex: '589', 'HS133' ou URL)."""
+    code = (
+        "import json\n"
+        "from tools.pourlascience.client import PourLaScienceClient\n"
+        "with PourLaScienceClient() as c:\n"
+        f"    res = c.get_issue_articles({issue_url_or_number!r})\n"
+        "print(json.dumps(res, ensure_ascii=False))\n"
+    )
+    res = _run_agent_auth_mcp_script(code, timeout=35)
+    return res if isinstance(res, dict) else {}
+
+
+def search_pourlascience_articles(query: str, page: int = 1, limit: int = 20) -> list[dict[str, Any]]:
+    """Recherche dans tous les articles et archives du site `www.pourlascience.fr`."""
+    code = (
+        "import json\n"
+        "from tools.pourlascience.client import PourLaScienceClient\n"
+        "with PourLaScienceClient() as c:\n"
+        f"    res = c.search_articles(query={query!r}, page={int(page)}, limit={int(limit)})\n"
+        "print(json.dumps(res, ensure_ascii=False))\n"
+    )
+    res = _run_agent_auth_mcp_script(code, timeout=35)
+    return res if isinstance(res, list) else []
 
 
 def _ensure_www_if_needed(url: str) -> str:
@@ -81,18 +150,74 @@ def _ensure_www_if_needed(url: str) -> str:
     return url
 
 
+def _extract_jsonld_or_meta_description(raw_html: str) -> str:
+    """Extrait `articleBody` ou `description` depuis les blocs JSON-LD ou les balises meta
+    lorsque Trafilatura renvoie peu de texte (ex: pages YouTube, podcasts ou SPA).
+    """
+    import html as html_lib
+    import re
+
+    pieces: list[str] = []
+    for match in re.finditer(
+        r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+        raw_html,
+        flags=re.DOTALL | re.IGNORECASE,
+    ):
+        raw_json = match.group(1).strip()
+        try:
+            data = json.loads(raw_json)
+            candidates = data if isinstance(data, list) else [data]
+            for obj in candidates:
+                if not isinstance(obj, dict):
+                    continue
+                for key in ("articleBody", "description", "text"):
+                    val = obj.get(key)
+                    if isinstance(val, str) and len(val.strip()) > 80:
+                        pieces.append(html_lib.unescape(val.strip()))
+        except Exception:
+            continue
+
+    if not pieces:
+        # Tentative pour la description complète YouTube dans ytInitialPlayerResponse
+        yt_match = re.search(r'"shortDescription":"((?:\\.|[^"\\])*)"', raw_html)
+        if yt_match:
+            try:
+                desc = json.loads(f'"{yt_match.group(1)}"')
+                if len(desc.strip()) > 60:
+                    pieces.append(desc.strip())
+            except Exception:
+                pass
+
+    if not pieces:
+        meta_match = re.search(
+            r'<meta[^>]+(?:property|name)=["\'](?:og:description|description)["\'][^>]+content=["\']([^"\']+)["\']',
+            raw_html,
+            flags=re.IGNORECASE,
+        )
+        if meta_match:
+            val = html_lib.unescape(meta_match.group(1).strip())
+            if len(val) > 60:
+                pieces.append(val)
+
+    return "\n\n".join(dict.fromkeys(pieces))
+
+
 def _fetch_via_trafilatura(url: str) -> dict[str, Any]:
-    """Extraction publique déterministe via httpx + Trafilatura (pour Quanta Magazine ou aperçu public)."""
+    """Extraction publique déterministe via httpx + Trafilatura (mode favor_recall=True)."""
     target = _ensure_www_if_needed(url)
     headers = {
-        "User-Agent": "MorningReview/1.0 (RSS Reader; Feed Fetcher)",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
     }
     raw_html = ""
-    with httpx.Client(follow_redirects=True, timeout=15.0, headers=headers) as client:
-        resp = client.get(target)
-        if resp.status_code < 400:
-            raw_html = resp.text
+    try:
+        with httpx.Client(follow_redirects=True, timeout=12.0, headers=headers) as client:
+            resp = client.get(target)
+            if resp.status_code < 400:
+                raw_html = resp.text
+    except Exception as exc:
+        logger.debug("httpx fetch fallback for %s: %s", target, exc)
 
     if not raw_html:
         raw_html = trafilatura.fetch_url(target) or ""
@@ -105,9 +230,17 @@ def _fetch_via_trafilatura(url: str) -> dict[str, Any]:
             output_format="markdown",
             include_links=True,
             include_formatting=True,
+            include_tables=True,
+            include_comments=False,
+            favor_recall=True,
         )
         or ""
-    )
+    ).strip()
+
+    extra_structured = _extract_jsonld_or_meta_description(raw_html)
+    if len(extra_structured) > len(md_text):
+        md_text = f"{extra_structured}\n\n{md_text}".strip() if md_text else extra_structured
+
     lower = (md_text + " " + raw_html[:8000]).lower()
     paywall_markers = (
         "cet article est réservé aux abonnés",
@@ -116,8 +249,9 @@ def _fetch_via_trafilatura(url: str) -> dict[str, Any]:
         "already a subscriber",
         "pour lire la suite, abonnez-vous",
         "become a member to read",
+        "member-only story",
     )
-    paywall_detected = any(m in lower for m in paywall_markers) or len(md_text.strip()) < 600
+    paywall_detected = any(m in lower for m in paywall_markers) or len(md_text.strip()) < 500
     return {
         "url": target,
         "markdown": md_text.strip(),
@@ -161,6 +295,15 @@ def enrich_topic_content(
         try:
             article_data = _fetch_via_agent_auth_mcp(client_spec, target_url)
             enrichment_method = f"mcp_auth:{tool_name}"
+            mcp_md = (
+                article_data.get("markdown")
+                or article_data.get("markdown_body")
+                or article_data.get("content")
+                or ""
+            )
+            if len(mcp_md.strip()) < 200:
+                article_data = _fetch_via_trafilatura(target_url)
+                enrichment_method = "trafilatura_public"
         except Exception as exc:
             logger.warning("Fallback trafilatura après échec MCP (%s): %s", tool_name, exc)
             article_data = _fetch_via_trafilatura(target_url)
@@ -173,8 +316,18 @@ def enrich_topic_content(
                 f"cd {AGENT_AUTH_MCP_DIR} && uv run python -m tools.{tool_name}.auth login"
             )
 
-    markdown_content = article_data.get("markdown") or ""
-    paywall_detected = bool(article_data.get("paywall_detected", False))
+    markdown_content = (
+        article_data.get("markdown")
+        or article_data.get("markdown_body")
+        or article_data.get("content")
+        or ""
+    )
+    paywall_detected = bool(
+        article_data.get(
+            "paywall_detected",
+            article_data.get("is_paywalled_or_truncated", False),
+        )
+    )
 
     visibility = "private" if enrichment_method.startswith("mcp_auth:") else "public"
     full_md_doc = (
@@ -193,27 +346,45 @@ def enrich_topic_content(
     )
     storage.put_markdown(s3_key, full_md_doc)
 
-    # Mise à jour du résumé du Topic et du ContentItem associé si l'extraction est plus riche
-    clean_lines = [
-        line.strip()
-        for line in markdown_content.splitlines()
-        if line.strip() and not line.strip().startswith("#")
-    ]
-    rich_excerpt = " ".join(clean_lines)[:600]
-    if len(rich_excerpt) > len(topic.summary or ""):
-        topic.summary = rich_excerpt
-
-    item = session.scalar(
-        select(CanonicalItem)
-        .where(CanonicalItem.topic_id == topic.id)
-        .order_by(CanonicalItem.created_at.desc())
+    # Mise à jour du résumé du Topic et du ContentItem correspondant à target_url
+    from morning_review.pipeline.ingestion import canonicalize_url
+    from morning_review.pipeline.synthesizer import (
+        _clean_markdown_body_paragraphs,
+        synthesize_topic_summary,
     )
+
+    clean_paras = _clean_markdown_body_paragraphs(markdown_content)
+    if clean_paras:
+        rich_excerpt = " ".join(clean_paras[:4])[:650]
+    else:
+        clean_lines = [
+            line.strip()
+            for line in markdown_content.splitlines()
+            if line.strip() and not line.strip().startswith("#")
+        ]
+        rich_excerpt = " ".join(clean_lines)[:600]
+
+    norm_target = canonicalize_url(target_url)
+    item = session.scalar(
+        select(CanonicalItem).where(
+            CanonicalItem.topic_id == topic.id,
+            CanonicalItem.canonical_url == norm_target,
+        )
+    )
+    if item is None:
+        item = session.scalar(
+            select(CanonicalItem)
+            .where(CanonicalItem.topic_id == topic.id)
+            .order_by(CanonicalItem.published_at.asc())
+        )
     if item is not None:
         item.s3_key = s3_key
         item.content_sha256 = sha256_hex
-        if len(rich_excerpt) > len(item.excerpt or ""):
+        if rich_excerpt:
             item.excerpt = rich_excerpt[:500]
 
+    session.flush()
+    synthesize_topic_summary(session, topic)
     session.commit()
 
     return {

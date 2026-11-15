@@ -92,3 +92,61 @@ morning-review/
 - [Décisions d'Architecture & Sources Officielles (`doc/adr.md`)](doc/adr.md)
 - [Plan d'Exécution Détaillé MVP & Post-MVP (`doc/tasks.md`)](doc/tasks.md)
 - [Configuration Type (`.env.example`)](.env.example)
+
+---
+
+## 5. Déploiement Kubernetes (K3s / ArgoCD) sur `vm-hostinger`
+
+Le déploiement suit exactement le patron GitOps de `allbal` (`bal.perso.frenchtoast.dev`) pour exposer **`https://review.perso.frenchtoast.dev`** derrière **Traefik Gateway API**, **Cert-Manager (Let's Encrypt)** et une authentification **Traefik BasicAuth**, avec **CloudNativePG** (`postgresql:17.2` + `pgvector`), **Backblaze B2 S3** et deux **`CronJob` Kubernetes** (`Europe/Paris`).
+
+### 5.1. Prérequis et Secrets (à exécuter une seule fois sur le cluster)
+
+1. **Créer le namespace `morning-review`** :
+   ```bash
+   kubectl create namespace morning-review --dry-run=client -o yaml | kubectl apply -f -
+   ```
+
+2. **Copier le PullSecret GHCR (`ghcr-secret`) depuis le namespace `sf2`** (idem `allbal`) :
+   ```bash
+   kubectl get secret ghcr-secret -n sf2 -o json \
+     | jq 'del(.metadata.namespace,.metadata.resourceVersion,.metadata.uid,.metadata.creationTimestamp)' \
+     | kubectl apply -n morning-review -f -
+   ```
+
+3. **Créer le Secret BasicAuth Traefik (`morning-review-basic-auth-secret`)** (ou copier celui de `allbal`) :
+   ```bash
+   # Option A : Réutiliser exactement les mêmes identifiants BasicAuth que allbal
+   kubectl get secret allbal-basic-auth-secret -n allbal -o json \
+     | jq '.metadata.name = "morning-review-basic-auth-secret" | del(.metadata.namespace,.metadata.resourceVersion,.metadata.uid,.metadata.creationTimestamp)' \
+     | kubectl apply -n morning-review -f -
+
+   # Option B : Générer un nouveau couple utilisateur/mot de passe avec htpasswd
+   htpasswd -nb mathieu 'VOTRE_MOT_DE_PASSE_SOLIDE' > /tmp/users.htpasswd
+   kubectl -n morning-review create secret generic morning-review-basic-auth-secret \
+     --from-file=users=/tmp/users.htpasswd \
+     --dry-run=client -o yaml | kubectl apply -f -
+   rm -f /tmp/users.htpasswd
+   ```
+
+4. **Créer le Secret applicatif (`morning-review-env-secret`) directement depuis le fichier `.env`** (incluant `GMAIL_ACCOUNT`, `GMAIL_PWD`, `OPENROUTER_API_KEY`, `B2_ENDPOINT_URL`, `B2_KEY_ID`, `B2_APPLICATION_KEY`, `B2_BUCKET`, etc.) :
+   ```bash
+   kubectl -n morning-review create secret generic morning-review-env-secret \
+     --from-env-file=.env \
+     --dry-run=client -o yaml | kubectl apply -f -
+   ```
+   > **Note** : Même si votre `.env` local contient `DATABASE_URL=postgresql+psycopg://...localhost...` ou `PUBLIC_UI_URL=http://localhost:8000`, le manifeste [`k8s/deployment.yaml`](k8s/deployment.yaml) surcharge automatiquement `DATABASE_URL` avec l'URI du cluster CloudNativePG interne (`morning-review-pg-app`) et `PUBLIC_UI_URL` avec `https://review.perso.frenchtoast.dev`.
+
+### 5.2. Déploiement GitOps via ArgoCD
+
+Appliquer l'Application ArgoCD :
+```bash
+kubectl apply -f k8s/argocd-application.yaml
+```
+
+### 5.3. Composants déployés par `k8s/deployment.yaml`
+
+- **`Cluster` CloudNativePG (`morning-review-pg`)** : PostgreSQL 17.2 (`local-path`, `2Gi`) avec activation automatique de `CREATE EXTENSION IF NOT EXISTS vector;`.
+- **`PersistentVolumeClaim` (`morning-review-cache-pvc`)** : Volume `1Gi` partageant le modèle ONNX FastEmbed (`/app/.cache/fastembed`) et les rapports Markdown (`/app/reports`) entre le serveur web et les `CronJob`.
+- **`Deployment` (`morning-review`)** : Serveur FastAPI/Uvicorn + UI Web sur `https://review.perso.frenchtoast.dev`.
+- **`CronJob` `morning-review-refresh-hourly` (`0 * * * *`, `Europe/Paris`)** : Relève horaire Gmail IMAP (incluant l'auto-validation prudente des inscriptions newsletters double opt-in), relève RSS/Podcasts/YouTube et recalcul du clustering.
+- **`CronJob` `morning-review-daily-06h30` (`30 6 * * *`, `Europe/Paris`)** : Relève complète à **06h30**, consolidation du clustering, génération du Morning Review et envoi par e-mail de `mathieuv.alterai@gmail.com` vers `mathieu.veron@gmail.com` (avec liens publics `https://review.perso.frenchtoast.dev`).

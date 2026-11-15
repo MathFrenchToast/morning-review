@@ -7,7 +7,7 @@ from uuid import UUID
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
+PROJECT_ROOT = Path(os.environ.get("APP_ROOT", str(Path(__file__).resolve().parents[4])))
 
 
 class Settings(BaseSettings):
@@ -22,6 +22,10 @@ class Settings(BaseSettings):
         default="dev-secret-key-change-in-production-32bytes",
         alias="APP_SECRET_KEY",
     )
+    enable_background_ingest: bool = Field(
+        default=True,
+        alias="ENABLE_BACKGROUND_INGEST",
+    )
 
     # Mode MVP (single_user) vs Post-MVP (oidc)
     auth_mode: str = Field(default="single_user", alias="AUTH_MODE")
@@ -32,13 +36,13 @@ class Settings(BaseSettings):
     bootstrap_user_email: str = Field(default="", alias="BOOTSTRAP_USER_EMAIL")
     mvp_api_token: str = Field(default="", alias="MVP_API_TOKEN")
 
-    # PostgreSQL
+    # PostgreSQL (compatible URI standard CloudNativePG postgresql:// et SQLAlchemy postgresql+psycopg://)
     database_url: str = Field(
         default="postgresql+psycopg://morning:morning@localhost:5432/morning_review",
         alias="DATABASE_URL",
     )
 
-    # Stockage S3 compatible (SeaweedFS / MinIO / Garage / AWS S3)
+    # Stockage S3 compatible (SeaweedFS / MinIO / Garage / AWS S3 / Backblaze B2)
     aws_endpoint_url_s3: str = Field(
         default="http://localhost:9000",
         alias="AWS_ENDPOINT_URL_S3",
@@ -48,6 +52,15 @@ class Settings(BaseSettings):
     aws_region: str = Field(default="us-east-1", alias="AWS_REGION")
     s3_bucket_name: str = Field(default="morning-review", alias="S3_BUCKET_NAME")
     s3_addressing_style: str = Field(default="path", alias="S3_ADDRESSING_STYLE")
+    s3_key_prefix: str = Field(default="", alias="S3_KEY_PREFIX")
+
+    # Variables Backblaze B2 optionnelles (compatibles avec les conventions .env de run-analysis)
+    b2_endpoint_url: str = Field(default="", alias="B2_ENDPOINT_URL")
+    b2_region: str = Field(default="", alias="B2_REGION")
+    b2_bucket: str = Field(default="", alias="B2_BUCKET")
+    b2_prefix: str = Field(default="", alias="B2_PREFIX")
+    b2_key_id: str = Field(default="", alias="B2_KEY_ID")
+    b2_application_key: str = Field(default="", alias="B2_APPLICATION_KEY")
 
     # Embeddings ONNX CPU
     embedding_model_name: str = Field(
@@ -79,12 +92,20 @@ class Settings(BaseSettings):
     openrouter_max_rpm: int = Field(default=15, alias="OPENROUTER_MAX_RPM")
     openrouter_max_rpd: int = Field(default=900, alias="OPENROUTER_MAX_RPD")
 
-    # Gmail IMAP (.env)
+    # Gmail IMAP & SMTP (.env)
     gmail_account: str = Field(default="", alias="GMAIL_ACCOUNT")
     gmail_pwd: str = Field(default="", alias="GMAIL_PWD")
     gmail_imap_host: str = Field(default="imap.gmail.com", alias="GMAIL_IMAP_HOST")
     gmail_imap_port: int = Field(default=993, alias="GMAIL_IMAP_PORT")
     gmail_curation_label: str = Field(default="INBOX", alias="GMAIL_CURATION_LABEL")
+    gmail_smtp_host: str = Field(default="smtp.gmail.com", alias="GMAIL_SMTP_HOST")
+    gmail_smtp_port: int = Field(default=465, alias="GMAIL_SMTP_PORT")
+    digest_recipient_email: str = Field(
+        default="mathieu.veron@gmail.com",
+        alias="DIGEST_RECIPIENT_EMAIL",
+    )
+    public_ui_url: str = Field(default="http://localhost:8000", alias="PUBLIC_UI_URL")
+    daily_digest_send_hour: int = Field(default=7, alias="DAILY_DIGEST_SEND_HOUR")
 
     # Fichier déclaratif des sources
     sources_yaml_path: Path = Field(
@@ -94,6 +115,49 @@ class Settings(BaseSettings):
     @property
     def effective_bootstrap_email(self) -> str:
         return self.bootstrap_user_email or self.gmail_account or "admin@localhost"
+
+    @property
+    def effective_database_url(self) -> str:
+        url = (self.database_url or "").strip()
+        if url.startswith("postgres://"):
+            return "postgresql+psycopg://" + url[len("postgres://") :]
+        if url.startswith("postgresql://"):
+            return "postgresql+psycopg://" + url[len("postgresql://") :]
+        return url
+
+    @property
+    def effective_s3_endpoint(self) -> str:
+        return (self.b2_endpoint_url or self.aws_endpoint_url_s3).strip()
+
+    @property
+    def effective_s3_access_key(self) -> str:
+        return (self.b2_key_id or self.aws_access_key_id).strip()
+
+    @property
+    def effective_s3_secret_key(self) -> str:
+        return (self.b2_application_key or self.aws_secret_access_key).strip()
+
+    @property
+    def effective_s3_region(self) -> str:
+        return (self.b2_region or self.aws_region).strip()
+
+    @property
+    def effective_s3_bucket(self) -> str:
+        return (self.b2_bucket or self.s3_bucket_name).strip()
+
+    @property
+    def effective_s3_prefix(self) -> str:
+        if self.s3_key_prefix.strip():
+            return self.s3_key_prefix.strip().strip("/")
+        if self.b2_prefix.strip():
+            return self.b2_prefix.strip().strip("/")
+        if self.b2_bucket.strip():
+            return "morning-review"
+        return ""
+
+    @property
+    def effective_s3_addressing_style(self) -> str:
+        return (self.s3_addressing_style or "path").strip()
 
 
 settings = Settings()
