@@ -365,7 +365,8 @@ spec:
       - http01:
           gatewayHTTPRoute:
             parentRefs:
-              - name: morning-review-gateway
+              - group: gateway.networking.k8s.io
+                name: morning-review-gateway
                 namespace: traefik
                 kind: Gateway
 ---

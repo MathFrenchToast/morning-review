@@ -29,6 +29,8 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgresql+psycopg://morning:morning@localhost:5432/morning_review
+      GMAIL_ACCOUNT: mathieuv.alterai@gmail.com
+      GMAIL_PWD: test-app-password-ci
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

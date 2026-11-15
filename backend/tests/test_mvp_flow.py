@@ -841,8 +841,13 @@ def test_daily_digest_smtp_idempotency_and_rearm_hook() -> None:
     import subprocess
     from datetime import date
     from pathlib import Path
-    from morning_review.core.config import PROJECT_ROOT
+    from morning_review.core.config import PROJECT_ROOT, settings
     from morning_review.db.models import UserDigest
+
+    if not settings.gmail_account:
+        settings.gmail_account = "mathieuv.alterai@gmail.com"
+    if not settings.gmail_pwd:
+        settings.gmail_pwd = "test-app-password-ci"
 
     sent_messages: list[object] = []
 
