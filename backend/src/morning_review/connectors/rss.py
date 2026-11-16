@@ -539,8 +539,8 @@ def fetch_rss_sources(
                         _fetch_via_agent_auth_mcp,
                         _get_runtime_token_path,
                     )
-                    from morning_review.core.url_utils import canonicalize_url
                     from morning_review.db.models import CanonicalItem
+                    from morning_review.pipeline.ingestion import canonicalize_url
 
                     pls_token = _get_runtime_token_path("pourlascience")
                     if pls_token.exists():
@@ -616,6 +616,8 @@ def fetch_rss_sources(
                 topics_touched.add(str(topic.id))
                 if created:
                     items_ingested += 1
+
+            session.commit()
 
         session.commit()
 
