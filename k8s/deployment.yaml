@@ -113,6 +113,9 @@ spec:
             - name: cache-volume
               mountPath: /app/reports
               subPath: reports
+            - name: cache-volume
+              mountPath: /app/.data/s3
+              subPath: s3-cache
           livenessProbe:
             httpGet:
               path: /api/v1/topics?limit=1
@@ -216,6 +219,9 @@ spec:
                 - name: cache-volume
                   mountPath: /app/reports
                   subPath: reports
+                - name: cache-volume
+                  mountPath: /app/.data/s3
+                  subPath: s3-cache
               resources:
                 requests:
                   cpu: 100m
@@ -306,6 +312,9 @@ spec:
                 - name: cache-volume
                   mountPath: /app/reports
                   subPath: reports
+                - name: cache-volume
+                  mountPath: /app/.data/s3
+                  subPath: s3-cache
               resources:
                 requests:
                   cpu: 100m

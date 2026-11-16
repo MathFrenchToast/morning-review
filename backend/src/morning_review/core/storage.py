@@ -100,6 +100,16 @@ class ContentStorage:
 
     def put_markdown(self, key: str, markdown_text: str) -> str:
         body = markdown_text.encode("utf-8")
+        target = self.local_fallback_dir / key
+        # Les clés d'articles (/items/<sha256[:2]>/<sha256>.md) sont immuables par adressage SHA-256 :
+        # si le fichier est déjà présent dans le cache disque local partagé, aucun appel S3 n'est requis.
+        already_cached_immutable = "/items/" in key and target.exists()
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(body)
+
+        if already_cached_immutable:
+            return key
+
         if self.ensure_bucket():
             try:
                 self._s3.put_object(
@@ -110,24 +120,26 @@ class ContentStorage:
                 )
                 return key
             except (ClientError, BotoCoreError) as exc:
-                logger.warning("S3 put_object failed (%s), writing to local mirror", exc)
+                logger.warning("S3 put_object failed (%s), kept in local cache", exc)
 
-        target = self.local_fallback_dir / key
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(body)
         return key
 
     def get_markdown(self, key: str) -> str | None:
+        target = self.local_fallback_dir / key
+        # Lecture prioritaire depuis le cache disque local (évite de consommer le quota quotidien Class B Backblaze B2)
+        if target.exists():
+            return target.read_text(encoding="utf-8")
+
         if self.ensure_bucket():
             try:
                 resp = self._s3.get_object(Bucket=self.bucket, Key=self._s3_key(key))
-                return resp["Body"].read().decode("utf-8")
+                text_data = resp["Body"].read().decode("utf-8")
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(text_data, encoding="utf-8")
+                return text_data
             except (ClientError, BotoCoreError):
                 pass
 
-        target = self.local_fallback_dir / key
-        if target.exists():
-            return target.read_text(encoding="utf-8")
         return None
 
 

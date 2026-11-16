@@ -762,7 +762,7 @@ def synthesize_topic_summary(session: Session, topic: Topic) -> str:
             m in raw_ex.lower()
             for m in ("member-only story", "hi everyone, welcome back", "[entretien", "](http")
         )
-        if s3_key and (len(raw_ex) < 350 or has_boilerplate or len(dedup_articles) == 1):
+        if s3_key and (len(raw_ex) < 220 or has_boilerplate):
             raw_md = storage.get_markdown(s3_key) or ""
             clean_paras = _clean_markdown_body_paragraphs(raw_md)
             if clean_paras:

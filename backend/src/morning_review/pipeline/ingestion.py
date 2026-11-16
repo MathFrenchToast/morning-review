@@ -1004,12 +1004,14 @@ def recluster_existing_topics(session: Session, user_id: UUID) -> dict[str, Any]
 
     session.flush()
 
-    # 4. Recalcule le compteur exact de sources indépendantes (dédoublonnant les déclinaisons TLDR)
+    # 4. Recalcule la synthèse uniquement sur les Topics effectivement fusionnés (ou sans résumé)
     from morning_review.pipeline.synthesizer import synthesize_topic_summary
 
+    kept_ids = {UUID(m["kept_topic_id"]) for m in merges_log}
     remaining_topics = session.scalars(select(Topic)).all()
     for rt in remaining_topics:
-        synthesize_topic_summary(session, rt)
+        if rt.id in kept_ids or not (rt.summary or "").strip():
+            synthesize_topic_summary(session, rt)
 
     session.commit()
     return {
