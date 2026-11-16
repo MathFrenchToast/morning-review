@@ -109,7 +109,11 @@ def test_newsletter_detection_and_link_extraction() -> None:
         "https://tracking.tldrnewsletter.com/CL0/"
         "https:%2F%2Fwww.wiz.io%2Fblog%2Fgheist-github%3Futm_source=tldrdevops/1/010001a1/sig=452"
     )
-    assert canonicalize_url(ses_url) == "https://wiz.io/blog/gheist-github"
+    assert canonicalize_url(ses_url) == "https://www.wiz.io/blog/gheist-github"
+    assert (
+        canonicalize_url("https://www.construction-physics.com/p/reading-list-11142026?utm_source=substack")
+        == "https://www.construction-physics.com/p/reading-list-11142026"
+    )
 
     # Vérifie l'exclusion des emails transactionnels OTP / sécurité
     otp_msg = EmailMessage()

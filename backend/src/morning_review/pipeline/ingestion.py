@@ -485,8 +485,6 @@ def canonicalize_url(raw_url: str) -> str:
         if k.lower() not in TRACKING_PARAMS and not k.lower().startswith("utm_")
     ]
     netloc = parsed.netloc.lower()
-    if netloc.startswith("www."):
-        netloc = netloc[4:]
     path = parsed.path.rstrip("/") or "/"
     return urlunparse(
         (

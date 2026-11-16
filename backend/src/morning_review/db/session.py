@@ -27,6 +27,22 @@ def init_db() -> UUID:
         conn.execute(text("ALTER TABLE user_digests ADD COLUMN IF NOT EXISTS emailed_to VARCHAR(320)"))
         conn.execute(text("CREATE INDEX IF NOT EXISTS ix_topics_first_seen_at ON topics (first_seen_at)"))
         conn.execute(text("CREATE INDEX IF NOT EXISTS ix_topics_last_seen_at ON topics (last_seen_at)"))
+        conn.execute(
+            text(
+                """
+                UPDATE canonical_items ci
+                SET canonical_url = regexp_replace(ci.canonical_url, '^(https?://)', '\\1www.')
+                FROM source_mentions sm
+                WHERE sm.item_id = ci.id
+                  AND sm.raw_url ~* '^https?://www\\.'
+                  AND ci.canonical_url !~* '^https?://www\\.'
+                  AND NOT EXISTS (
+                    SELECT 1 FROM canonical_items ci2
+                    WHERE ci2.canonical_url = regexp_replace(ci.canonical_url, '^(https?://)', '\\1www.')
+                  )
+                """
+            )
+        )
 
     with SessionLocal() as session:
         user = session.get(User, settings.bootstrap_user_id)
