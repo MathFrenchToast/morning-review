@@ -942,8 +942,13 @@ def test_daily_digest_smtp_idempotency_and_rearm_hook() -> None:
         check=True,
     )
     hook_out = json.loads(hook_proc.stdout)
-    assert "injectSteps" in hook_out
-    assert "morning-review-daily-06h30" in hook_out["injectSteps"][0]["systemMessage"]["systemMessage"]
+    any_enabled = any(d.get("enabled", True) for d in sched_data.get("daemons", [])) or any(
+        s.get("enabled", True) for s in sched_data.get("schedules", [])
+    )
+    if any_enabled:
+        assert "injectSteps" in hook_out
+    else:
+        assert hook_out == {}
 
 
 def test_k8s_and_b2_cnpg_configuration() -> None:

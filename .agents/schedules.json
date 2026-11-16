@@ -2,7 +2,7 @@
   "daemons": [
     {
       "id": "morning-review-server-8000",
-      "enabled": true,
+      "enabled": false,
       "port": 8000,
       "healthUrl": "http://127.0.0.1:8000/api/v1/topics?limit=1",
       "preCommand": "cd /home/mathieu/dev/projects/perso/morning-review && docker compose up -d",
