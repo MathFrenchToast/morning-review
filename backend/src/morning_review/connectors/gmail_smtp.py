@@ -120,7 +120,10 @@ def build_digest_html(
     esc_ui = html.escape(ui_url, quote=True) if has_public_ui else ""
 
     header_cta = (
-        f'<a href="{esc_ui}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;">Ouvrir l\'interface</a>'
+        f'<a href="{esc_ui}" title="Ouvrir l\'interface Morning Review" aria-label="Ouvrir l\'interface Morning Review" '
+        f'style="float:right;display:inline-block;width:36px;height:36px;line-height:36px;text-align:center;'
+        f'background:#2563eb;color:#ffffff;text-decoration:none;font-size:18px;font-weight:700;border-radius:8px;'
+        f'border:1px solid rgba(255,255,255,0.18);">&#8599;</a>'
         if has_public_ui
         else ""
     )
@@ -131,16 +134,17 @@ def build_digest_html(
         f"<title>Morning Review — {target_date.isoformat()}</title></head>",
         '<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#111827;line-height:1.55;">',
         '<div style="max-width:720px;margin:0 auto;padding:24px 14px;">',
-        '<div style="background:#0f172a;color:#f8fafc;border-radius:12px;padding:22px 24px;margin-bottom:20px;">',
-        '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">',
-        "<div>",
-        f'<h1 style="margin:0;font-size:21px;font-weight:700;letter-spacing:-0.01em;">Morning Review — {target_date.isoformat()}</h1>',
-        f'<p style="margin:6px 0 0 0;font-size:13px;color:#cbd5e1;"><strong>{total_topics}</strong> sujet(s) actif(s)'
+        '<div style="background:#0f172a;color:#f8fafc;border-radius:12px;padding:18px 20px;margin-bottom:20px;">',
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">',
+        "<tr>",
+        '<td align="left" valign="middle" style="padding-right:12px;">',
+        f'<h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.01em;color:#f8fafc;">Morning Review — {target_date.isoformat()}</h1>',
+        f'<p style="margin:5px 0 0 0;font-size:13px;color:#cbd5e1;"><strong>{total_topics}</strong> sujet(s) actif(s)'
         + (f' • <strong>{updates_count}</strong> mise(s) à jour détectée(s)' if updates_count else "")
         + "</p>",
-        "</div>",
-        header_cta,
-        "</div></div>",
+        "</td>",
+        f'<td align="right" valign="middle" style="width:44px;white-space:nowrap;">{header_cta}</td>',
+        "</tr></table></div>",
     ]
 
     if confirmations:
