@@ -30,6 +30,13 @@ DOMAIN_TO_MCP_TOOL: dict[str, tuple[str, str]] = {
     "newscientist.com": ("newscientist", "tools.newscientist.client:NewScientistClient"),
     "pourlascience.fr": ("pourlascience", "tools.pourlascience.client:PourLaScienceClient"),
     "medium.com": ("medium", "tools.medium.client:MediumClient"),
+    "lemonde.fr": ("lemonde", "tools.lemonde.client:LeMondeClient"),
+    "courrierinternational.com": (
+        "courrierinternational",
+        "tools.courrierinternational.client:CourrierInternationalClient",
+    ),
+    "canardpc.com": ("canardpc", "tools.canardpc.client:CanardPCClient"),
+    "substack.com": ("substack", "tools.substack.client:SubstackClient"),
 }
 
 

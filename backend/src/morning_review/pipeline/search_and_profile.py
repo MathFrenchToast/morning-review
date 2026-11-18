@@ -376,6 +376,9 @@ HIGH_SIGNAL_LONGFORM_DOMAINS: tuple[str, ...] = (
     "quantamagazine.org",
     "pourlascience.fr",
     "newscientist.com",
+    "canardpc.com",
+    "courrierinternational.com",
+    "lemonde.fr",
     "construction-physics.com",
     "dwarkesh.com",
     "pragmaticengineer.com",
@@ -391,7 +394,6 @@ HIGH_SIGNAL_LONGFORM_DOMAINS: tuple[str, ...] = (
     "simonwillison.net",
     "stratechery.com",
     "ben-evans.com",
-    "courrierinternational.com",
 )
 
 

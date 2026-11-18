@@ -65,16 +65,38 @@ sources:
 - kind: newsletter
   title: Courrier international (info@redaction.courrierinternational.com)
   url: newsletter://35.89784.redaction.courrierinternational.com
-  category: tech
+  category: actu
   labels:
   - newsletter
-  - tech
+  - actu
   creator: Courrier international
   is_public: false
   enabled: true
   discovery_method: gmail_auto
   sender_email: info@redaction.courrierinternational.com
   list_id: 35.89784.redaction.courrierinternational.com
+- kind: rss
+  title: Courrier international - À la une
+  url: https://www.courrierinternational.com/feed/all/rss.xml
+  category: actu
+  labels:
+  - actu
+  creator: Courrier international
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.courrierinternational.com/
+- kind: rss
+  title: Canard PC - Articles & Tests
+  url: https://www.canardpc.com/feed/
+  category: gaming-hardware
+  labels:
+  - gaming-hardware
+  creator: Canard PC
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.canardpc.com/
 - kind: newsletter
   title: Medium Daily Digest (noreply@medium.com)
   url: newsletter://noreply@medium.com/medium-daily-digest

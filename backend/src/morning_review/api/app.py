@@ -1038,7 +1038,15 @@ def api_edge_pending_topics(
     }
 
     pending: list[dict[str, Any]] = []
-    subscriber_domains = ("pourlascience.fr", "newscientist.com", "medium.com")
+    subscriber_domains = (
+        "pourlascience.fr",
+        "newscientist.com",
+        "medium.com",
+        "lemonde.fr",
+        "courrierinternational.com",
+        "canardpc.com",
+        "substack.com",
+    )
     for t in topics:
         st = state_map.get(t.id)
         if st and st.is_archived:
