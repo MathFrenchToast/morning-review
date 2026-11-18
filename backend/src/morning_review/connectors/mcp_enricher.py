@@ -255,6 +255,7 @@ def _fetch_via_trafilatura(url: str) -> dict[str, Any]:
     return {
         "url": target,
         "markdown": md_text.strip(),
+        "markdown_body": md_text.strip(),
         "paywall_detected": paywall_detected,
     }
 

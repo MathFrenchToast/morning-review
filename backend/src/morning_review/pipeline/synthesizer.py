@@ -246,23 +246,46 @@ def sync_topic_source_dates(session: Session, topic: Topic) -> None:
 def _get_openrouter_models() -> list[str]:
     primary = getattr(settings, "openrouter_primary_model", None) or "openrouter/free"
     models = [
-        primary,
-        "google/gemini-2.0-flash-exp:free",
         "meta-llama/llama-3.3-70b-instruct:free",
+        "google/gemma-3-27b-it:free",
+        "deepseek/deepseek-chat-v3-0324:free",
+        primary,
+        "openrouter/free",
     ]
-    return list(dict.fromkeys(models))
+    return list(dict.fromkeys(m for m in models if m))
+
+
+def _extract_json_dict_from_llm_text(raw_text: str) -> dict[str, Any] | None:
+    if not raw_text:
+        return None
+    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_text.strip(), flags=re.I).strip()
+    try:
+        parsed = json.loads(cleaned)
+        if isinstance(parsed, dict):
+            return parsed
+    except Exception:
+        pass
+    match = re.search(r"\{[\s\S]*\}", cleaned)
+    if match:
+        try:
+            parsed = json.loads(match.group(0))
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+    return None
 
 
 def _call_llm_json(
     system_prompt: str,
     user_prompt: str,
     *,
-    timeout: float = 18.0,
-    max_tokens: int = 850,
+    timeout: float = 22.0,
+    max_tokens: int = 900,
     allow_local_ollama: bool = True,
 ) -> dict[str, Any] | None:
     """Appelle un LLM en mode JSON structuré :
-    1. OpenRouter si `OPENROUTER_API_KEY` est configurée.
+    1. OpenRouter (:free) si `OPENROUTER_API_KEY` est configurée.
     2. Ollama local (`http://localhost:11434/api/chat` avec `format="json"`) si disponible.
     """
     api_key = (settings.openrouter_api_key or "").strip()
@@ -270,25 +293,25 @@ def _call_llm_json(
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://localhost:8000",
+            "HTTP-Referer": settings.public_ui_url or "https://review.perso.frenchtoast.dev",
             "X-Title": "Morning Review",
         }
         with httpx.Client(timeout=timeout) as client:
             for model_slug in _get_openrouter_models():
                 try:
+                    payload: dict[str, Any] = {
+                        "model": model_slug,
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                        "temperature": 0.15,
+                        "max_tokens": max_tokens,
+                    }
                     resp = client.post(
                         f"{settings.openrouter_base_url.rstrip('/')}/chat/completions",
                         headers=headers,
-                        json={
-                            "model": model_slug,
-                            "messages": [
-                                {"role": "system", "content": system_prompt},
-                                {"role": "user", "content": user_prompt},
-                            ],
-                            "response_format": {"type": "json_object"},
-                            "temperature": 0.1,
-                            "max_tokens": max_tokens,
-                        },
+                        json=payload,
                     )
                     if resp.status_code == 200:
                         content = (
@@ -298,9 +321,8 @@ def _call_llm_json(
                             .get("content", "")
                             .strip()
                         )
-                        content = re.sub(r"^```(?:json)?\s*|\s*```$", "", content, flags=re.I).strip()
-                        parsed = json.loads(content)
-                        if isinstance(parsed, dict):
+                        parsed = _extract_json_dict_from_llm_text(content)
+                        if parsed is not None:
                             return parsed
                 except Exception as exc:
                     logger.debug("OpenRouter JSON fallback (%s): %s", model_slug, exc)
@@ -314,6 +336,7 @@ def _call_llm_json(
     ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
     ollama_models = [
         os.environ.get("OLLAMA_MODEL", "qwen2.5:7b"),
+        "gpt-oss:20b",
         "llama3.2:latest",
         "gemma3:4b",
     ]
@@ -330,14 +353,13 @@ def _call_llm_json(
                         ],
                         "format": "json",
                         "stream": False,
-                        "options": {"temperature": 0.1, "num_predict": max_tokens},
+                        "options": {"temperature": 0.15, "num_predict": max_tokens},
                     },
                 )
                 if resp.status_code == 200:
                     raw_msg = resp.json().get("message", {}).get("content", "").strip()
-                    raw_msg = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_msg, flags=re.I).strip()
-                    parsed = json.loads(raw_msg)
-                    if isinstance(parsed, dict):
+                    parsed = _extract_json_dict_from_llm_text(raw_msg)
+                    if parsed is not None:
                         return parsed
             except Exception as exc:
                 logger.debug("Ollama JSON fallback (%s): %s", model_name, exc)
@@ -391,7 +413,8 @@ def _call_llm_topic_synthesis_and_subtopics(
         "RÈGLES STRICTES :\n"
         "1. Rédige TOUT en français (traduis et intègre les faits des sources anglophones).\n"
         "2. `summary` (3 à 5 phrases denses et fluides, 350 à 850 caractères) :\n"
-        "   - Expose d'abord le cœur factuel de l'événement (nature, ampleur, dates/durée précise, acteurs).\n"
+        "   - Expose d'abord le cœur factuel de l'événement (nature, ampleur, dates/durée précise, acteurs, détails techniques).\n"
+        "   - ZÉRO TEASING : si un titre pose une question ou annonce une réserve (ex: 'but there's a catch', 'mais il y a un hic', 'voici pourquoi'), donne immédiatement l'explication concrète et factuelle tirée du corps de l'article.\n"
         "   - Indique clairement l'évolution chronologique et l'état actuel (ex: incident résolu / service rétabli avec date et heure de fin si disponible).\n"
         "   - Mentionne les conséquences concrètes et les enjeux/réactions soulevés par les différentes sources (ex: impact sur les utilisateurs, réactions politiques ou souveraineté européenne).\n"
         "   - Cite les sources pertinentes entre crochets dans le texte (ex: [Radio France], [Microsoft 365 Status], [TechRadar]).\n"
@@ -1006,9 +1029,76 @@ def evaluate_topic_novelty(
             if not is_novel_llm:
                 return False, [], ""
             return True, [llm_formatted], llm_formatted
+        # En production (hors tests unitaires sans LLM), interdiction stricte de réhydrater un sujet
+        # sans validation sémantique positive du LLM : d'autres sources racontant le même fait avec d'autres mots
+        # ne doivent jamais réactiver la news.
+        if not os.environ.get("PYTEST_CURRENT_TEST"):
+            return False, [], ""
 
     formatted = " • ".join(f"[{src_label}] {pt}" for pt in novel_points)
     return True, novel_points, formatted[:600]
+
+
+def ensure_topic_full_content_and_llm_summary(
+    session: Session,
+    topic: Topic,
+    user_id: UUID,
+) -> str:
+    """Pour un sujet sélectionné dans le Morning Review :
+    1. Vérifie si les articles sources rattachés au sujet n'ont qu'un court chapô RSS/Newsletter (< 1200 car.) ;
+       si oui, télécharge le corps complet de la page web avec Trafilatura (jusqu'à 3 articles par sujet) et met à jour S3/cache.
+    2. Génère par LLM (OpenRouter :free ou Ollama local) un résumé analytique dense de 3 à 4 phrases complètes
+       à partir du contenu réel des articles (et non des seuls titres mis bout à bout).
+    """
+    from morning_review.connectors.mcp_enricher import _fetch_via_trafilatura, enrich_topic_content
+    from morning_review.pipeline.ingestion import clean_aggregator_noise
+
+    items = session.scalars(
+        select(CanonicalItem)
+        .where(CanonicalItem.topic_id == topic.id)
+        .order_by(CanonicalItem.published_at.desc().nullslast(), CanonicalItem.created_at.desc())
+    ).all()
+
+    fetched_count = 0
+    for it in items[:3]:
+        raw_md = storage.get_markdown(it.s3_key) if it.s3_key else ""
+        clean_paras = _clean_markdown_body_paragraphs(raw_md)
+        body_chars = sum(len(p) for p in clean_paras)
+        url = (it.canonical_url or "").strip()
+        if (
+            body_chars < 1100
+            and url.startswith(("http://", "https://"))
+            and not any(d in url.lower() for d in ("youtube.com/", "youtu.be/", "radiofrance.fr/"))
+            and fetched_count < 2
+        ):
+            try:
+                if it == items[0]:
+                    enrich_topic_content(session, user_id=user_id, topic_id=topic.id)
+                    fetched_count += 1
+                else:
+                    res = _fetch_via_trafilatura(url)
+                    md_body = (res.get("markdown") or res.get("markdown_body") or "").strip()
+                    if len(md_body) >= 500:
+                        new_hash = storage.compute_sha256(md_body)
+                        new_key = storage.build_item_key(
+                            new_hash,
+                            visibility=it.visibility,
+                            user_id=it.user_id,
+                        )
+                        storage.put_markdown(new_key, md_body)
+                        it.s3_key = new_key
+                        it.content_sha256 = new_hash
+                        ext_paras = _clean_markdown_body_paragraphs(md_body)
+                        if ext_paras:
+                            it.excerpt = clean_aggregator_noise(" ".join(ext_paras[:3]))[:600]
+                        fetched_count += 1
+            except Exception as exc:
+                logger.debug("Full-text fetch skipped for %s: %s", url, exc)
+
+    if fetched_count > 0:
+        session.flush()
+
+    return synthesize_topic_summary(session, topic)
 
 
 def check_and_reactivate_topic_if_novel(
@@ -1032,7 +1122,7 @@ def check_and_reactivate_topic_if_novel(
 
     reactivated_any = False
     for state in states:
-        if not state.is_archived and not state.has_updates:
+        if not state.is_archived and not state.has_updates and not state.archived_summary_snapshot:
             continue
         snapshot_ref = state.archived_summary_snapshot or build_topic_structured_snapshot(session, topic)
         is_novel, _, formatted_update = evaluate_topic_novelty(

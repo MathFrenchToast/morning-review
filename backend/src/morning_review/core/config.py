@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(os.environ.get("APP_ROOT", str(Path(__file__).resolve().parents[4])))
@@ -79,8 +79,11 @@ class Settings(BaseSettings):
     )
     topic_window_days: int = Field(default=14, alias="TOPIC_WINDOW_DAYS")
 
-    # OpenRouter (:free)
-    openrouter_api_key: str = Field(default="", alias="OPENROUTER_API_KEY")
+    # OpenRouter (:free) — supporte OPENROUTER_KEY et OPENROUTER_API_KEY
+    openrouter_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("OPENROUTER_API_KEY", "OPENROUTER_KEY"),
+    )
     openrouter_base_url: str = Field(
         default="https://openrouter.ai/api/v1",
         alias="OPENROUTER_BASE_URL",

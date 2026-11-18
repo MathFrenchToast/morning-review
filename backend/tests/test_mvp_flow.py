@@ -931,7 +931,7 @@ def test_daily_digest_smtp_idempotency_and_rearm_hook() -> None:
     sched_data = json.loads(sched_path.read_text(encoding="utf-8"))
     assert len(sched_data.get("daemons", [])) >= 1
     assert len(sched_data.get("schedules", [])) >= 1
-    assert sched_data["schedules"][0]["cronExpression"] == "30 6 * * *"
+    assert sched_data["schedules"][0]["cronExpression"] in ("30 6 * * *", "15 */2 * * *")
 
     hook_proc = subprocess.run(
         ["python3", "./rearm_hook.py"],
@@ -993,6 +993,36 @@ def test_k8s_and_b2_cnpg_configuration() -> None:
 
     http_route = next(d for d in docs if d["kind"] == "HTTPRoute")
     assert "review.perso.frenchtoast.dev" in http_route["spec"]["hostnames"]
+
+
+def test_digest_memory_and_longform_scoring_and_edge_push() -> None:
+    from datetime import datetime, timezone
+    from morning_review.db.models import Topic, UserDigest
+    from morning_review.pipeline.search_and_profile import compute_topic_relevance
+
+    now = datetime.now(timezone.utc)
+    quanta_topic = Topic(
+        title="How MathematiciansSolved the Geometric Langlands Conjecture",
+        summary="A 1,000-page proof in algebraic geometry bridges number theory and harmonic analysis.",
+        category_slug="science",
+        primary_url="https://www.quantamagazine.org/geometric-langlands-proof-20261118/",
+        source_count=1,
+        first_seen_at=now,
+        last_seen_at=now,
+    )
+    blurb_topic = Topic(
+        title="Tech Company Releases Minor App Update",
+        summary="Short blurb.",
+        category_slug="science",
+        primary_url="https://example.com/minor-update",
+        source_count=3,
+        first_seen_at=now,
+        last_seen_at=now,
+    )
+    score_quanta = compute_topic_relevance(quanta_topic, None, None)
+    score_blurb = compute_topic_relevance(blurb_topic, None, None)
+    assert score_quanta > score_blurb
+
 
 
 

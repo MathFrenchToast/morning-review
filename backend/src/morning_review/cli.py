@@ -76,10 +76,18 @@ def main() -> None:
     p_corrob.add_argument("topic_id", type=str, help="UUID du sujet (topic_id)")
 
     p_digest = sub.add_parser("digest", help="Génère le rapport quotidien Morning Review (BDD + S3 + reports/) et l'envoie optionnellement par e-mail")
-    p_digest.add_argument("--max-topics", type=int, default=25)
+    p_digest.add_argument("--max-topics", type=int, default=12)
     p_digest.add_argument("--send-email", action="store_true", help="Expédie le digest par e-mail (idempotent 1 fois/jour)")
     p_digest.add_argument("--force-send", action="store_true", help="Force le renvoi par e-mail même si déjà envoyé aujourd'hui")
     p_digest.add_argument("--to", type=str, default=None, help="Destinataire e-mail optionnel (défaut: DIGEST_RECIPIENT_EMAIL)")
+
+    p_edge = sub.add_parser(
+        "sync-edge",
+        help="Mode Hybride Edge : enrichit en local les sujets abonnés (tokens RAM agent-auth-mcp) et génère les synthèses LLM (Ollama/OpenRouter) puis les pousse vers vm-hostinger",
+    )
+    p_edge.add_argument("--remote-url", type=str, default="https://review.perso.frenchtoast.dev", help="URL de l'instance Morning Review distante")
+    p_edge.add_argument("--auth", type=str, default=None, help="Identifiants BasicAuth 'user:password' (ou variable REMOTE_BASIC_AUTH dans .env)")
+    p_edge.add_argument("--limit", type=int, default=15, help="Nombre max de sujets à enrichir par passe")
 
     sub.add_parser(
         "automations",
@@ -108,6 +116,131 @@ def main() -> None:
         import uvicorn
 
         uvicorn.run("morning_review.api.app:app", host=args.host, port=args.port, reload=False)
+        return
+
+    if args.command == "sync-edge":
+        import os
+        import subprocess
+        import httpx
+        from morning_review.connectors.mcp_enricher import (
+            _detect_mcp_tool,
+            _fetch_via_agent_auth_mcp,
+            _fetch_via_trafilatura,
+            _get_runtime_token_path,
+        )
+        from morning_review.pipeline.synthesizer import (
+            _call_llm_topic_synthesis_and_subtopics,
+            _clean_markdown_body_paragraphs,
+        )
+
+        remote_base = (args.remote_url or "https://review.perso.frenchtoast.dev").rstrip("/")
+        raw_auth = args.auth or os.environ.get("REMOTE_BASIC_AUTH", "")
+        httpx_auth = None
+        if raw_auth and ":" in raw_auth:
+            u, p = raw_auth.split(":", 1)
+            httpx_auth = (u, p)
+
+        def _remote_api_get_pending(limit_val: int) -> list[dict[str, object]]:
+            if httpx_auth is not None:
+                with httpx.Client(timeout=30.0, auth=httpx_auth) as client:
+                    r = client.get(f"{remote_base}/api/v1/edge/pending-topics", params={"limit": limit_val})
+                    r.raise_for_status()
+                    return r.json()
+            proc = subprocess.run(
+                [
+                    "ssh",
+                    "vm-hostinger",
+                    f"sudo kubectl exec -i -n morning-review deploy/morning-review -- python3 -c \"import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/v1/edge/pending-topics?limit={int(limit_val)}').read().decode('utf-8'))\"",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=35,
+            )
+            return json.loads(proc.stdout)
+
+        def _remote_api_post_enrichment(payload_dict: dict[str, object]) -> dict[str, object] | None:
+            if httpx_auth is not None:
+                with httpx.Client(timeout=30.0, auth=httpx_auth) as client:
+                    r = client.post(f"{remote_base}/api/v1/edge/push-enrichment", json=payload_dict)
+                    return r.json() if r.status_code == 200 else None
+            proc = subprocess.run(
+                [
+                    "ssh",
+                    "vm-hostinger",
+                    "sudo kubectl exec -i -n morning-review deploy/morning-review -- python3 -c \"import sys, urllib.request; req = urllib.request.Request('http://127.0.0.1:8000/api/v1/edge/push-enrichment', data=sys.stdin.buffer.read(), headers={'Content-Type': 'application/json'}, method='POST'); print(urllib.request.urlopen(req).read().decode('utf-8'))\"",
+                ],
+                input=json.dumps(payload_dict),
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=35,
+            )
+            if proc.returncode == 0 and proc.stdout.strip():
+                return json.loads(proc.stdout)
+            return None
+
+        pending_list = _remote_api_get_pending(args.limit)
+        pushed_results: list[dict[str, object]] = []
+        for item in pending_list:
+            tid = str(item["topic_id"])
+            title = str(item["title"])
+            purl = str(item.get("primary_url") or "")
+            articles = list(item.get("articles") or [])
+
+            extracted_md = ""
+            extracted_excerpt = ""
+            mcp_tool, client_spec = _detect_mcp_tool(purl)
+            if mcp_tool and client_spec and _get_runtime_token_path(mcp_tool).exists():
+                try:
+                    mcp_res = _fetch_via_agent_auth_mcp(client_spec, purl)
+                    extracted_md = (mcp_res.get("markdown") or mcp_res.get("markdown_body") or "").strip()
+                except Exception:
+                    pass
+
+            if not extracted_md and purl.startswith(("http://", "https://")) and not item.get("already_enriched"):
+                try:
+                    traf_res = _fetch_via_trafilatura(purl)
+                    extracted_md = (traf_res.get("markdown") or traf_res.get("markdown_body") or "").strip()
+                except Exception:
+                    pass
+
+            if extracted_md:
+                paras = _clean_markdown_body_paragraphs(extracted_md)
+                if paras:
+                    extracted_excerpt = " ".join(paras[:3])[:560]
+                    if articles:
+                        articles[0]["excerpt"] = " ".join(paras[:8])[:2200]
+
+            llm_res = _call_llm_topic_synthesis_and_subtopics(title, articles, allow_local_ollama=True)
+            summary_out = (llm_res or {}).get("summary") or ""
+            subtopics_out = (llm_res or {}).get("subtopics")
+
+            if extracted_md or summary_out:
+                res_obj = _remote_api_post_enrichment(
+                    {
+                        "topic_id": tid,
+                        "markdown_body": extracted_md or None,
+                        "excerpt": extracted_excerpt or None,
+                        "summary": summary_out or None,
+                        "subtopics": subtopics_out,
+                    }
+                )
+                if res_obj is not None:
+                    pushed_results.append(res_obj)
+
+        print(
+            json.dumps(
+                {
+                    "remote_url": remote_base,
+                    "pending_found": len(pending_list),
+                    "enriched_pushed": len(pushed_results),
+                    "results": pushed_results,
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
         return
 
     user_id = init_db()

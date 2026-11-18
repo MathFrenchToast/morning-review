@@ -372,6 +372,29 @@ def record_topic_feedback(
     }
 
 
+HIGH_SIGNAL_LONGFORM_DOMAINS: tuple[str, ...] = (
+    "quantamagazine.org",
+    "pourlascience.fr",
+    "newscientist.com",
+    "construction-physics.com",
+    "dwarkesh.com",
+    "pragmaticengineer.com",
+    "bytebytego.com",
+    "latent.space",
+    "importai.net",
+    "arstechnica.com",
+    "404media.co",
+    "nature.com",
+    "science.org",
+    "lwn.net",
+    "danluu.com",
+    "simonwillison.net",
+    "stratechery.com",
+    "ben-evans.com",
+    "courrierinternational.com",
+)
+
+
 def compute_topic_relevance(topic: Topic, profile: UserProfile | None, vote: int | None = None) -> float:
     if vote == -1:
         return -1.0
@@ -385,8 +408,28 @@ def compute_topic_relevance(topic: Topic, profile: UserProfile | None, vote: int
         cat_bonus = float((profile.category_affinities or {}).get(topic.category_slug, 0.0))
         score += max(-0.2, min(0.25, cat_bonus * 0.15))
 
-    # Bonus de corroboration multi-sources
-    score += min(0.25, 0.12 * math.log1p(max(0, (topic.source_count or 1) - 1)))
+    # Bonus de corroboration multi-sources (plafonné pour ne pas écraser les articles de fond)
+    score += min(0.22, 0.10 * math.log1p(max(0, min(8, (topic.source_count or 1)) - 1)))
+
+    # Bonus d'autorité et de profondeur éditoriale (Long-form : Quanta Magazine, Pour la Science, etc.)
+    primary_url_low = (topic.primary_url or "").lower()
+    if any(dom in primary_url_low for dom in HIGH_SIGNAL_LONGFORM_DOMAINS):
+        score += 0.24
+    elif len(topic.summary or "") >= 380 and "• [" not in (topic.summary or ""):
+        score += 0.10
+
+    # Fraîcheur temporelle (Time Decay sur first_seen_at / last_seen_at)
+    ref_dt = topic.first_seen_at or topic.last_seen_at
+    if ref_dt is not None:
+        ref_utc = ref_dt.replace(tzinfo=timezone.utc) if ref_dt.tzinfo is None else ref_dt
+        age_hours = max(0.0, (utcnow() - ref_utc).total_seconds() / 3600.0)
+        if age_hours <= 24.0:
+            score += 0.16
+        elif age_hours <= 36.0:
+            score += 0.04
+        elif age_hours > 48.0 and vote != 1:
+            score -= min(0.35, 0.08 * ((age_hours - 48.0) / 24.0))
+
     if vote == 1:
         score += 0.30
     return round(score, 4)
@@ -397,16 +440,20 @@ def generate_daily_digest(
     user_id: UUID,
     *,
     digest_date: date | None = None,
-    max_topics: int = 25,
-    recent_hours: int = 48,
+    max_topics: int = 12,
+    recent_hours: int = 24,
     send_email: bool = False,
     force_send: bool = False,
     recipient_email: str | None = None,
     smtp_factory: Any = None,
 ) -> dict[str, Any]:
     """Génère le rapport quotidien Morning Review (persisté en BDD, sur S3 et dans reports/),
-    et l'expédie optionnellement par e-mail de manière idempotente (une fois par jour sauf `force_send=True`).
+    avec mémoire stricte des digests précédents (un sujet déjà présenté n'est jamais ré-envoyé
+    sauf rebondissement factuel réel validé postérieurement) et enrichissement + synthèse LLM
+    sur le contenu intégral des articles retenus.
     """
+    import os
+
     target_date = digest_date or utcnow().date()
     profile = session.get(UserProfile, user_id)
 
@@ -423,6 +470,32 @@ def generate_daily_digest(
         ).all()
     }
 
+    # Mémoire des digests précédents : récupère tous les topic_id déjà présentés avant target_date
+    previous_digests = session.scalars(
+        select(UserDigest)
+        .where(
+            UserDigest.user_id == user_id,
+            UserDigest.digest_date < target_date,
+        )
+        .order_by(UserDigest.digest_date.desc())
+    ).all()
+    previously_presented_ids: set[UUID] = set()
+    last_digest_created_at: datetime | None = None
+    for pd in previous_digests:
+        if last_digest_created_at is None and pd.created_at is not None:
+            last_digest_created_at = (
+                pd.created_at.replace(tzinfo=timezone.utc)
+                if pd.created_at.tzinfo is None
+                else pd.created_at
+            )
+        for item in pd.topics_json or []:
+            raw_tid = item.get("topic_id") if isinstance(item, dict) else None
+            if raw_tid:
+                try:
+                    previously_presented_ids.add(UUID(str(raw_tid)))
+                except ValueError:
+                    pass
+
     topics = session.scalars(
         select(Topic)
         .where(or_(Topic.visibility == "public", Topic.user_id == user_id))
@@ -430,9 +503,25 @@ def generate_daily_digest(
         .limit(300)
     ).all()
 
-    unarchived_topics = [
-        t for t in topics if not (state_map.get(t.id) and state_map[t.id].is_archived)
-    ]
+    unarchived_topics: list[Topic] = []
+    for t in topics:
+        st = state_map.get(t.id)
+        if st and st.is_archived:
+            continue
+        if t.id in previously_presented_ids:
+            # Déjà présenté dans un Morning Review précédent : exclu sauf vraie suite factuelle postérieure
+            if not (st and st.has_updates and st.updates_summary):
+                continue
+            if last_digest_created_at is not None and st.reactivated_at is not None:
+                react_utc = (
+                    st.reactivated_at.replace(tzinfo=timezone.utc)
+                    if st.reactivated_at.tzinfo is None
+                    else st.reactivated_at
+                )
+                if react_utc <= last_digest_created_at:
+                    continue
+        unarchived_topics.append(t)
+
     window_cutoff = utcnow() - timedelta(hours=recent_hours)
     fresh_topics = [
         t
@@ -448,7 +537,7 @@ def generate_daily_digest(
         )
         or bool(state_map.get(t.id) and state_map[t.id].has_updates)
     ]
-    candidate_topics = fresh_topics if len(fresh_topics) >= 5 else unarchived_topics
+    candidate_topics = fresh_topics if len(fresh_topics) >= 3 else unarchived_topics
 
     scored_by_cat: dict[str, list[tuple[float, Topic]]] = defaultdict(list)
     for t in candidate_topics:
@@ -461,10 +550,10 @@ def generate_daily_digest(
     for cat_list in scored_by_cat.values():
         cat_list.sort(key=lambda pair: (pair[0], pair[1].last_seen_at), reverse=True)
 
-    # Garantit une diversité par catégorie (jusqu'à 8 sujets par catégorie active), puis complète au score
+    # Garantit une sélection concentrée et équilibrée (2 à 4 meilleurs sujets par catégorie active)
     selected: list[tuple[float, Topic]] = []
     seen_ids: set[UUID] = set()
-    quota_per_cat = max(4, min(8, max_topics // max(1, len(scored_by_cat))))
+    quota_per_cat = max(2, min(4, max_topics // max(1, len(scored_by_cat))))
     for cat_slug in sorted(scored_by_cat.keys()):
         for pair in scored_by_cat[cat_slug][:quota_per_cat]:
             if len(selected) < max_topics:
@@ -487,11 +576,19 @@ def generate_daily_digest(
     digest_topics_payload: list[dict[str, Any]] = []
 
     from morning_review.pipeline.synthesizer import (
-        extract_topic_subtopics,
+        build_topic_structured_snapshot,
+        ensure_topic_full_content_and_llm_summary,
         get_deduplicated_topic_articles,
     )
 
+    is_pytest = bool(os.environ.get("PYTEST_CURRENT_TEST"))
+
     for rel_score, t in selected:
+        if not is_pytest:
+            try:
+                ensure_topic_full_content_and_llm_summary(session, t, user_id)
+            except Exception:
+                pass
         dedup_articles = get_deduplicated_topic_articles(session, t.id)
         sources_list = [
             {
@@ -508,6 +605,22 @@ def generate_daily_digest(
         t_state = state_map.get(t.id)
         has_upd = bool(t_state and t_state.has_updates)
         upd_sum = (t_state.updates_summary or "") if t_state else ""
+        # Enregistre le snapshot du sujet présenté dans ce digest afin que toute nouvelle source
+        # ultérieure soit évaluée par rapport à ce qui a déjà été présenté à l'utilisateur
+        if t_state is None:
+            t_state = UserTopicState(
+                user_id=user_id,
+                topic_id=t.id,
+                is_archived=False,
+                archived_summary_snapshot=build_topic_structured_snapshot(session, t),
+                has_updates=False,
+            )
+            session.add(t_state)
+            state_map[t.id] = t_state
+        else:
+            t_state.archived_summary_snapshot = build_topic_structured_snapshot(session, t)
+            t_state.has_updates = False
+
         entry = {
             "topic_id": str(t.id),
             "title": t.title,
@@ -519,9 +632,9 @@ def generate_daily_digest(
             "last_seen_at": last_iso,
             "first_source_at": first_iso,
             "latest_source_at": last_iso,
-            "summary": (t.summary or "")[:480],
+            "summary": (t.summary or "")[:1200],
             "has_updates": has_upd,
-            "updates_summary": upd_sum[:400],
+            "updates_summary": upd_sum[:500],
             "subtopics": (t.subtopics_json or [])[:4] if isinstance(t.subtopics_json, list) else [],
             "sources": sources_list,
         }

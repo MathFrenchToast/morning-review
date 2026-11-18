@@ -8,19 +8,19 @@
       "preCommand": "cd /home/mathieu/dev/projects/perso/morning-review && docker compose up -d",
       "command": "cd /home/mathieu/dev/projects/perso/morning-review/backend && uv run morning-review serve --port 8000",
       "isDaemon": true,
-      "description": "Serveur Web FastAPI/Uvicorn (port 8000) + boucle incrémentale 30 min (Gmail IMAP, confirmations opt-in, RSS & filet d'envoi e-mail 07h00)"
+      "description": "Serveur Web local (désactivé car déployé sur vm-hostinger : https://review.perso.frenchtoast.dev)"
     }
   ],
   "schedules": [
     {
-      "id": "morning-review-daily-06h30",
-      "enabled": false,
-      "cronExpression": "30 6 * * *",
-      "exactTiming": true,
+      "id": "morning-review-edge-sync",
+      "enabled": true,
+      "cronExpression": "15 */2 * * *",
+      "exactTiming": false,
       "isDaemon": true,
       "skill": ".agents/skills/morning-review-daily/SKILL.md",
-      "description": "Revue matinale quotidienne à 06h30 : relève Gmail/confirmations opt-in + RSS, enrichissement abonné, génération du digest et envoi par e-mail de mathieuv.alterai@gmail.com vers mathieu.veron@gmail.com",
-      "prompt": "Active la skill `morning-review-daily` (`.agents/skills/morning-review-daily/SKILL.md`) : (1) vérifie que Docker (`morning-review-pg`, `morning-review-s3`) et le serveur Uvicorn (`http://127.0.0.1:8000/api/v1/topics?limit=1`) sont actifs et relance-les si nécessaire, (2) exécute `uv run morning-review fetch-gmail --max-messages 60 --since-days 7` (incluant la validation automatique prudente des liens d'inscription newsletter double opt-in) puis `uv run morning-review fetch-rss --max-entries 8`, (3) si des jetons éphémères sont présents dans `/run/user/$UID/agent-tokens/` (`pourlascience.token`, `medium.token`, `newscientist.token`), enrichis les nouveaux sujets correspondants et consolide le clustering (`uv run morning-review cluster`), (4) génère et expédie le Morning Review par e-mail de `mathieuv.alterai@gmail.com` vers `mathieu.veron@gmail.com` avec `uv run morning-review digest --max-topics 25 --send-email`."
+      "description": "Pont Hybride Edge local -> vm-hostinger (toutes les 2h à :15) : utilise les tokens personnels en RAM (/run/user/$UID/agent-tokens/*.token pour Pour la Science, Medium, New Scientist) et le LLM local/OpenRouter pour enrichir les sujets en attente sur vm-hostinger sans exposer les tokens sur le serveur distant.",
+      "prompt": "Exécute la synchronisation hybride Edge locale vers `vm-hostinger` avec `cd /home/mathieu/dev/projects/perso/morning-review && uv run morning-review sync-edge --limit 15` afin d'enrichir les articles de sources abonnées (`pourlascience.token`, `medium.token`, `newscientist.token` dans `/run/user/$UID/agent-tokens/`) et leurs synthèses LLM sur `https://review.perso.frenchtoast.dev`."
     }
   ]
 }

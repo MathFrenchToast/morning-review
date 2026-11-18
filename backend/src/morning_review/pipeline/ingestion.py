@@ -658,6 +658,15 @@ def ingest_content_item(
             cos_sim = float(raw_sim or 0.0)
             if cos_sim < 0.38:
                 continue
+            # Garde-fou anti-« boule de neige » : au-delà de 72h après la 1re source ou de 14 sources,
+            # n'accepte plus que des quasi-doublons directs (>= 0.85)
+            cand_first = cand_topic.first_seen_at
+            if cand_first is not None:
+                c_first_utc = cand_first.replace(tzinfo=pub_dt.tzinfo) if cand_first.tzinfo is None else cand_first
+                if abs((pub_dt - c_first_utc).total_seconds()) > 72 * 3600 and cos_sim < 0.85:
+                    continue
+            if (cand_topic.source_count or 1) >= 14 and cos_sim < 0.85:
+                continue
             cand_slug = _extract_url_slug_tokens(cand_topic.primary_url)
             cand_subj, cand_concepts = extract_story_profile(
                 cand_topic.title,

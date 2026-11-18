@@ -146,7 +146,47 @@ kubectl apply -f k8s/argocd-application.yaml
 ### 5.3. Composants déployés par `k8s/deployment.yaml`
 
 - **`Cluster` CloudNativePG (`morning-review-pg`)** : PostgreSQL 17.2 (`local-path`, `2Gi`) avec activation automatique de `CREATE EXTENSION IF NOT EXISTS vector;`.
-- **`PersistentVolumeClaim` (`morning-review-cache-pvc`)** : Volume `1Gi` partageant le modèle ONNX FastEmbed (`/app/.cache/fastembed`) et les rapports Markdown (`/app/reports`) entre le serveur web et les `CronJob`.
+- **`PersistentVolumeClaim` (`morning-review-cache-pvc`)** : Volume `1Gi` partageant le modèle ONNX FastEmbed (`/app/.cache/fastembed`), le cache disque S3 (`/app/.data/s3`, évitant toute surconsommation de transactions Class B Backblaze B2) et les rapports Markdown (`/app/reports`) entre le serveur web et les `CronJob`.
 - **`Deployment` (`morning-review`)** : Serveur FastAPI/Uvicorn + UI Web sur `https://review.perso.frenchtoast.dev`.
-- **`CronJob` `morning-review-refresh-hourly` (`0 * * * *`, `Europe/Paris`)** : Relève horaire Gmail IMAP (incluant l'auto-validation prudente des inscriptions newsletters double opt-in), relève RSS/Podcasts/YouTube et recalcul du clustering.
-- **`CronJob` `morning-review-daily-06h30` (`30 6 * * *`, `Europe/Paris`)** : Relève complète à **06h30**, consolidation du clustering, génération du Morning Review et envoi par e-mail de `mathieuv.alterai@gmail.com` vers `mathieu.veron@gmail.com` (avec liens publics `https://review.perso.frenchtoast.dev`).
+- **`CronJob` `morning-review-refresh-hourly` (`0 * * * *`, `Europe/Paris`)** : Relève horaire Gmail IMAP (incluant l'auto-validation prudente des inscriptions newsletters double opt-in), relève RSS/Podcasts/YouTube (avec extraction Trafilatura sur les sources Long-Form) et recalcul du clustering.
+- **`CronJob` `morning-review-daily-06h30` (`30 6 * * *`, `Europe/Paris`)** : Relève complète à **06h30**, consolidation du clustering, sélection des **12 meilleurs sujets inédits (24h)** avec mémoire inter-digests, synthèse LLM (`OPENROUTER_API_KEY` `:free`) et envoi par e-mail de `mathieuv.alterai@gmail.com` vers `mathieu.veron@gmail.com`.
+
+---
+
+## 6. Architecture de Synchronisation Hybride en 4 Étapes (`vm-hostinger` $\leftrightarrow$ Poste Local Edge)
+
+Afin de ne **jamais stocker de jetons personnels d'abonnements payants sur `vm-hostinger`** tout en bénéficiant d'une analyse de fond sur les articles derrière paywall (*Pour la Science*, *New Scientist*, *Medium*, *Substack*, et prochainement *Le Monde*, *Courrier international*, *Canard PC*), la collecte et l'enrichissement fonctionnent en **4 étapes** :
+
+```mermaid
+sequenceDiagram
+    participant Sources as Gmail IMAP & RSS
+    participant VM as vm-hostinger (K3s)
+    participant Edge as PC Local (Edge + Tokens RAM)
+    participant Mail as mathieu.veron@gmail.com
+
+    Note over VM: Étape 1 — Cron K8s :00 (chaque heure)
+    Sources->>VM: Collecte RSS + Gmail (texte complet public via Trafilatura,<br/>ou titre + chapô si derrière paywall)
+    Note over VM: Étape 2 — File d'attente /api/v1/edge/pending-topics
+    VM->>VM: Les sujets abonnés non encore enrichis (sans préfixe S3 enriched/)<br/>sont marqués comme « à récupérer »
+    Note over Edge: Étape 3 — Cron Local :15 (toutes les 2h quand PC allumé)
+    Edge->>VM: GET /api/v1/edge/pending-topics
+    Edge->>Edge: Lit l'article abonné complet via les tokens RAM locaux<br/>(/run/user/$UID/agent-tokens/*.token via agent-auth-mcp)<br/>+ génère la synthèse LLM (Ollama local / OpenRouter)
+    Edge->>VM: POST /api/v1/edge/push-enrichment (Markdown intégral + Résumé)
+    Note over VM: Étape 4 — Cron K8s 06h30 (chaque matin)
+    VM->>VM: Sélectionne 12 sujets frais (24h, mémoire stricte des digests)<br/>sur contenu complet (si enrichi) ou chapô public + sources croisées
+    VM->>Mail: Envoie la Morning Review à 06h30
+```
+
+1. **Étape 1 — Collecte continue sur `vm-hostinger` (`0 * * * *`)** :
+   - Le serveur K3s relève les flux RSS et les newsletters Gmail. Pour les sources ouvertes (ex. *Quanta Magazine*, *Ars Technica*, *Construction Physics*), **Trafilatura** extrait directement l'article complet. Pour les sources derrière paywall, `vm-hostinger` enregistre le titre, l'URL et le chapô public.
+2. **Étape 2 — Marquage « à récupérer » (`GET /api/v1/edge/pending-topics`)** :
+   - Tout sujet récent issu d'un domaine abonné dont le contenu S3 n'est pas encore préfixé par `enriched/` (ou dont la synthèse LLM est absente) est exposé dans la file d'attente `/api/v1/edge/pending-topics`.
+3. **Étape 3 — Enrichissement par le PC local lorsqu'il est allumé (`morning-review sync-edge`, cron `15 */2 * * *`)** :
+   - Déclaré dans [`.agents/schedules.json`](.agents/schedules.json), le job local exécute :
+     ```bash
+     uv run morning-review sync-edge --limit 15
+     ```
+   - Il interroge `vm-hostinger`, utilise les jetons éphémères en RAM (`/run/user/$UID/agent-tokens/<outil>.token`) du projet frère `/home/mathieu/dev/projects/perso/agent-auth-mcp` pour extraire le corps complet derrière le paywall, calcule la synthèse LLM (Ollama local / OpenRouter) et pousse le résultat vers `POST /api/v1/edge/push-enrichment`.
+4. **Étape 4 — Génération de la Morning Review à `06h30` (`30 6 * * *`)** :
+   - Sélectionne au plus **12 sujets à forte valeur ajoutée** sur les dernières 24h, en **excluant tout sujet déjà présenté dans un digest précédent** (sauf rebondissement factuel réel validé sémantiquement par le LLM) et en appliquant un bonus d'autorité aux publications *Long-Form* (*Quanta Magazine*, *Pour la Science*, *New Scientist*...).
+   - Génère la revue à partir du contenu abonné complet (si le PC local l'a enrichi) ou du chapô public croisé avec les autres sources ouvertes (via `OPENROUTER_API_KEY` `:free`).

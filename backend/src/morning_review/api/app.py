@@ -1001,5 +1001,127 @@ def api_pourlascience_read_article(
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
+class EdgeEnrichmentPushRequest(BaseModel):
+    topic_id: UUID
+    markdown_body: str | None = None
+    excerpt: str | None = None
+    summary: str | None = None
+    subtopics: list[dict[str, Any]] | None = None
+
+
+@app.get("/api/v1/edge/pending-topics")
+def api_edge_pending_topics(
+    limit: int = Query(default=20, ge=1, le=60),
+    user_id: UUID = Depends(get_current_user_id),
+    session: Session = Depends(get_db),
+) -> list[dict[str, Any]]:
+    """Retourne les sujets récents sur le serveur distant qui bénéficieraient d'un enrichissement
+    local Edge (sources payantes Pour la Science / New Scientist / Medium via tokens RAM locaux,
+    ou sujets dont le résumé n'a pas encore été synthétisé par un LLM).
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=72)
+    topics = session.scalars(
+        select(Topic)
+        .where(
+            or_(Topic.visibility == "public", Topic.user_id == user_id),
+            Topic.last_seen_at >= cutoff,
+        )
+        .order_by(Topic.last_seen_at.desc())
+        .limit(200)
+    ).all()
+
+    state_map = {
+        st.topic_id: st
+        for st in session.scalars(
+            select(UserTopicState).where(UserTopicState.user_id == user_id)
+        ).all()
+    }
+
+    pending: list[dict[str, Any]] = []
+    subscriber_domains = ("pourlascience.fr", "newscientist.com", "medium.com")
+    for t in topics:
+        st = state_map.get(t.id)
+        if st and st.is_archived:
+            continue
+        url_low = (t.primary_url or "").lower()
+        is_sub_domain = any(d in url_low for d in subscriber_domains)
+        primary_item = session.scalar(
+            select(CanonicalItem)
+            .where(CanonicalItem.topic_id == t.id)
+            .order_by(CanonicalItem.published_at.desc().nullslast())
+            .limit(1)
+        )
+        already_enriched = bool(
+            primary_item and (primary_item.s3_key or "").startswith("enriched/")
+        )
+        needs_summary = (
+            "• [" in (t.summary or "")
+            or "member-only story" in (t.summary or "").lower()
+            or len(t.summary or "") < 180
+        )
+        if (is_sub_domain and not already_enriched) or needs_summary:
+            pending.append(
+                {
+                    "topic_id": str(t.id),
+                    "title": t.title,
+                    "primary_url": t.primary_url,
+                    "category": t.category_slug,
+                    "is_subscriber_domain": is_sub_domain,
+                    "already_enriched": already_enriched,
+                    "current_summary": t.summary or "",
+                    "articles": get_deduplicated_topic_articles(session, t.id),
+                }
+            )
+            if len(pending) >= limit:
+                break
+    return pending
+
+
+@app.post("/api/v1/edge/push-enrichment")
+def api_edge_push_enrichment(
+    payload: EdgeEnrichmentPushRequest,
+    user_id: UUID = Depends(get_current_user_id),
+    session: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Reçoit depuis le poste local (Edge) le contenu Markdown intégral (extrait via tokens RAM agent-auth-mcp
+    ou Trafilatura) et/ou la synthèse LLM calculée localement, et met à jour la BDD et le stockage S3 distant.
+    """
+    from morning_review.pipeline.ingestion import clean_aggregator_noise
+
+    topic = session.get(Topic, payload.topic_id)
+    if topic is None:
+        raise HTTPException(status_code=404, detail="Topic introuvable")
+
+    primary_item = session.scalar(
+        select(CanonicalItem)
+        .where(CanonicalItem.topic_id == topic.id)
+        .order_by(CanonicalItem.published_at.desc().nullslast())
+        .limit(1)
+    )
+    s3_key_updated = None
+    if payload.markdown_body and len(payload.markdown_body.strip()) >= 200 and primary_item is not None:
+        md_clean = payload.markdown_body.strip()
+        content_hash = storage.compute_sha256(md_clean)
+        s3_key_updated = f"enriched/{content_hash[:2]}/{content_hash}.md"
+        storage.put_markdown(s3_key_updated, md_clean)
+        primary_item.s3_key = s3_key_updated
+        primary_item.content_sha256 = content_hash
+        if payload.excerpt:
+            primary_item.excerpt = clean_aggregator_noise(payload.excerpt)[:600]
+
+    if payload.summary and len(payload.summary.strip()) >= 60:
+        topic.summary = clean_aggregator_noise(payload.summary.strip())[:1200]
+    if payload.subtopics is not None:
+        topic.subtopics_json = payload.subtopics
+
+    session.commit()
+    return {
+        "status": "updated",
+        "topic_id": str(topic.id),
+        "s3_key": s3_key_updated or (primary_item.s3_key if primary_item else None),
+        "summary_len": len(topic.summary or ""),
+    }
+
+
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")

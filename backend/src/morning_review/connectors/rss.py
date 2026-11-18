@@ -570,25 +570,52 @@ def fetch_rss_sources(
                             except Exception as exc:
                                 logger.debug("Pour la Science inline subscriber fetch skipped for %s: %s", link, exc)
 
-                # Si un article RSS web (ex: Hacker News, Hugging Face Blog) n'a pas de description dans le flux,
-                # tente d'extraire les premiers paragraphes éditoriaux de la page cible
-                if not extra_body_md and len(clean_excerpt) < 40 and link.startswith(("http://", "https://")):
+                # Si l'article provient d'une source de fond (Quanta Magazine, Pour la Science, New Scientist, Ars Technica...)
+                # ou que le flux RSS ne fournit qu'un court chapô (< 220 car.), extrait le texte intégral via Trafilatura
+                is_longform_domain = any(
+                    d in link.lower()
+                    for d in (
+                        "quantamagazine.org",
+                        "pourlascience.fr",
+                        "newscientist.com",
+                        "construction-physics.com",
+                        "dwarkesh.com",
+                        "pragmaticengineer.com",
+                        "bytebytego.com",
+                        "latent.space",
+                        "importai.net",
+                        "arstechnica.com",
+                        "404media.co",
+                        "lwn.net",
+                        "danluu.com",
+                        "simonwillison.net",
+                    )
+                )
+                if not extra_body_md and (is_longform_domain or len(clean_excerpt) < 220) and link.startswith(("http://", "https://")):
                     if "youtube.com/" in link or "youtu.be/" in link:
                         creator_lbl = str((source.metadata_json or {}).get("creator") or source.title.replace("(YouTube)", "").strip())
                         clean_excerpt = f"Vidéo publiée par {creator_lbl} : « {title} »."
                     elif "radiofrance.fr/" not in link:
                         try:
-                            art_resp = client.get(link, timeout=6.0)
+                            art_resp = client.get(link, timeout=7.0)
                             if art_resp.status_code == 200 and "text/html" in art_resp.headers.get("content-type", "").lower():
-                                extracted_md = trafilatura.extract(art_resp.text, output_format="markdown", include_links=False) or ""
+                                extracted_md = (
+                                    trafilatura.extract(
+                                        art_resp.text,
+                                        output_format="markdown",
+                                        include_links=False,
+                                        favor_precision=True,
+                                    )
+                                    or ""
+                                )
                                 paras = [
                                     " ".join(p.split())
                                     for p in extracted_md.split("\n\n")
                                     if len(p.strip()) >= 45 and not p.strip().startswith("#")
                                 ]
                                 if paras:
-                                    clean_excerpt = " ".join(paras[:2])[:520]
-                                    extra_body_md = "\n\n".join(paras[:6])
+                                    clean_excerpt = " ".join(paras[:3])[:560]
+                                    extra_body_md = "\n\n".join(paras[:14])
                         except Exception:
                             pass
 
