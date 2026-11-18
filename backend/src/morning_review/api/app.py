@@ -816,7 +816,11 @@ def api_topic_feedback(
     user_id: UUID = Depends(get_current_user_id),
 ) -> dict[str, Any]:
     try:
-        return record_topic_feedback(db, user_id=user_id, topic_id=topic_id, vote=payload.vote)
+        res = record_topic_feedback(db, user_id=user_id, topic_id=topic_id, vote=payload.vote)
+        if payload.vote == -1:
+            set_topic_archive_state(db, user_id=user_id, topic_id=topic_id, archived=True)
+            res["is_archived"] = True
+        return res
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

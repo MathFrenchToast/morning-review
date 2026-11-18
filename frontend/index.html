@@ -857,9 +857,9 @@
               <button
                 class="icon-btn vote-down"
                 :class="{ active: t.user_vote === -1 }"
-                @click="handleMinusClick(t)"
-                title="Non pertinent (-1, ou retire le like en premier si déjà liké — Raccourci : -)"
-                aria-label="Marquer ce sujet comme non pertinent (-1) ou retirer le like"
+                @click="handleMinusClick(t, idx)"
+                title="Je n'aime pas (-1) et marquer comme lu (ou retire le like en premier si déjà liké — Raccourci : -)"
+                aria-label="Marquer ce sujet comme non pertinent (-1) et le passer en lu"
                 :aria-pressed="t.user_vote === -1"
               >
                 <span aria-hidden="true">👎</span>
@@ -2000,8 +2000,12 @@
           await loadTopics(true);
         }
 
-        async function voteTopic(t, vote) {
+        async function voteTopic(t, vote, idx = null) {
           if (!t) return;
+          if (vote === -1 && activeTab.value === "topics") {
+            await dislikeAndArchive(t, idx);
+            return;
+          }
           const r = await fetch(`/api/v1/topics/${t.topic_id}/feedback`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -2014,7 +2018,7 @@
               vote === 1
                 ? "👍 +1 Pertinent"
                 : vote === -1
-                ? "👎 -1 Non pertinent"
+                ? "👎 -1 Non pertinent (marqué comme lu)"
                 : "➖ Vote retiré (neutre)";
             statusMessage.value = `Vote mis à jour (${label}) sur "${t.title.slice(0, 50)}..."`;
           }
@@ -2027,11 +2031,11 @@
           await voteTopic(t, nextVote);
         }
 
-        async function handleMinusClick(t) {
+        async function handleMinusClick(t, idx = null) {
           if (!t) return;
-          // Comme demandé : '-' enlève le like en premier (1 -> 0), puis passe à j'aime pas (0 -> -1)
+          // '-' enlève le like en premier (1 -> 0), puis passe à j'aime pas (0 -> -1) et le marque comme lu/archivé
           const nextVote = t.user_vote === 1 ? 0 : -1;
-          await voteTopic(t, nextVote);
+          await voteTopic(t, nextVote, idx);
         }
 
         async function handleKeyDown(event) {
