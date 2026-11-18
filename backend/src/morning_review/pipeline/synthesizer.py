@@ -243,15 +243,90 @@ def sync_topic_source_dates(session: Session, topic: Topic) -> None:
             topic.last_seen_at = max_pub
 
 
+def _is_paid_openrouter_model(model_slug: str) -> bool:
+    slug = (model_slug or "").strip()
+    return bool(slug) and not slug.endswith(":free") and slug != "openrouter/free"
+
+
+def _get_paid_quota_file() -> Any:
+    from pathlib import Path
+
+    base = Path(getattr(settings, "s3_local_fallback_dir", ".data/s3"))
+    base.mkdir(parents=True, exist_ok=True)
+    return base / "_openrouter_paid_quota.json"
+
+
+def _can_use_paid_openrouter() -> bool:
+    from datetime import datetime, timezone
+
+    quota_limit = int(getattr(settings, "openrouter_paid_daily_quota", 60) or 0)
+    if quota_limit <= 0:
+        return False
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    qfile = _get_paid_quota_file()
+    try:
+        if qfile.exists():
+            data = json.loads(qfile.read_text(encoding="utf-8"))
+            if data.get("date") == today_str:
+                return int(data.get("used", 0)) < quota_limit
+    except Exception:
+        pass
+    return True
+
+
+def _record_paid_openrouter_call(model_slug: str) -> None:
+    if not _is_paid_openrouter_model(model_slug):
+        return
+    from datetime import datetime, timezone
+
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    qfile = _get_paid_quota_file()
+    used = 0
+    by_model: dict[str, int] = {}
+    try:
+        if qfile.exists():
+            data = json.loads(qfile.read_text(encoding="utf-8"))
+            if data.get("date") == today_str:
+                used = int(data.get("used", 0))
+                if isinstance(data.get("by_model"), dict):
+                    by_model = {str(k): int(v) for k, v in data["by_model"].items()}
+    except Exception:
+        pass
+    used += 1
+    by_model[model_slug] = by_model.get(model_slug, 0) + 1
+    try:
+        qfile.write_text(
+            json.dumps(
+                {
+                    "date": today_str,
+                    "used": used,
+                    "limit": int(getattr(settings, "openrouter_paid_daily_quota", 60) or 60),
+                    "by_model": by_model,
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+    except Exception:
+        pass
+
+
 def _get_openrouter_models() -> list[str]:
-    primary = getattr(settings, "openrouter_primary_model", None) or "openrouter/free"
-    models = [
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "google/gemma-3-27b-it:free",
-        "deepseek/deepseek-chat-v3-0324:free",
-        primary,
-        "openrouter/free",
+    primary = getattr(settings, "openrouter_primary_model", None) or "google/gemma-4-26b-a4b-it:free"
+    models: list[str] = [
+        "google/gemma-4-26b-a4b-it:free",
+        primary if ":free" in primary else "",
     ]
+    if _can_use_paid_openrouter():
+        raw_paid = getattr(
+            settings,
+            "openrouter_paid_models",
+            "mistralai/mistral-small-24b-instruct-2501,google/gemma-3-12b-it,google/gemini-2.5-flash-lite",
+        )
+        for pm in (raw_paid or "").split(","):
+            if pm.strip():
+                models.append(pm.strip())
+    models.append("openrouter/free")
     return list(dict.fromkeys(m for m in models if m))
 
 
@@ -323,6 +398,7 @@ def _call_llm_json(
                         )
                         parsed = _extract_json_dict_from_llm_text(content)
                         if parsed is not None:
+                            _record_paid_openrouter_call(model_slug)
                             return parsed
                 except Exception as exc:
                     logger.debug("OpenRouter JSON fallback (%s): %s", model_slug, exc)
@@ -414,7 +490,7 @@ def _call_llm_topic_synthesis_and_subtopics(
         "1. Rédige TOUT en français (traduis et intègre les faits des sources anglophones).\n"
         "2. `summary` (3 à 5 phrases denses et fluides, 350 à 850 caractères) :\n"
         "   - Expose d'abord le cœur factuel de l'événement (nature, ampleur, dates/durée précise, acteurs, détails techniques).\n"
-        "   - ZÉRO TEASING : si un titre pose une question ou annonce une réserve (ex: 'but there's a catch', 'mais il y a un hic', 'voici pourquoi'), donne immédiatement l'explication concrète et factuelle tirée du corps de l'article.\n"
+        "   - ZÉRO TEASING ET ZÉRO MÉTA-COMMENTAIRE : si un titre pose une question ou annonce une réserve, donne immédiatement l'explication factuelle tirée du texte. N'écris JAMAIS de phrase méta sur le document ('les détails ne sont pas disponibles dans les sources fournies', 'l'extrait est tronqué', 'trafic automatisé') : synthétise uniquement les faits présents.\n"
         "   - Indique clairement l'évolution chronologique et l'état actuel (ex: incident résolu / service rétabli avec date et heure de fin si disponible).\n"
         "   - Mentionne les conséquences concrètes et les enjeux/réactions soulevés par les différentes sources (ex: impact sur les utilisateurs, réactions politiques ou souveraineté européenne).\n"
         "   - Cite les sources pertinentes entre crochets dans le texte (ex: [Radio France], [Microsoft 365 Status], [TechRadar]).\n"
@@ -531,6 +607,7 @@ def _call_openrouter_synthesis(title: str, source_snippets: list[str]) -> str | 
                         .strip()
                     )
                     if len(content) >= 40:
+                        _record_paid_openrouter_call(model_slug)
                         return content
             except Exception as exc:
                 logger.debug("OpenRouter synthesis fallback (%s): %s", model_slug, exc)
@@ -783,14 +860,14 @@ def synthesize_topic_summary(session: Session, topic: Topic) -> str:
         raw_ex = art.get("excerpt") or ""
         has_boilerplate = any(
             m in raw_ex.lower()
-            for m in ("member-only story", "hi everyone, welcome back", "[entretien", "](http")
+            for m in ("member-only story", "hi everyone, welcome back", "[entretien", "](http", "**genre :")
         )
-        if s3_key and (len(raw_ex) < 220 or has_boilerplate):
+        if s3_key and (len(raw_ex) < 1200 or has_boilerplate or s3_key.startswith("enriched/")):
             raw_md = storage.get_markdown(s3_key) or ""
             clean_paras = _clean_markdown_body_paragraphs(raw_md)
             if clean_paras:
-                if len(clean_paras) > 7 and len(dedup_articles) == 1:
-                    # Conserve tous les blocs contenant un sous-titre numéroté [1. ...] (condensés à 200 car.) ainsi que le début, le milieu et la conclusion
+                if len(clean_paras) >= 4 and len(dedup_articles) == 1:
+                    # Conserve les blocs numérotés [1. ...] ainsi que le début, le milieu et la conclusion
                     numbered = [p[:200] for p in clean_paras if re.search(r"\[\d+[\.\)]\s+", p)]
                     mid_idx = len(clean_paras) // 2
                     sampled = list(
@@ -803,7 +880,16 @@ def synthesize_topic_summary(session: Session, topic: Topic) -> str:
                     )
                     art["excerpt"] = " ".join(sampled)[:2400]
                 else:
-                    art["excerpt"] = " ".join(clean_paras[:6])[:1400]
+                    art["excerpt"] = " ".join(clean_paras[:6])[:1600]
+
+    existing_sum = (topic.summary or "").strip()
+    existing_is_bad = (
+        len(existing_sum) < 160
+        or any(
+            m in existing_sum.lower()
+            for m in ("member-only story", "hi everyone", "](http", "• [", "**genre :", "tronqué dans l'extrait")
+        )
+    )
 
     if len(dedup_articles) <= 1:
         if dedup_articles:
@@ -812,10 +898,7 @@ def synthesize_topic_summary(session: Session, topic: Topic) -> str:
             needs_llm = (
                 len(clean_ex) >= 320
                 or os.environ.get("MORNING_REVIEW_FORCE_LLM") == "1"
-                or any(
-                    m in (topic.summary or "").lower()
-                    for m in ("member-only story", "hi everyone", "](http", "• [")
-                )
+                or existing_is_bad
             )
             if needs_llm:
                 llm_res = _call_llm_topic_synthesis_and_subtopics(topic.title, dedup_articles)
@@ -823,7 +906,7 @@ def synthesize_topic_summary(session: Session, topic: Topic) -> str:
                     topic.summary = llm_res["summary"]
                     if llm_res.get("subtopics"):
                         topic.subtopics_json = llm_res["subtopics"]
-                else:
+                elif existing_is_bad:
                     topic.summary = clean_ex[:750] or clean_aggregator_noise(topic.title)
             elif clean_ex and (" • [" in (topic.summary or "") or not topic.summary or "Source RSS" in (topic.summary or "")):
                 topic.summary = clean_ex[:750]
@@ -843,7 +926,7 @@ def synthesize_topic_summary(session: Session, topic: Topic) -> str:
             llm_summary = _call_openrouter_synthesis(topic.title, snippets)
             if llm_summary:
                 topic.summary = clean_aggregator_noise(llm_summary)[:900]
-            else:
+            elif existing_is_bad:
                 clean_rows = [(a["title"], a["excerpt"], a["source_title"]) for a in dedup_articles]
                 topic.summary = _build_deterministic_multisource_summary(topic.title, clean_rows)
 
@@ -1097,6 +1180,18 @@ def ensure_topic_full_content_and_llm_summary(
 
     if fetched_count > 0:
         session.flush()
+
+    existing_sum = (topic.summary or "").strip()
+    is_already_enriched = bool(items and (items[0].s3_key or "").startswith("enriched/"))
+    has_clean_summary = (
+        len(existing_sum) >= 180
+        and not any(
+            m in existing_sum.lower()
+            for m in ("member-only story", "hi everyone", "](http", "• [", "**genre :", "tronqué dans l'extrait")
+        )
+    )
+    if is_already_enriched and has_clean_summary and fetched_count == 0:
+        return existing_sum
 
     return synthesize_topic_summary(session, topic)
 

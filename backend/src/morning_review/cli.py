@@ -206,11 +206,40 @@ def main() -> None:
                     pass
 
             if extracted_md:
+                low_md = extracted_md.lower()
+                if any(
+                    bad in low_md
+                    for bad in (
+                        "identified as automated",
+                        "licensing@lemonde.fr",
+                        "identifié comme automatisé",
+                        "enable javascript and cookies",
+                        "verify you are human",
+                    )
+                ):
+                    extracted_md = ""
+
+            if extracted_md:
                 paras = _clean_markdown_body_paragraphs(extracted_md)
                 if paras:
                     extracted_excerpt = " ".join(paras[:3])[:560]
                     if articles:
-                        articles[0]["excerpt"] = " ".join(paras[:8])[:2200]
+                        orig_lead = (articles[0].get("excerpt") or "").strip()
+                        if len(paras) >= 5:
+                            mid_idx = len(paras) // 2
+                            sampled = list(
+                                dict.fromkeys(
+                                    paras[:2] + paras[mid_idx : mid_idx + 2] + paras[-2:]
+                                )
+                            )
+                            body_sample = " ".join(sampled)[:2200]
+                        else:
+                            body_sample = " ".join(paras)[:2200]
+                        articles[0]["excerpt"] = (
+                            f"{orig_lead}\n{body_sample}".strip()[:2400]
+                            if orig_lead and orig_lead not in body_sample
+                            else body_sample
+                        )
 
             llm_res = _call_llm_topic_synthesis_and_subtopics(title, articles, allow_local_ollama=True)
             summary_out = (llm_res or {}).get("summary") or ""

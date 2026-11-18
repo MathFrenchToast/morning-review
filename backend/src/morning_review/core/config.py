@@ -79,7 +79,7 @@ class Settings(BaseSettings):
     )
     topic_window_days: int = Field(default=14, alias="TOPIC_WINDOW_DAYS")
 
-    # OpenRouter (:free) — supporte OPENROUTER_KEY et OPENROUTER_API_KEY
+    # OpenRouter (:free + quota journalier sur petits modèles économiques)
     openrouter_api_key: str = Field(
         default="",
         validation_alias=AliasChoices("OPENROUTER_API_KEY", "OPENROUTER_KEY"),
@@ -89,8 +89,16 @@ class Settings(BaseSettings):
         alias="OPENROUTER_BASE_URL",
     )
     openrouter_primary_model: str = Field(
-        default="openrouter/free",
+        default="google/gemma-4-26b-a4b-it:free",
         alias="OPENROUTER_PRIMARY_MODEL",
+    )
+    openrouter_paid_daily_quota: int = Field(
+        default=60,
+        alias="OPENROUTER_PAID_DAILY_QUOTA",
+    )
+    openrouter_paid_models: str = Field(
+        default="mistralai/mistral-small-24b-instruct-2501,google/gemma-3-12b-it,google/gemini-2.5-flash-lite",
+        alias="OPENROUTER_PAID_MODELS",
     )
     openrouter_max_rpm: int = Field(default=15, alias="OPENROUTER_MAX_RPM")
     openrouter_max_rpd: int = Field(default=900, alias="OPENROUTER_MAX_RPD")

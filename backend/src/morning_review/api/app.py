@@ -1065,6 +1065,8 @@ def api_edge_pending_topics(
         needs_summary = (
             "• [" in (t.summary or "")
             or "member-only story" in (t.summary or "").lower()
+            or "**genre :" in (t.summary or "").lower()
+            or "tronqué dans l'extrait" in (t.summary or "").lower()
             or len(t.summary or "") < 180
         )
         if (is_sub_domain and not already_enriched) or needs_summary:
