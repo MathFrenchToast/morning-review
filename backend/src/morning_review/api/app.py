@@ -291,23 +291,76 @@ def api_list_sources(
     return list_user_sources(db, user_id)
 
 
+def _resolve_rss_feed_url_if_html(raw_url: str) -> str:
+    """Si l'utilisateur saisit la page d'accueil HTML d'un site (ex: https://www.quantamagazine.org/),
+    détecte automatiquement la balise <link rel="alternate" type="application/rss+xml"> ou teste /feed/.
+    """
+    import re
+    from urllib.parse import urljoin
+
+    import feedparser
+    import httpx
+
+    u = (raw_url or "").strip()
+    if not u.startswith(("http://", "https://")):
+        return u
+    try:
+        with httpx.Client(
+            timeout=8.0,
+            follow_redirects=True,
+            headers={"User-Agent": "MorningReview/1.0 (RSS Reader; Feed Fetcher)"},
+        ) as client:
+            r = client.get(u)
+            ctype = (r.headers.get("content-type") or "").lower()
+            parsed = feedparser.parse(r.text)
+            if parsed.entries or "xml" in ctype or "rss" in ctype or "atom" in ctype:
+                return str(r.url)
+            match = re.search(
+                r'<link[^>]+type=["\']application/(?:rss|atom)\+xml["\'][^>]*href=["\']([^"\']+)["\']',
+                r.text,
+                flags=re.IGNORECASE,
+            ) or re.search(
+                r'<link[^>]+href=["\']([^"\']+)["\'][^>]*type=["\']application/(?:rss|atom)\+xml["\']',
+                r.text,
+                flags=re.IGNORECASE,
+            )
+            if match:
+                return urljoin(str(r.url), match.group(1).strip())
+            candidate_feed = u.rstrip("/") + "/feed/"
+            r2 = client.get(candidate_feed)
+            if r2.status_code == 200 and feedparser.parse(r2.text).entries:
+                return str(r2.url)
+    except Exception:
+        pass
+    return u
+
+
 @app.post("/api/v1/sources")
 def api_add_source(
     payload: SourceCreateRequest,
     db: Session = Depends(get_db),
     user_id: UUID = Depends(get_current_user_id),
 ) -> dict[str, Any]:
-    source = db.scalar(select(Source).where(Source.url == payload.url.strip()))
+    resolved_url = (
+        _resolve_rss_feed_url_if_html(payload.url.strip())
+        if payload.kind in ("rss", "podcast")
+        else payload.url.strip()
+    )
+    source = db.scalar(
+        select(Source).where(or_(Source.url == resolved_url, Source.url == payload.url.strip()))
+    )
     if source is None:
         source = Source(
             kind=payload.kind,
-            url=payload.url.strip(),
-            site_url=payload.site_url,
+            url=resolved_url,
+            site_url=payload.site_url or (payload.url.strip() if resolved_url != payload.url.strip() else None),
             title=payload.title.strip(),
             is_public=payload.is_public,
         )
         db.add(source)
         db.flush()
+    elif source.url != resolved_url and (source.item_count or 0) == 0:
+        source.url = resolved_url
 
     cat_obj = db.scalar(
         select(UserCategory).where(
@@ -336,7 +389,54 @@ def api_add_source(
         sub.enabled = payload.enabled
 
     db.commit()
-    return {"source_id": str(source.id), "subscription_id": str(sub.id), "title": source.title}
+
+    ingested_now = 0
+    if payload.kind in ("rss", "podcast") and resolved_url.startswith(("http://", "https://")):
+        try:
+            import feedparser
+            import httpx
+            from morning_review.connectors.rss import _extract_entry_text, _parse_entry_date
+            from morning_review.pipeline.ingestion import ingest_content_item
+
+            with httpx.Client(
+                timeout=10.0,
+                follow_redirects=True,
+                headers={"User-Agent": "MorningReview/1.0 (RSS Reader; Feed Fetcher)"},
+            ) as client:
+                r = client.get(resolved_url)
+                parsed = feedparser.parse(r.text)
+                for entry in (parsed.entries or [])[:8]:
+                    link = (getattr(entry, "link", "") or "").strip()
+                    title = (getattr(entry, "title", "") or "").strip()
+                    if not link or not title:
+                        continue
+                    summary_txt, full_txt = _extract_entry_text(entry)
+                    pub_dt = _parse_entry_date(entry)
+                    _, _, created = ingest_content_item(
+                        db,
+                        user_id=user_id,
+                        source=source,
+                        raw_url=link,
+                        title=title,
+                        markdown_body=f"# {title}\n\n{full_txt or summary_txt or title}",
+                        excerpt=(summary_txt or full_txt or title)[:500],
+                        published_at=pub_dt,
+                        visibility="public" if source.is_public else "private",
+                        category_slug=sub.category_slug or "actu",
+                    )
+                    if created:
+                        ingested_now += 1
+                db.commit()
+        except Exception as exc:
+            logger.warning("Immediate RSS poll on source creation failed for %s: %s", resolved_url, exc)
+
+    return {
+        "source_id": str(source.id),
+        "subscription_id": str(sub.id),
+        "title": source.title,
+        "url": source.url,
+        "ingested_now": ingested_now,
+    }
 
 
 @app.patch("/api/v1/sources/{source_id}")
@@ -615,8 +715,55 @@ def api_list_topics(
             Topic.last_seen_at.asc() if is_asc else Topic.last_seen_at.desc(),
         )
 
-    stmt = stmt.limit(limit if sort_by != "relevance" else max(limit, 120))
-    topics = db.scalars(stmt).all()
+    fetch_limit = (
+        max(limit * 3, 360)
+        if (not category and sort_by == "sources") or sort_by == "relevance"
+        else limit
+    )
+    stmt = stmt.limit(fetch_limit)
+    raw_topics = list(db.scalars(stmt).all())
+
+    if not category and sort_by == "sources" and len(raw_topics) > limit:
+        from collections import defaultdict
+
+        longform_domains = (
+            "quantamagazine.org",
+            "pourlascience.fr",
+            "newscientist.com",
+            "canardpc.com",
+            "courrierinternational.com",
+        )
+
+        def _editorial_rank_key(tp: Topic) -> tuple[Any, ...]:
+            dt = tp.last_seen_at or tp.first_seen_at
+            day_str = dt.strftime("%Y-%m-%d") if dt else "1970-01-01"
+            p_url = (tp.primary_url or "").lower()
+            bonus = 2 if any(d in p_url for d in longform_domains) else 0
+            return (day_str, (tp.source_count or 1) + bonus, dt.isoformat() if dt else "")
+
+        raw_topics.sort(key=_editorial_rank_key, reverse=not is_asc)
+        by_cat: dict[str, list[Topic]] = defaultdict(list)
+        for tp in raw_topics:
+            by_cat[tp.category_slug or "actu"].append(tp)
+
+        quota = max(15, limit // max(1, len(by_cat)))
+        balanced: list[Topic] = []
+        seen_tids: set[UUID] = set()
+        for c_slug in ("science", "gaming-hardware", "tech", "actu", "perso"):
+            for tp in by_cat.get(c_slug, [])[:quota]:
+                if len(balanced) < limit and tp.id not in seen_tids:
+                    balanced.append(tp)
+                    seen_tids.add(tp.id)
+        for tp in raw_topics:
+            if len(balanced) >= limit:
+                break
+            if tp.id not in seen_tids:
+                balanced.append(tp)
+                seen_tids.add(tp.id)
+        balanced.sort(key=_editorial_rank_key, reverse=not is_asc)
+        topics = balanced
+    else:
+        topics = raw_topics
 
     result: list[dict[str, Any]] = []
     for t in topics:

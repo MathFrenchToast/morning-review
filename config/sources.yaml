@@ -97,6 +97,17 @@ sources:
   enabled: true
   discovery_method: yaml_seed
   site_url: https://www.canardpc.com/
+- kind: rss
+  title: Kotaku
+  url: https://kotaku.com/feed
+  category: gaming-hardware
+  labels:
+  - gaming-hardware
+  creator: Kotaku
+  is_public: true
+  enabled: true
+  discovery_method: api
+  site_url: https://kotaku.com/
 - kind: newsletter
   title: Medium Daily Digest (noreply@medium.com)
   url: newsletter://noreply@medium.com/medium-daily-digest

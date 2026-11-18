@@ -292,9 +292,11 @@ def sync_sources_from_yaml(
             )
             session.add(sub)
         else:
-            sub.category_slug = cat_slug
-            sub.category_id = cat_obj.id if cat_obj else sub.category_id
-            sub.enabled = enabled
+            # Préserve `sub.enabled` et `sub.category_slug` choisis par l'utilisateur en BDD
+            if not sub.category_slug:
+                sub.category_slug = cat_slug
+            if sub.category_id is None and cat_obj is not None:
+                sub.category_id = cat_obj.id
         src_count += 1
 
     session.commit()

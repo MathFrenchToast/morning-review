@@ -908,13 +908,21 @@ def recluster_existing_topics(session: Session, user_id: UUID) -> dict[str, Any]
             cand = topics[j]
             if cand.id in merged_into:
                 continue
-            delta_days = abs((target.last_seen_at - cand.last_seen_at).total_seconds()) / 86400.0
+            t_anchor = target.first_seen_at or target.last_seen_at
+            c_anchor = cand.last_seen_at or cand.first_seen_at
+            delta_days = abs((t_anchor - c_anchor).total_seconds()) / 86400.0
             if delta_days > settings.topic_window_days:
                 continue
 
             v_cand, subj_cand, conc_cand = profile_cache[cand.id]
             cos_sim = float(np.dot(v_target, v_cand))
             if cos_sim < 0.38:
+                continue
+            # Garde-fou anti-« boule de neige » : au-delà de 72h ou de 14 sources cumulées,
+            # n'accepte plus que des quasi-doublons directs (cos_sim >= 0.86)
+            if delta_days > 3.0 and cos_sim < 0.86:
+                continue
+            if ((target.source_count or 1) + (cand.source_count or 1)) > 14 and cos_sim < 0.86:
                 continue
 
             matched, hyb_score = compute_hybrid_story_match(
@@ -927,10 +935,8 @@ def recluster_existing_topics(session: Session, user_id: UUID) -> dict[str, Any]
             if not matched:
                 continue
 
-            # Fusionne `cand` dans `target`
+            # Fusionne `cand` dans `target` sans élargir transitivement `subj_target`/`conc_target`
             merged_into[cand.id] = target.id
-            subj_target |= subj_cand
-            conc_target |= conc_cand
 
             cand_items = session.scalars(
                 select(CanonicalItem).where(CanonicalItem.topic_id == cand.id)
