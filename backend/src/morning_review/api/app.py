@@ -393,10 +393,12 @@ def api_add_source(
     ingested_now = 0
     if payload.kind in ("rss", "podcast") and resolved_url.startswith(("http://", "https://")):
         try:
+            from datetime import datetime, timezone
+            from email.utils import parsedate_to_datetime
+
             import feedparser
             import httpx
-            from morning_review.connectors.rss import _extract_entry_text, _parse_entry_date
-            from morning_review.pipeline.ingestion import ingest_content_item
+            from morning_review.pipeline.ingestion import clean_aggregator_noise, ingest_content_item
 
             with httpx.Client(
                 timeout=10.0,
@@ -410,16 +412,22 @@ def api_add_source(
                     title = (getattr(entry, "title", "") or "").strip()
                     if not link or not title:
                         continue
-                    summary_txt, full_txt = _extract_entry_text(entry)
-                    pub_dt = _parse_entry_date(entry)
+                    summary_txt = clean_aggregator_noise((getattr(entry, "summary", "") or title).strip())
+                    raw_pub = getattr(entry, "published", None) or getattr(entry, "updated", None)
+                    try:
+                        pub_dt = parsedate_to_datetime(str(raw_pub)) if raw_pub else datetime.now(timezone.utc)
+                        if pub_dt.tzinfo is None:
+                            pub_dt = pub_dt.replace(tzinfo=timezone.utc)
+                    except Exception:
+                        pub_dt = datetime.now(timezone.utc)
                     _, _, created = ingest_content_item(
                         db,
                         user_id=user_id,
                         source=source,
                         raw_url=link,
                         title=title,
-                        markdown_body=f"# {title}\n\n{full_txt or summary_txt or title}",
-                        excerpt=(summary_txt or full_txt or title)[:500],
+                        markdown_body=f"# {title}\n\n{summary_txt}",
+                        excerpt=summary_txt[:500],
                         published_at=pub_dt,
                         visibility="public" if source.is_public else "private",
                         category_slug=sub.category_slug or "actu",

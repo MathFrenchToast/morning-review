@@ -108,6 +108,50 @@ sources:
   enabled: true
   discovery_method: api
   site_url: https://kotaku.com/
+- kind: rss
+  title: Developpez.com — Sécurité
+  url: https://securite.developpez.com/index/rss
+  category: tech
+  labels:
+  - tech
+  creator: Developpez.com
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://securite.developpez.com/
+- kind: rss
+  title: Developpez.com — Actualités IT
+  url: https://www.developpez.com/index/rss
+  category: tech
+  labels:
+  - tech
+  creator: Developpez.com
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.developpez.com/
+- kind: rss
+  title: BleepingComputer
+  url: https://www.bleepingcomputer.com/feed/
+  category: tech
+  labels:
+  - tech
+  creator: BleepingComputer
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.bleepingcomputer.com/
+- kind: rss
+  title: The Hacker News (Cybersecurity)
+  url: https://feeds.feedburner.com/TheHackersNews
+  category: tech
+  labels:
+  - tech
+  creator: The Hacker News
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://thehackernews.com/
 - kind: newsletter
   title: Medium Daily Digest (noreply@medium.com)
   url: newsletter://noreply@medium.com/medium-daily-digest
