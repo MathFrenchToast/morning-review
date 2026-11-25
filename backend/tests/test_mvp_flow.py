@@ -199,10 +199,11 @@ def test_multisource_topic_deduplication_search_and_profiling() -> None:
             session.delete(old_tp)
         session.commit()
 
-        from datetime import datetime, timezone
+        from datetime import datetime, timedelta, timezone
 
-        t_first = datetime(2026, 11, 10, 8, 30, tzinfo=timezone.utc)
-        t_latest = datetime(2026, 11, 13, 14, 45, tzinfo=timezone.utc)
+        now_utc = datetime.now(timezone.utc).replace(microsecond=0)
+        t_first = now_utc - timedelta(hours=36)
+        t_latest = now_utc - timedelta(hours=2)
 
         shared_url = "https://engineering.example.com/posts/pgvector-hybrid-search"
         item_1, topic_1, _ = ingest_content_item(
@@ -289,7 +290,7 @@ def test_multisource_topic_deduplication_search_and_profiling() -> None:
             query="pgvector HNSW Reciprocal Rank",
             mode="hybrid",
             date_field="first_seen_at",
-            date_from="2026-11-10",
+            date_from=t_first.date().isoformat(),
             sort_by="last_seen_at",
             sort_order="desc",
         )
