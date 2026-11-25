@@ -865,7 +865,7 @@
                 <span aria-hidden="true">👎</span>
               </button>
               <button
-                class="icon-btn"
+                class="icon-btn desktop-only"
                 @click="corroborateTopic(t)"
                 :disabled="busy"
                 title="Croiser les sources sur le Web et générer une synthèse multi-sources"
@@ -874,7 +874,7 @@
                 <span aria-hidden="true">🌐</span>
               </button>
               <button
-                class="icon-btn"
+                class="icon-btn desktop-only"
                 @click="viewContent(t)"
                 title="Lire le contenu Markdown brut archivé sur S3"
                 aria-label="Lire le contenu Markdown brut archivé sur S3"
@@ -882,7 +882,7 @@
                 <span aria-hidden="true">📖</span>
               </button>
               <button
-                class="icon-btn"
+                class="icon-btn desktop-only"
                 @click="enrichTopic(t)"
                 :disabled="busy"
                 title="Enrichir l'article complet (via MCP abonné ou Trafilatura)"
@@ -1061,14 +1061,14 @@
                 ↩️ Remettre dans le flux
               </button>
               <button
-                class="icon-btn"
+                class="icon-btn desktop-only"
                 @click="viewContent(t)"
                 title="Lire le contenu Markdown archivé sur S3"
               >
                 <span aria-hidden="true">📖</span>
               </button>
               <button
-                class="icon-btn"
+                class="icon-btn desktop-only"
                 @click="enrichTopic(t)"
                 :disabled="busy"
                 title="Enrichir l'article complet (via MCP abonné ou Trafilatura)"
@@ -1764,7 +1764,11 @@
         async function openInboxTab() {
           activeTab.value = "topics";
           selectedTopicIndex.value = 0;
-          await Promise.all([loadTopics(true), loadProfile()]);
+          if (searchQuery.value.trim()) {
+            await Promise.all([runSearch(), loadProfile()]);
+          } else {
+            await Promise.all([loadTopics(true), loadProfile()]);
+          }
         }
 
         async function openArchiveTab() {

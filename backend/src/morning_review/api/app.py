@@ -738,6 +738,7 @@ def api_list_topics(
             "quantamagazine.org",
             "pourlascience.fr",
             "newscientist.com",
+            "science.org",
             "canardpc.com",
             "courrierinternational.com",
         )

@@ -152,6 +152,17 @@ sources:
   enabled: true
   discovery_method: yaml_seed
   site_url: https://thehackernews.com/
+- kind: rss
+  title: Science Magazine (AAAS — Latest News)
+  url: https://www.science.org/rss/news_current.xml
+  category: science
+  labels:
+  - science
+  creator: Science Magazine
+  is_public: true
+  enabled: true
+  discovery_method: yaml_seed
+  site_url: https://www.science.org/
 - kind: newsletter
   title: Medium Daily Digest (noreply@medium.com)
   url: newsletter://noreply@medium.com/medium-daily-digest
