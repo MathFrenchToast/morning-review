@@ -903,6 +903,39 @@ def test_daily_digest_smtp_idempotency_and_rearm_hook() -> None:
         assert "http://localhost" not in raw_mime
         assert "topic_id" not in raw_mime
 
+        from morning_review.connectors.gmail_smtp import build_digest_html, build_digest_plain_text
+
+        sample_cat = {
+            "tech": [
+                {
+                    "title": "Sujet de test digest",
+                    "primary_url": "https://example.com/article",
+                    "summary": "Résumé synthétique complet dans le corps.",
+                    "relevance_score": 4.2,
+                    "source_count": 2,
+                    "subtopics": [
+                        {"title": "Sous-sujet redondant", "summary": "Ne doit pas apparaître dans le mail."}
+                    ],
+                    "sources": [{"source_title": "Example"}],
+                }
+            ]
+        }
+        rendered_html = build_digest_html(
+            target_date=test_date,
+            by_category=sample_cat,
+            confirmations=[],
+            ui_url="https://review.perso.frenchtoast.dev",
+        )
+        rendered_plain = build_digest_plain_text(
+            target_date=test_date,
+            by_category=sample_cat,
+            confirmations=[],
+            ui_url="https://review.perso.frenchtoast.dev",
+        )
+        assert "Résumé synthétique complet dans le corps." in rendered_html
+        assert "Sous-sujet redondant" not in rendered_html
+        assert "Sous-sujet redondant" not in rendered_plain
+
         # 2e appel le même jour sans force_send : idempotent (aucun nouvel e-mail envoyé)
         res_second = generate_daily_digest(
             session,

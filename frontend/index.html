@@ -404,6 +404,18 @@
         padding: 0.38rem 0.55rem;
         font-size: 0.82rem;
       }
+      .mobile-actions-select {
+        display: inline-block !important;
+        width: auto;
+        max-width: 10.5rem;
+        padding: 0.38rem 0.65rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+      }
       .tabs {
         flex-wrap: nowrap;
         overflow-x: auto;
@@ -466,14 +478,26 @@
       <div class="brand">
         <h1>☀️ Morning Review</h1>
         <span class="pill desktop-only" title="Identifiant utilisateur UUID (multi-tenant ready)">user_id: {{ profile.user_id?.slice(0, 8) }}…</span>
-        <span class="pill">👍 {{ profile.positive_votes || 0 }} | 👎 {{ profile.negative_votes || 0 }}</span>
+        <span class="pill desktop-only">👍 {{ profile.positive_votes || 0 }} | 👎 {{ profile.negative_votes || 0 }}</span>
       </div>
-      <div class="actions">
-        <button @click="triggerRssIngest" :disabled="busy" title="Relever Flux RSS">🔄<span class="desktop-only"> Relever Flux RSS</span></button>
-        <button @click="triggerGmailIngest" :disabled="busy" title="Relever Gmail">✉️<span class="desktop-only"> Relever Gmail</span></button>
-        <button @click="triggerRecluster" :disabled="busy" title="Consolider Sujets">🔗<span class="desktop-only"> Consolider Sujets</span></button>
-        <button class="primary" @click="triggerDigest" :disabled="busy" title="Générer Briefing">✨<span class="desktop-only"> Générer Briefing</span></button>
+      <div class="actions desktop-only">
+        <button @click="triggerRssIngest" :disabled="busy" title="Relever Flux RSS">🔄 Relever Flux RSS</button>
+        <button @click="triggerGmailIngest" :disabled="busy" title="Relever Gmail">✉️ Relever Gmail</button>
+        <button @click="triggerRecluster" :disabled="busy" title="Consolider Sujets">🔗 Consolider Sujets</button>
+        <button class="primary" @click="triggerDigest" :disabled="busy" title="Générer Briefing">✨ Générer Briefing</button>
       </div>
+      <select
+        class="mobile-only mobile-actions-select"
+        aria-label="Options Morning Review"
+        :disabled="busy"
+        @change="runMobileHeaderAction($event)"
+      >
+        <option value="" selected disabled>{{ busy ? '⏳ En cours…' : '☰ Options' }}</option>
+        <option value="rss">🔄 Relever Flux RSS</option>
+        <option value="gmail">✉️ Relever Gmail</option>
+        <option value="recluster">🔗 Consolider Sujets</option>
+        <option value="digest">✨ Générer Briefing</option>
+      </select>
     </header>
 
     <div v-if="statusMessage" class="toast">
@@ -2598,6 +2622,22 @@
           return styles.join(" ");
         }
 
+        async function runMobileHeaderAction(event) {
+          const action = event?.target?.value || "";
+          if (event?.target) {
+            event.target.value = "";
+          }
+          if (action === "rss") {
+            await triggerRssIngest();
+          } else if (action === "gmail") {
+            await triggerGmailIngest();
+          } else if (action === "recluster") {
+            await triggerRecluster();
+          } else if (action === "digest") {
+            await triggerDigest();
+          }
+        }
+
         onMounted(async () => {
           window.addEventListener("keydown", handleKeyDown);
           window.addEventListener("resize", handleResize);
@@ -2628,7 +2668,7 @@
           openInboxTab, openArchiveTab, loadArchivedTopics, runArchiveSearch, resetArchiveSearch,
           markAsRead, markAllDisplayedAsRead, unarchiveTopic,
           onCardTouchStart, onCardTouchMove, onCardTouchEnd, onCardTouchCancel, getCardSwipeStyle,
-          triggerRssIngest, triggerGmailIngest, dismissConfirmation, triggerDigest, triggerRecluster, openDigestTab,
+          triggerRssIngest, triggerGmailIngest, dismissConfirmation, triggerDigest, triggerRecluster, openDigestTab, runMobileHeaderAction,
           loadCreators, openCreatorsTab, toggleCreatorAll, toggleCreatorChannel,
           syncYouTubeOAuth, importYouTubeChannels, addPodcastBySearch,
           addSource, toggleSource, exportSourcesYaml, formatHost, formatDate,

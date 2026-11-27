@@ -442,7 +442,7 @@ def generate_daily_digest(
     user_id: UUID,
     *,
     digest_date: date | None = None,
-    max_topics: int = 12,
+    max_topics: int = 14,
     recent_hours: int = 24,
     send_email: bool = False,
     force_send: bool = False,

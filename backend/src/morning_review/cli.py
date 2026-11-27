@@ -76,7 +76,7 @@ def main() -> None:
     p_corrob.add_argument("topic_id", type=str, help="UUID du sujet (topic_id)")
 
     p_digest = sub.add_parser("digest", help="Génère le rapport quotidien Morning Review (BDD + S3 + reports/) et l'envoie optionnellement par e-mail")
-    p_digest.add_argument("--max-topics", type=int, default=12)
+    p_digest.add_argument("--max-topics", type=int, default=14)
     p_digest.add_argument("--send-email", action="store_true", help="Expédie le digest par e-mail (idempotent 1 fois/jour)")
     p_digest.add_argument("--force-send", action="store_true", help="Force le renvoi par e-mail même si déjà envoyé aujourd'hui")
     p_digest.add_argument("--to", type=str, default=None, help="Destinataire e-mail optionnel (défaut: DIGEST_RECIPIENT_EMAIL)")

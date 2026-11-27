@@ -92,11 +92,6 @@ def build_digest_plain_text(
                 lines.append(f"  Nouveauté : {item['updates_summary']}")
             if summary:
                 lines.append(f"  {summary}")
-            for st in (item.get("subtopics") or [])[:3]:
-                st_lbl = st.get("title") or st.get("label") or ""
-                st_sum = st.get("summary") or ""
-                if st_lbl and st_sum:
-                    lines.append(f"    - {st_lbl} : {st_sum}")
             if purl and is_public_web_url(purl):
                 lines.append(f"  Lien : {purl}")
             lines.append("")
@@ -227,19 +222,7 @@ def build_digest_html(
                     f"</div>"
                 )
             if summary:
-                parts.append(f'<p style="margin:0 0 10px 0;font-size:14px;color:#334155;">{summary}</p>')
-
-            subtopics = item.get("subtopics") or []
-            if subtopics:
-                parts.append('<ul style="margin:0 0 8px 0;padding-left:18px;font-size:13px;color:#475569;">')
-                for st in subtopics[:3]:
-                    st_lbl = html.escape(st.get("title") or st.get("label") or "")
-                    st_sum = html.escape(st.get("summary") or "")
-                    if st_lbl and st_sum:
-                        parts.append(f'<li style="margin-bottom:4px;"><strong>{st_lbl}</strong> : {st_sum}</li>')
-                    elif st_sum or st_lbl:
-                        parts.append(f'<li style="margin-bottom:4px;">{st_sum or st_lbl}</li>')
-                parts.append("</ul>")
+                parts.append(f'<p style="margin:0;font-size:14px;color:#334155;">{summary}</p>')
 
             parts.append("</div>")
 

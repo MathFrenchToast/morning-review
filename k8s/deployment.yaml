@@ -282,7 +282,7 @@ spec:
                   morning-review fetch-gmail --max-messages 60 --since-days 7 || true
                   morning-review fetch-rss --max-entries 8 || true
                   morning-review cluster || true
-                  morning-review digest --max-topics 12 --send-email
+                  morning-review digest --max-topics 14 --send-email
               envFrom:
                 - secretRef:
                     name: morning-review-env-secret
